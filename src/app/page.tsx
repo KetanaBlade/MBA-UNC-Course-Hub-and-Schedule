@@ -60,6 +60,8 @@ export default function HomePage() {
         setBundlesByCourse(cachedBundles);
         setSelectedCourseIds(cachedCourses.map((c) => c.id));
         setIsLoading(false);
+        // Re-sync with Canvas in the background to ensure calendar events are correlated
+        fetchLiveData(savedTokens);
       } else {
         fetchLiveData(savedTokens);
       }
@@ -94,6 +96,11 @@ export default function HomePage() {
           const dcCourses = await dcClient.getCourses();
           loadedCourses.push(...dcCourses);
 
+          // Fetch all calendar events across DigitalCampus courses
+          const dcCalendarEvents = await dcClient
+            .getCalendarEvents(dcCourses.map((c) => c.id))
+            .catch(() => []);
+
           for (const course of dcCourses) {
             try {
               const [modules, assignments, folders, announcements] = await Promise.all([
@@ -110,6 +117,17 @@ export default function HomePage() {
                 }
               }
 
+              const courseCalEvents = dcCalendarEvents.filter((ev) => {
+                if (ev.context_code === `course_${course.id}` || ev.context_code?.endsWith(`_${course.id}`)) {
+                  return true;
+                }
+                const text = `${ev.title || ""} ${ev.description || ""}`.toLowerCase();
+                return (
+                  text.includes(course.course_code.toLowerCase()) ||
+                  text.includes(course.name.toLowerCase())
+                );
+              });
+
               bundlesMap[course.id] = aggregateCourseIntoWeeks({
                 course,
                 modules,
@@ -117,6 +135,7 @@ export default function HomePage() {
                 folders,
                 folderFilesMap,
                 announcements,
+                calendarEvents: courseCalEvents,
                 completedItemIds: completedItems,
               });
             } catch (err) {
@@ -134,6 +153,11 @@ export default function HomePage() {
           const kfCourses = await kfClient.getCourses();
           loadedCourses.push(...kfCourses);
 
+          // Fetch all calendar events across Kenan-Flagler courses
+          const kfCalendarEvents = await kfClient
+            .getCalendarEvents(kfCourses.map((c) => c.id))
+            .catch(() => []);
+
           for (const course of kfCourses) {
             try {
               const [modules, assignments, folders, announcements] = await Promise.all([
@@ -150,6 +174,17 @@ export default function HomePage() {
                 }
               }
 
+              const courseCalEvents = kfCalendarEvents.filter((ev) => {
+                if (ev.context_code === `course_${course.id}` || ev.context_code?.endsWith(`_${course.id}`)) {
+                  return true;
+                }
+                const text = `${ev.title || ""} ${ev.description || ""}`.toLowerCase();
+                return (
+                  text.includes(course.course_code.toLowerCase()) ||
+                  text.includes(course.name.toLowerCase())
+                );
+              });
+
               bundlesMap[course.id] = aggregateCourseIntoWeeks({
                 course,
                 modules,
@@ -157,6 +192,7 @@ export default function HomePage() {
                 folders,
                 folderFilesMap,
                 announcements,
+                calendarEvents: courseCalEvents,
                 completedItemIds: completedItems,
               });
             } catch (err) {

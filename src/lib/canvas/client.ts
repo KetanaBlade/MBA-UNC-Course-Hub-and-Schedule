@@ -137,19 +137,38 @@ export class CanvasApiClient {
   }
 
   /**
-   * Fetches calendar events and upcoming deadlines
+   * Fetches calendar events and upcoming live sessions
    */
-  async getCalendarEvents(): Promise<CanvasCalendarEvent[]> {
+  async getCalendarEvents(courseIds?: number[]): Promise<CanvasCalendarEvent[]> {
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 14); // 2 weeks back
+    startDate.setDate(startDate.getDate() - 30); // 30 days back
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 60); // 60 days forward
+    endDate.setDate(endDate.getDate() + 90); // 90 days forward
 
-    return this.request<CanvasCalendarEvent[]>("calendar_events", {
+    const params: Record<string, string | string[]> = {
       type: "event",
+      all_events: "true",
       start_date: startDate.toISOString().split("T")[0],
       end_date: endDate.toISOString().split("T")[0],
       per_page: "100",
-    });
+    };
+
+    if (courseIds && courseIds.length > 0) {
+      params["context_codes[]"] = courseIds.map((id) => `course_${id}`);
+    }
+
+    try {
+      const events = await this.request<CanvasCalendarEvent[]>("calendar_events", params);
+      return events || [];
+    } catch (err) {
+      console.warn("Calendar events fetch with context_codes failed, falling back to all_events:", err);
+      try {
+        delete params["context_codes[]"];
+        const fallbackEvents = await this.request<CanvasCalendarEvent[]>("calendar_events", params);
+        return fallbackEvents || [];
+      } catch {
+        return [];
+      }
+    }
   }
 }

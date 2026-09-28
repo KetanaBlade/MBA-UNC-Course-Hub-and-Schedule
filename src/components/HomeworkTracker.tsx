@@ -104,6 +104,38 @@ export function HomeworkTracker({
     return `Due: ${dateStr}`;
   };
 
+  const formatSessionSchedule = (startAt?: string, endAt?: string) => {
+    if (!startAt) return `Week ${weekNumber} Synchronous Class`;
+    try {
+      const start = new Date(startAt);
+      if (isNaN(start.getTime())) return `Week ${weekNumber} Synchronous Class`;
+
+      const datePart = start.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      });
+      const timePart = start.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+
+      if (endAt) {
+        const end = new Date(endAt);
+        if (!isNaN(end.getTime())) {
+          const endTimePart = end.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          });
+          return `${datePart} • ${timePart} – ${endTimePart}`;
+        }
+      }
+      return `${datePart} • ${timePart}`;
+    } catch {
+      return `Week ${weekNumber} Synchronous Class`;
+    }
+  };
+
   const totalCount = deliverables.length + liveSessions.length;
 
   if (totalCount === 0) {
@@ -133,7 +165,7 @@ export function HomeworkTracker({
 
       {/* Scannable Deliverables & Live Sessions List */}
       <div className="divide-y divide-border/60">
-        {/* Live Synchronous Sessions */}
+        {/* Live Synchronous Sessions from Canvas Calendar */}
         {liveSessions.map((session) => {
           const courseColor = getCourseColor(session.courseCode);
           return (
@@ -153,8 +185,8 @@ export function HomeworkTracker({
                     <Clock className="w-3.5 h-3.5 opacity-70" />
                     LIVE ZOOM SESSION
                   </span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    • Week {weekNumber} Synchronous Class
+                  <span className="font-mono text-xs text-muted-foreground font-semibold">
+                    • {formatSessionSchedule(session.startAt, session.endAt)}
                   </span>
                 </div>
 
@@ -170,6 +202,11 @@ export function HomeworkTracker({
                   >
                     {getCleanCourseName(session.courseCode, session.courseName)}
                   </span>
+                  {session.location && !session.location.includes("http") && (
+                    <span className="font-mono text-xs text-muted-foreground">
+                      • {session.location}
+                    </span>
+                  )}
                   <span className="font-mono text-xs font-semibold text-purple-700 dark:text-purple-300">
                     • Real-time Attendance Required
                   </span>
@@ -183,9 +220,9 @@ export function HomeworkTracker({
                   target="_blank"
                   rel="noreferrer"
                   className="h-7 px-2.5 rounded border border-purple-500/40 bg-purple-500/15 hover:bg-purple-500/25 text-purple-900 dark:text-purple-200 text-xs font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
-                  title="Join live Zoom session"
+                  title={session.zoomUrl ? "Join live Zoom session" : "View session details in Canvas Calendar"}
                 >
-                  <span>Join Zoom</span>
+                  <span>{session.zoomUrl ? "Join Zoom" : "View"}</span>
                   <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                 </a>
               </div>

@@ -1,6 +1,7 @@
 import {
   CanvasAnnouncement,
   CanvasAssignment,
+  CanvasCalendarEvent,
   CanvasCourse,
   CanvasFile,
   CanvasFolder,
@@ -26,6 +27,7 @@ export interface AggregatorInput {
   folders: CanvasFolder[];
   folderFilesMap: Record<number, CanvasFile[]>; // folderId -> files
   announcements: CanvasAnnouncement[];
+  calendarEvents?: CanvasCalendarEvent[];
   completedItemIds?: Set<string>;
 }
 
@@ -37,6 +39,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     folders,
     folderFilesMap,
     announcements,
+    calendarEvents = [],
     completedItemIds = new Set<string>(),
   } = input;
 
@@ -66,6 +69,11 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
 
   announcements.forEach((an) => {
     const w = extractWeekNumber(an.title);
+    if (w) detectedWeeks.add(w);
+  });
+
+  calendarEvents.forEach((ev) => {
+    const w = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
     if (w) detectedWeeks.add(w);
   });
 
@@ -138,48 +146,36 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const readings: NormalizedReading[] = [];
     const addedUrls = new Set<string>();
 
-    const targetModule = modules.find((m) => extractWeekNumber(m.name) === weekNum);
-    if (targetModule && targetModule.items) {
-      targetModule.items.forEach((item) => {
-        const titleLower = item.title.toLowerCase();
-        const isSyncSession =
-          titleLower.includes("synchronous") ||
-          titleLower.includes("live session") ||
-          titleLower.includes("live class") ||
-          titleLower.includes("zoom meeting") ||
-          titleLower.includes("virtual class") ||
-          Boolean(item.external_url?.includes("zoom.us"));
+    const weekModules = modules.filter((m) => extractWeekNumber(m.name) === weekNum);
+    weekModules.forEach((targetModule) => {
+      if (targetModule && targetModule.items) {
+        targetModule.items.forEach((item) => {
+          if (
+            item.type === "File" ||
+            item.type === "Page" ||
+            item.type === "ExternalUrl" ||
+            item.type === "ExternalTool"
+          ) {
+            const itemUrl = item.html_url || item.url || "";
+            addedUrls.add(item.title.toLowerCase());
+            const id = `mod-item-${item.id}`;
 
-        if (isSyncSession) {
-          // Handled in liveSessions section
-          return;
-        }
-
-        if (
-          item.type === "File" ||
-          item.type === "Page" ||
-          item.type === "ExternalUrl" ||
-          item.type === "ExternalTool"
-        ) {
-          const itemUrl = item.html_url || item.url || "";
-          addedUrls.add(item.title.toLowerCase());
-          const id = `mod-item-${item.id}`;
-
-          const isCanvasCompleted = Boolean(item.completion_requirement?.completed);
-          readings.push({
-            id,
-            title: item.title,
-            source: "module_item",
-            category: categorizeResource(item.title, undefined, "module_item"),
-            canvasUrl: itemUrl,
-            fileUrl: item.external_url || item.url,
-            isCompleted: isCanvasCompleted || completedItemIds.has(id),
-            courseCode: course.course_code,
-            courseName: course.name,
-          });
-        }
-      });
-    }
+            const isCanvasCompleted = Boolean(item.completion_requirement?.completed);
+            readings.push({
+              id,
+              title: item.title,
+              source: "module_item",
+              category: categorizeResource(item.title, undefined, "module_item"),
+              canvasUrl: itemUrl,
+              fileUrl: item.external_url || item.url,
+              isCompleted: isCanvasCompleted || completedItemIds.has(id),
+              courseCode: course.course_code,
+              courseName: course.name,
+            });
+          }
+        });
+      }
+    });
 
     // --- C. Rescued Pre-Readings from Buried Files Tab Folders ---
     folders.forEach((f) => {
@@ -249,72 +245,108 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
       }
     });
 
-    // --- E. Live Synchronous & Zoom Sessions ---
+    // --- E. Live Synchronous Sessions from Canvas Calendar (Primary Source) ---
     const liveSessions: NormalizedLiveSession[] = [];
     const addedLiveKeys = new Set<string>();
 
-    // 1. From Course Modules (e.g. "Synchronous Session 1" in Week 1 module)
-    modules.forEach((mod) => {
-      const modWeek = extractWeekNumber(mod.name);
-      if (mod.items) {
-        mod.items.forEach((item) => {
-          const itemWeek = extractWeekNumber(item.title) || modWeek;
-          const titleLower = item.title.toLowerCase();
-          const isSyncSession =
-            titleLower.includes("synchronous") ||
-            titleLower.includes("live session") ||
-            titleLower.includes("live class") ||
-            titleLower.includes("zoom meeting") ||
-            titleLower.includes("virtual class") ||
-            Boolean(item.external_url?.includes("zoom.us"));
+    // 1. Primary Source: Canvas Calendar Events
+    if (calendarEvents && calendarEvents.length > 0) {
+      calendarEvents.forEach((ev) => {
+        // Match week number by title or description
+        const evWeek = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
 
-          if (isSyncSession && (itemWeek === weekNum || modWeek === weekNum)) {
-            const zoomUrl =
-              item.external_url ||
-              (item.url?.includes("zoom.us") ? item.url : undefined) ||
-              (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
+        if (evWeek === weekNum) {
+          // Extract Zoom links from location, description, or url
+          const allText = `${ev.location_name || ""} ${ev.location_address || ""} ${ev.description || ""} ${ev.url || ""}`;
+          const zoomUrls = extractZoomLinks(allText);
+          const directZoom = [ev.location_name, ev.location_address, ev.url].find(
+            (loc) => loc && /zoom\.us/i.test(loc)
+          );
+          const zoomUrl = directZoom || zoomUrls[0];
 
-            const sessionKey = `${course.id}-${item.title}`.toLowerCase();
-            if (!addedLiveKeys.has(sessionKey)) {
-              addedLiveKeys.add(sessionKey);
-              liveSessions.push({
-                id: `live-mod-${item.id}`,
-                title: item.title,
-                courseName: course.name,
-                courseCode: course.course_code,
-                startAt: new Date().toISOString(),
-                endAt: new Date().toISOString(),
-                zoomUrl,
-                canvasUrl:
-                  item.html_url ||
-                  item.url ||
-                  `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/courses/${course.id}/modules/items/${item.id}`,
-              });
-            }
+          const sessionKey = `${course.id}-${ev.id}`.toLowerCase();
+          if (!addedLiveKeys.has(sessionKey)) {
+            addedLiveKeys.add(sessionKey);
+            liveSessions.push({
+              id: `cal-live-${ev.id}`,
+              title: ev.title,
+              courseName: course.name,
+              courseCode: course.course_code,
+              startAt: ev.start_at || new Date().toISOString(),
+              endAt: ev.end_at || ev.start_at || new Date().toISOString(),
+              zoomUrl,
+              location: ev.location_name || ev.location_address || (zoomUrl ? "Zoom" : undefined),
+              canvasUrl:
+                ev.html_url ||
+                `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/calendar?event_id=${ev.id}&include_contexts=course_${course.id}`,
+            });
           }
-        });
-      }
-    });
+        }
+      });
+    }
 
-    // 2. From Announcements containing Zoom links
-    weekAnnouncements.forEach((an) => {
-      if (an.zoomUrl) {
-        const sessionKey = `${course.id}-${an.title}`.toLowerCase();
-        if (!addedLiveKeys.has(sessionKey)) {
-          addedLiveKeys.add(sessionKey);
-          liveSessions.push({
-            id: `live-${an.id}`,
-            title: an.title.includes("Live") ? an.title : `Week ${weekNum} Live Class`,
-            courseName: course.name,
-            courseCode: course.course_code,
-            startAt: an.postedAt,
-            endAt: an.postedAt,
-            zoomUrl: an.zoomUrl,
-            canvasUrl: an.canvasUrl,
+    // 2. Secondary Fallback: If no calendar events found for this week, check Module sync items
+    if (liveSessions.length === 0) {
+      modules.forEach((mod) => {
+        const modWeek = extractWeekNumber(mod.name);
+        if (mod.items) {
+          mod.items.forEach((item) => {
+            const itemWeek = extractWeekNumber(item.title) || modWeek;
+            const titleLower = item.title.toLowerCase();
+            const isSyncSession =
+              /\b(?:sync|synchronous|live\s*session|live\s*class|zoom|virtual\s*class)\b/i.test(titleLower) ||
+              Boolean(item.external_url?.includes("zoom.us"));
+
+            if (isSyncSession && (itemWeek === weekNum || modWeek === weekNum)) {
+              const zoomUrl =
+                item.external_url ||
+                (item.url?.includes("zoom.us") ? item.url : undefined) ||
+                (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
+
+              const sessionKey = `${course.id}-${item.title}`.toLowerCase();
+              if (!addedLiveKeys.has(sessionKey)) {
+                addedLiveKeys.add(sessionKey);
+                liveSessions.push({
+                  id: `live-mod-${item.id}`,
+                  title: item.title,
+                  courseName: course.name,
+                  courseCode: course.course_code,
+                  startAt: new Date().toISOString(),
+                  endAt: new Date().toISOString(),
+                  zoomUrl,
+                  canvasUrl:
+                    item.html_url ||
+                    item.url ||
+                    `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/courses/${course.id}/modules/items/${item.id}`,
+                });
+              }
+            }
           });
         }
-      }
-    });
+      });
+    }
+
+    // 3. Tertiary Fallback: Announcements containing Zoom links
+    if (liveSessions.length === 0) {
+      weekAnnouncements.forEach((an) => {
+        if (an.zoomUrl) {
+          const sessionKey = `${course.id}-${an.title}`.toLowerCase();
+          if (!addedLiveKeys.has(sessionKey)) {
+            addedLiveKeys.add(sessionKey);
+            liveSessions.push({
+              id: `live-${an.id}`,
+              title: an.title.includes("Live") ? an.title : `Week ${weekNum} Live Class`,
+              courseName: course.name,
+              courseCode: course.course_code,
+              startAt: an.postedAt,
+              endAt: an.postedAt,
+              zoomUrl: an.zoomUrl,
+              canvasUrl: an.canvasUrl,
+            });
+          }
+        }
+      });
+    }
 
     // --- F. Stats ---
     const submittedCount = weekDeliverables.filter(
@@ -323,7 +355,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const completedReadingsCount = readings.filter((r) => r.isCompleted).length;
 
     // Module name fallback for week label
-    const moduleLabel = targetModule ? targetModule.name : `Week ${weekNum}`;
+    const moduleLabel = weekModules.length > 0 ? weekModules[0].name : `Week ${weekNum}`;
 
     return {
       weekNumber: weekNum,
@@ -560,20 +592,19 @@ export function getMockMBACoursesData(): {
         announcements,
         readings,
         deliverables,
-        liveSessions: announcements[0]?.zoomUrl
-          ? [
-              {
-                id: `mock-live-${course.id}-${weekNum}`,
-                title: `${course.course_code} Live Sync Session`,
-                courseName: course.name,
-                courseCode: course.course_code,
-                startAt: new Date(Date.now() + 86400000).toISOString(),
-                endAt: new Date(Date.now() + 86400000 + 5400000).toISOString(),
-                zoomUrl: announcements[0].zoomUrl,
-                canvasUrl: announcements[0].canvasUrl,
-              },
-            ]
-          : [],
+        liveSessions: [
+          {
+            id: `mock-live-${course.id}-${weekNum}`,
+            title: `${course.course_code} Synchronous Session ${weekNum}`,
+            courseName: course.name,
+            courseCode: course.course_code,
+            startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 86400000).toISOString(),
+            endAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 86400000 + 5400000).toISOString(),
+            zoomUrl: "https://unc.zoom.us/j/98421038291",
+            location: "Zoom Online Classroom",
+            canvasUrl: `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/calendar`,
+          },
+        ],
         stats: {
           totalDeliverables: deliverables.length,
           submittedCount: deliverables.filter((d) => d.status === "submitted" || d.status === "graded").length,

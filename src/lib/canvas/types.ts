@@ -114,7 +114,9 @@ export interface CanvasCalendarEvent {
   description: string;
   context_code: string;
   location_name?: string;
+  location_address?: string;
   html_url: string;
+  url?: string;
 }
 
 // Normalized Hub Models
