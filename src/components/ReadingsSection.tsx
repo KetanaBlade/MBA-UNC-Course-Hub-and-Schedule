@@ -116,24 +116,27 @@ export function ReadingsSection({
 
   return (
     <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col h-full transition-all">
-      {/* Sticky Header: Clean, no icon, no wrapped tags */}
+      {/* Sticky Header: Clean, count integrated into headline, zero zoom wrapping */}
       <div className="sticky top-0 z-20 bg-card border-b border-border p-4 sm:p-5 space-y-3">
         <div>
-          <div className="flex items-baseline justify-between gap-2">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
-              Week {weekNumber} Readings & Cases
-            </h2>
-            <span className="font-mono text-xs font-bold text-muted-foreground shrink-0">
-              {completedCount} of {readings.length} completed ({progressPercent}%)
+          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+            Week {weekNumber} Readings & Cases{" "}
+            <span className="text-primary font-mono text-base font-bold">
+              ({readings.length})
+            </span>
+          </h2>
+          <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-muted-foreground mt-1">
+            <span>
+              {completedCount} of {readings.length} completed
+            </span>
+            <span className="font-mono font-bold text-foreground">
+              {progressPercent}%
             </span>
           </div>
-          <p className="text-xs sm:text-[13px] text-muted-foreground mt-1">
-            Required readings, Harvard Business cases, and video lectures
-          </p>
         </div>
 
         {/* Progress Bar */}
-        <div className="h-1.5 w-full bg-muted/40 rounded-full overflow-hidden">
+        <div className="h-2 w-full bg-muted/40 rounded-full overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-300"
             style={{ width: `${progressPercent}%` }}

@@ -34,17 +34,15 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
 
   return (
     <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
-      {/* Clean Header: No icon, no awkward wrapping badge */}
+      {/* Clean Full-Width Header: Count integrated into headline, zero zoom wrapping */}
       <div className="p-4 sm:p-5 border-b border-border bg-card">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
-            Week {weekNumber} Briefings
-          </h2>
-          <span className="font-mono text-xs font-semibold text-muted-foreground shrink-0">
-            {announcements.length} {announcements.length === 1 ? "note" : "notes"}
+        <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+          Week {weekNumber} Briefings{" "}
+          <span className="text-primary font-mono text-base font-bold">
+            ({announcements.length})
           </span>
-        </div>
-        <p className="text-xs sm:text-[13px] text-muted-foreground mt-1">
+        </h2>
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
           Announcements, guidance, and Zoom links
         </p>
       </div>

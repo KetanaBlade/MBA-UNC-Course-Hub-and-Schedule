@@ -196,11 +196,11 @@ export function WeeklyDashboard({
         </div>
       </div>
 
-      {/* 2. SOLID WHITE KPI METRIC DECK (CLEAN, NO ICONS) */}
+      {/* 2. SOLID WHITE KPI METRIC DECK (CLEAN, NO ICONS, ZERO WRAPPING) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {/* Deliverables Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
             Deliverables
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
@@ -211,7 +211,7 @@ export function WeeklyDashboard({
 
         {/* Readings Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
             Readings & Cases
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
@@ -222,7 +222,7 @@ export function WeeklyDashboard({
 
         {/* Live Zoom Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
             Live Zoom
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
@@ -233,7 +233,7 @@ export function WeeklyDashboard({
 
         {/* Completion Rate Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
             Overall Pace
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">

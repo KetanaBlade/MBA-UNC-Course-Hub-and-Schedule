@@ -25,19 +25,17 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
 
   return (
     <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col h-full transition-all">
-      {/* Sticky Header: Clean, no icon, no wrapped tags */}
+      {/* Sticky Header: Clean, count integrated into headline, zero zoom wrapping */}
       <div className="sticky top-0 z-20 bg-card border-b border-border p-4 sm:p-5 space-y-3">
         <div>
-          <div className="flex items-baseline justify-between gap-2">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
-              Week {weekNumber} Course Files
-            </h2>
-            <span className="font-mono text-xs font-semibold text-muted-foreground shrink-0">
-              {files.length} {files.length === 1 ? "file" : "files"}
+          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+            Week {weekNumber} Course Files{" "}
+            <span className="text-primary font-mono text-base font-bold">
+              ({files.length})
             </span>
-          </div>
-          <p className="text-xs sm:text-[13px] text-muted-foreground mt-1">
-            Spreadsheets, slide decks, and data rescued from Files folders
+          </h2>
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
+            Spreadsheets, slide decks, and data rescued from Canvas Files
           </p>
         </div>
 
