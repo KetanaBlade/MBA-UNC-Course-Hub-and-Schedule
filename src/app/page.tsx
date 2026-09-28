@@ -284,7 +284,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen pb-16 bg-background text-foreground transition-colors duration-200">
+    <div className="min-h-screen pb-16">
       {/* Executive Navbar */}
       <Navbar
         tokens={tokens}
@@ -297,53 +297,60 @@ export default function HomePage() {
       />
 
       {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-        {/* Navigation Mode Sub-header (Tier 1 Display) */}
-        <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#13294B] dark:text-[#4B9CD3] font-sans">
+      <main className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 space-y-6">
+        {/* Page Header & Hero (Recipe 5.1) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border/40">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-primary font-mono text-[10px] font-bold px-2 py-0.5 rounded-sm bg-primary/10 border border-primary/20 uppercase tracking-wider">
+                Active Cohort Term
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight font-sans">
               Course Hub & Master Schedule
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Unified cross-instance Canvas intelligence for Kenan-Flagler Online MBA
+            <p className="text-sm font-medium text-muted-foreground font-sans">
+              Unified weekly coursework, readings, and calendar across DigitalCampus & Kenan-Flagler
             </p>
           </div>
 
-          {/* Anchored View Mode Deck */}
-          <div className="flex items-center rounded-md border border-border/80 bg-white/80 dark:bg-card p-0.5 shadow-2xs self-start sm:self-auto">
-            <button
-              onClick={() => setActiveTab("weekly")}
-              className={`btn-tactile flex min-h-[34px] items-center gap-1.5 rounded-[4px] px-3.5 py-1 text-xs font-bold transition ${
-                activeTab === "weekly"
-                  ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Layers className="h-3.5 w-3.5" />
-              <span>Weekly Hub</span>
-            </button>
+          {/* Segmented Control Tabs (Recipe 5.3) */}
+          <div className="flex items-center gap-2.5 self-start md:self-auto">
+            <div className="flex items-center bg-muted/40 p-0.5 rounded-md border border-border/50">
+              <button
+                onClick={() => setActiveTab("weekly")}
+                className={`px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === "weekly"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Weekly Hub</span>
+              </button>
 
-            <button
-              onClick={() => setActiveTab("calendar")}
-              className={`btn-tactile flex min-h-[34px] items-center gap-1.5 rounded-[4px] px-3.5 py-1 text-xs font-bold transition ${
-                activeTab === "calendar"
-                  ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <CalendarIcon className="h-3.5 w-3.5" />
-              <span>Master Calendar</span>
-            </button>
+              <button
+                onClick={() => setActiveTab("calendar")}
+                className={`px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === "calendar"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <CalendarIcon className="w-3.5 h-3.5" />
+                <span>Master Calendar</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Sync or Connection Notification */}
         {syncError && (
-          <div className="mb-5 rounded-md border border-rose-500/20 bg-rose-500/10 p-3 text-xs font-semibold text-rose-800 dark:text-rose-300 flex items-center justify-between">
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs font-semibold text-destructive flex items-center justify-between">
             <span>{syncError}</span>
             <button
               onClick={() => setShowSetupWizard(true)}
-              className="text-[#4B9CD3] font-bold underline ml-2"
+              className="text-primary font-bold underline ml-2 cursor-pointer"
             >
               Check Tokens
             </button>

@@ -17,40 +17,40 @@ interface HomeworkTrackerProps {
 }
 
 export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerProps) {
-  const getStatusChip = (status: DeliverableStatus, score?: number | null, grade?: string | null) => {
+  const getStatusBadge = (status: DeliverableStatus, score?: number | null, grade?: string | null) => {
     switch (status) {
       case "graded":
         return (
-          <span className="micro-tag bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-            <CheckCircle2 className="h-2.5 w-2.5" />
-            GRADED {grade ? `(${grade})` : score !== null && score !== undefined ? `(${score} PTS)` : ""}
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>GRADED {grade ? `(${grade})` : score !== null && score !== undefined ? `(${score} PTS)` : ""}</span>
           </span>
         );
       case "submitted":
         return (
-          <span className="micro-tag bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-            <CheckCircle2 className="h-2.5 w-2.5" />
-            SUBMITTED
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>SUBMITTED</span>
           </span>
         );
       case "upcoming":
         return (
-          <span className="micro-tag bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-            <Clock className="h-2.5 w-2.5" />
-            DUE SOON
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span>DUE SOON</span>
           </span>
         );
       case "overdue":
         return (
-          <span className="micro-tag bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20">
-            <AlertTriangle className="h-2.5 w-2.5" />
-            OVERDUE
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>OVERDUE</span>
           </span>
         );
       default:
         return (
-          <span className="micro-tag bg-muted text-muted-foreground border border-border">
-            TO DO
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-muted/60 text-muted-foreground border border-border/80">
+            <span>TO DO</span>
           </span>
         );
     }
@@ -89,72 +89,75 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
 
   if (deliverables.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card p-6 text-center text-xs text-muted-foreground">
-        <GraduationCap className="mx-auto h-5 w-5 text-muted-foreground/60 mb-1.5" />
+      <div className="border border-border/70 rounded-lg bg-card p-6 text-center text-xs text-muted-foreground shadow-xs">
+        <GraduationCap className="mx-auto w-5 h-5 text-muted-foreground/60 mb-1.5" />
         No homework deliverables assigned for Week {weekNumber}.
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
-      {/* Outer Card Header */}
-      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
-            <GraduationCap className="h-3.5 w-3.5" />
+    <div className="border border-border/70 rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
+      {/* Card Header (Recipe 5.2) */}
+      <div className="p-4 sm:p-5 flex items-center justify-between border-b border-border/40 bg-card">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 text-primary" />
+            <h2 className="text-lg font-bold text-foreground tracking-tight font-sans">
+              Week {weekNumber} Homework & Deliverables
+            </h2>
           </div>
-          <h3 className="text-base font-bold tracking-tight text-foreground">
-            Week {weekNumber} Homework & Deliverables
-          </h3>
+          <p className="text-sm font-medium text-muted-foreground font-sans">
+            Assignments, case memos, and quizzes pulled into weekly context
+          </p>
         </div>
-        <span className="micro-tag bg-muted text-muted-foreground">
+        <span className="font-mono text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm bg-muted/60 border border-border/80 text-muted-foreground">
           {deliverables.length} {deliverables.length === 1 ? "DELIVERABLE" : "DELIVERABLES"}
         </span>
       </div>
 
       {/* De-boxified List Rows */}
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border/40">
         {deliverables.map((deliv) => {
           return (
             <div
               key={deliv.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 transition hover:bg-muted/30"
+              className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:bg-muted/15"
             >
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="micro-tag bg-primary text-primary-foreground font-mono">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
                     {deliv.courseCode}
                   </span>
-                  <h4 className="text-sm font-bold text-foreground leading-snug">
+                  <h3 className="text-sm font-bold text-foreground leading-snug font-sans">
                     {deliv.title}
-                  </h4>
-                  {getStatusChip(deliv.status, deliv.score, deliv.grade)}
+                  </h3>
+                  {getStatusBadge(deliv.status, deliv.score, deliv.grade)}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1 font-mono text-[11px]">
-                    <Calendar className="h-3 w-3 opacity-70" />
+                    <Calendar className="w-3.5 h-3.5 opacity-70" />
                     {formatDueText(deliv)}
                   </span>
                   {deliv.pointsPossible > 0 && (
-                    <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/90">
+                    <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/80">
                       • {deliv.pointsPossible} PTS
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Action Button */}
+              {/* Action Button (Recipe 5.5) */}
               <div className="shrink-0 self-end sm:self-center">
                 <a
                   href={deliv.canvasUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className={`btn-tactile inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-bold shadow-2xs transition ${
+                  className={`h-8 px-3 rounded-md text-xs font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 ${
                     deliv.status === "graded" || deliv.status === "submitted"
-                      ? "border border-border bg-muted/40 hover:bg-muted text-foreground"
-                      : "bg-primary text-primary-foreground hover:opacity-90"
+                      ? "border border-border bg-card hover:bg-muted/40 text-foreground"
+                      : "bg-primary hover:bg-primary/90 text-primary-foreground"
                   }`}
                 >
                   <span>
@@ -162,7 +165,7 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
                       ? "View Submission"
                       : "Submit on Canvas"}
                   </span>
-                  <ExternalLink className="h-3 w-3 opacity-80" />
+                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                 </a>
               </div>
             </div>

@@ -76,60 +76,52 @@ export function MasterCalendarView({
   });
 
   return (
-    <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
-      {/* Outer Card Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border bg-muted/40 px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
-            <CalendarIcon className="h-3.5 w-3.5" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold tracking-tight text-foreground">
+    <div className="border border-border/70 rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
+      {/* Card Header (Recipe 5.2) */}
+      <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 bg-card">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-primary" />
+            <h2 className="text-lg font-bold text-foreground tracking-tight font-sans">
               Master Term Schedule
-            </h3>
-            <p className="text-[11px] text-muted-foreground">
-              Unified cross-instance timeline for Kenan-Flagler Online MBA
-            </p>
+            </h2>
           </div>
+          <p className="text-sm font-medium text-muted-foreground font-sans">
+            Unified cross-instance timeline for Kenan-Flagler Online MBA
+          </p>
         </div>
 
-        {/* Anchored Filter Toolbar */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-md border border-border bg-muted/40 p-0.5 text-xs">
+        {/* Anchored Controls (Recipe 5.3) */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center bg-muted/40 p-0.5 rounded-md border border-border/50">
             <button
               onClick={() => setFilter("all")}
-              className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
-                filter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              className={`px-2.5 py-1 rounded-sm text-xs font-bold transition-all cursor-pointer ${
+                filter === "all" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter("upcoming")}
-              className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
-                filter === "upcoming"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+              className={`px-2.5 py-1 rounded-sm text-xs font-bold transition-all cursor-pointer ${
+                filter === "upcoming" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Upcoming
             </button>
             <button
               onClick={() => setFilter("deliverables")}
-              className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
-                filter === "deliverables"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+              className={`px-2.5 py-1 rounded-sm text-xs font-bold transition-all cursor-pointer ${
+                filter === "deliverables" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Due Dates
             </button>
             <button
               onClick={() => setFilter("live")}
-              className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
-                filter === "live"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+              className={`px-2.5 py-1 rounded-sm text-xs font-bold transition-all cursor-pointer ${
+                filter === "live" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Zoom
@@ -138,16 +130,16 @@ export function MasterCalendarView({
 
           <button
             onClick={onExportICS}
-            className="btn-tactile inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 hover:bg-muted px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs"
+            className="h-8 px-2.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
           >
-            <Download className="h-3 w-3 text-[#4B9CD3]" />
+            <Download className="w-3.5 h-3.5 text-primary" />
             <span>.ICS</span>
           </button>
         </div>
       </div>
 
       {/* De-boxified Event Stream */}
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border/40">
         {filteredEvents.length === 0 ? (
           <div className="p-8 text-center text-xs text-muted-foreground">
             No events match the selected filter.
@@ -158,13 +150,13 @@ export function MasterCalendarView({
             return (
               <div
                 key={evt.id}
-                className={`flex items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 transition hover:bg-muted/30 ${
-                  isPast ? "opacity-50" : ""
+                className={`p-4 sm:p-5 flex items-start sm:items-center justify-between gap-3 transition hover:bg-muted/15 ${
+                  isPast ? "opacity-60" : ""
                 }`}
               >
                 <div className="flex items-start sm:items-center gap-3">
                   <div
-                    className={`mt-0.5 sm:mt-0 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
+                    className={`mt-0.5 sm:mt-0 flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${
                       evt.type === "live"
                         ? "bg-purple-500/10 text-purple-700 dark:text-purple-300"
                         : evt.status === "graded" || evt.status === "submitted"
@@ -173,22 +165,22 @@ export function MasterCalendarView({
                     }`}
                   >
                     {evt.type === "live" ? (
-                      <Video className="h-3.5 w-3.5" />
+                      <Video className="w-4 h-4" />
                     ) : evt.status === "graded" || evt.status === "submitted" ? (
-                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <CheckCircle2 className="w-4 h-4" />
                     ) : (
-                      <Clock className="h-3.5 w-3.5" />
+                      <Clock className="w-4 h-4" />
                     )}
                   </div>
 
                   <div>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="micro-tag bg-primary text-primary-foreground font-mono">
+                      <span className="font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
                         {evt.courseCode}
                       </span>
-                      <h4 className="text-xs sm:text-sm font-bold text-foreground leading-snug">
+                      <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug font-sans">
                         {evt.title}
-                      </h4>
+                      </h3>
                     </div>
                     <div className="flex items-center gap-2.5 text-xs text-muted-foreground mt-0.5">
                       <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/80">
@@ -201,7 +193,7 @@ export function MasterCalendarView({
                         })}
                       </span>
                       {evt.extraInfo && (
-                        <span className="font-mono text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           • {evt.extraInfo}
                         </span>
                       )}
@@ -214,10 +206,10 @@ export function MasterCalendarView({
                     href={evt.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn-tactile inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition"
+                    className="h-8 px-2.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1"
                   >
                     <span>{evt.type === "live" ? "Join Zoom" : "Open"}</span>
-                    <ExternalLink className="h-3 w-3 text-muted-foreground/70" />
+                    <ExternalLink className="w-3 h-3 text-muted-foreground" />
                   </a>
                 </div>
               </div>

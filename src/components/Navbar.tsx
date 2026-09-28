@@ -35,110 +35,106 @@ export function Navbar({
   const hasKenanFlagler = Boolean(tokens.kenanFlaglerToken);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#E4E1D8]/80 dark:border-border/80 bg-[#13294B] text-white shadow-xs">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-card/90 backdrop-blur-md text-foreground transition-colors">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand & Program Title */}
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#4B9CD3] font-bold text-[#13294B] shadow-inner text-base tracking-tighter">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary font-bold text-primary-foreground shadow-xs text-sm font-sans tracking-tight">
             UNC
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold tracking-tight text-white text-sm sm:text-base font-sans">
+              <span className="font-bold tracking-tight text-foreground text-sm sm:text-base font-sans">
                 Kenan-Flagler Online MBA
               </span>
               {isDemoMode && (
-                <span className="micro-tag bg-amber-400/20 text-amber-200 border border-amber-400/30">
-                  <Sparkles className="h-2.5 w-2.5" />
+                <span className="font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary">
+                  <Sparkles className="h-2.5 w-2.5 inline mr-1" />
                   DEMO
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-300 hidden sm:block tracking-normal opacity-90">
-              Centralized Course Hub & Master Schedule
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              Centralized Course Resources & Master Schedule
             </p>
           </div>
         </div>
 
-        {/* Canvas Instance Micro-Tags (Desktop) */}
+        {/* Canvas Instance Micro-Data Tags (Recipe 5.6) */}
         <div className="hidden md:flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 border border-white/10">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-muted/60 border border-border/80 text-foreground">
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                hasDigitalCampus || isDemoMode ? "bg-emerald-400 animate-pulse" : "bg-slate-400"
+                hasDigitalCampus || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
               }`}
             />
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-200">
-              DIGITALCAMPUS
-            </span>
+            <span>DIGITALCAMPUS</span>
             {(hasDigitalCampus || isDemoMode) && (
-              <CheckCircle2 className="h-3 w-3 text-emerald-400 ml-0.5" />
+              <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 ml-0.5" />
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 border border-white/10">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-muted/60 border border-border/80 text-foreground">
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                hasKenanFlagler || isDemoMode ? "bg-emerald-400 animate-pulse" : "bg-slate-400"
+                hasKenanFlagler || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
               }`}
             />
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-200">
-              KENAN-FLAGLER
-            </span>
+            <span>KENAN-FLAGLER</span>
             {(hasKenanFlagler || isDemoMode) && (
-              <CheckCircle2 className="h-3 w-3 text-emerald-400 ml-0.5" />
+              <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 ml-0.5" />
             )}
           </div>
         </div>
 
-        {/* Action Controls & Theme Toggle */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Refresh / Sync Button */}
+        {/* Action Triggers (Recipe 5.5) */}
+        <div className="flex items-center gap-2">
+          {/* Refresh / Sync Button (Secondary Trigger) */}
           <button
             onClick={onSync}
             disabled={isSyncing}
             aria-label="Synchronize Canvas data"
-            className="btn-tactile flex min-h-[38px] items-center justify-center rounded-md bg-white/10 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] disabled:opacity-50"
+            className="h-9 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
             title="Refresh Canvas Data"
           >
             <RefreshCw
-              className={`h-3.5 w-3.5 sm:mr-1.5 ${isSyncing ? "animate-spin text-[#4B9CD3]" : ""}`}
+              className={`w-3.5 h-3.5 text-muted-foreground ${isSyncing ? "animate-spin text-primary" : ""}`}
             />
             <span className="hidden sm:inline">Sync</span>
           </button>
 
-          {/* Export Calendar (.ics) */}
+          {/* Export Calendar (.ics) (Secondary Trigger) */}
           <button
             onClick={onExportCalendar}
             aria-label="Export Master Calendar to iCal"
-            className="btn-tactile flex min-h-[38px] items-center justify-center rounded-md bg-white/10 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3]"
+            className="h-9 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
             title="Export Calendar (.ics)"
           >
-            <Calendar className="h-3.5 w-3.5 sm:mr-1.5 text-[#4B9CD3]" />
+            <Calendar className="w-3.5 h-3.5 text-primary" />
             <span className="hidden sm:inline">Export .ics</span>
           </button>
 
-          {/* Cohort Share */}
+          {/* Cohort Share (Secondary Trigger) */}
           <button
             onClick={onOpenCohortShare}
             aria-label="Cohort sharing tools"
-            className="btn-tactile flex min-h-[38px] items-center justify-center rounded-md bg-white/10 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3]"
+            className="h-9 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
             title="Share Schedule with Cohort"
           >
-            <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
+            <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="hidden sm:inline">Share</span>
           </button>
 
-          {/* Light / Dark Mode Toggle */}
+          {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Settings / Tokens */}
+          {/* Primary Tokens Button (Recipe 5.5 Primary Action) */}
           <button
             onClick={onOpenSettings}
             aria-label="Open Token Settings"
-            className="btn-tactile flex min-h-[38px] items-center justify-center rounded-md bg-[#4B9CD3] hover:bg-[#5aa8dd] px-3 py-1.5 text-xs font-bold text-[#13294B] shadow-2xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="h-9 px-3.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
           >
-            <Key className="h-3.5 w-3.5 mr-1.5" />
+            <Key className="w-3.5 h-3.5" />
             <span>Tokens</span>
           </button>
         </div>

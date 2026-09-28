@@ -44,36 +44,32 @@ export function CohortShareModal({ isOpen, onClose }: CohortShareModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="share-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
     >
-      <div className="relative w-full max-w-lg rounded-lg bg-card p-6 sm:p-7 shadow-2xl border border-border">
-        <button
-          onClick={onClose}
-          aria-label="Close dialog"
-          className="btn-tactile absolute right-4 top-4 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground touch-target"
-        >
-          <X className="h-4.5 w-4.5" />
-        </button>
-
-        <div className="flex items-center gap-3 mb-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
-            <Users className="h-4.5 w-4.5" />
-          </div>
-          <div>
-            <h2 id="share-title" className="text-lg font-bold tracking-tight text-foreground font-sans">
+      <div className="w-full max-w-md bg-card border border-border/80 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        {/* Header (Recipe 5.7) */}
+        <div className="p-5 border-b border-border/40 flex items-center justify-between bg-card">
+          <div className="flex items-center gap-2.5">
+            <Users className="w-4 h-4 text-primary" />
+            <h3 id="share-title" className="text-lg font-bold text-foreground tracking-tight font-sans">
               Share with Your Cohort
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Zero-install handoff for UNC Kenan-Flagler classmates
-            </p>
+            </h3>
           </div>
+          <button
+            onClick={onClose}
+            aria-label="Close dialog"
+            className="text-muted-foreground hover:text-foreground rounded-sm p-1 cursor-pointer transition-all"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        <div className="mt-4 space-y-3.5 text-xs text-muted-foreground leading-relaxed">
-          <div className="inner-strip p-3.5 space-y-1.5">
+        {/* Body (Recipe 5.7) */}
+        <div className="p-5 space-y-4 text-sm font-medium text-foreground">
+          <div className="bg-muted/20 border border-border/70 rounded-md p-3.5 space-y-1.5 text-xs text-muted-foreground">
             <h4 className="font-bold text-foreground flex items-center gap-1.5 font-sans">
-              <Sparkles className="h-3 w-3 text-amber-500" />
-              How classmates use this app:
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span>How classmates use this app:</span>
             </h4>
             <ol className="list-decimal pl-4 space-y-1 text-xs">
               <li>
@@ -92,51 +88,62 @@ export function CohortShareModal({ isOpen, onClose }: CohortShareModalProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-foreground/80 font-sans">
-              Share Web Link
+            <label className="text-xs font-semibold text-foreground flex items-center justify-between">
+              <span>Share Web Link</span>
+              <span className="font-mono text-[10px] text-muted-foreground uppercase">URL</span>
             </label>
             <div className="flex gap-2">
               <input
                 readOnly
                 value={typeof window !== "undefined" ? window.location.origin : ""}
-                className="w-full rounded-md border border-border bg-muted/20 px-3 py-1.5 text-xs font-mono text-foreground select-all"
+                className="w-full h-10 px-3 rounded-md bg-card border border-border text-xs font-mono text-foreground select-all outline-none"
               />
               <button
                 onClick={handleCopy}
-                className="btn-tactile inline-flex items-center gap-1.5 rounded-md bg-[#13294B] px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-[#1a3866] transition shrink-0"
+                className="h-10 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shrink-0"
               >
                 {copied ? (
                   <>
-                    <Check className="h-3 w-3 text-emerald-400" />
-                    Copied!
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Copied!</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="h-3 w-3" />
-                    Copy Link
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          <div className="border-t border-border/80 pt-3">
+          <div className="border-t border-border/40 pt-3">
             <div className="flex items-center justify-between">
               <div>
-                <h5 className="font-bold text-foreground font-sans">Export Cohort Course Config</h5>
+                <h5 className="font-bold text-foreground text-xs font-sans">Export Cohort Course Config</h5>
                 <p className="text-[11px] text-muted-foreground">
-                  Save active course structure backup as JSON
+                  Backup current course mapping JSON
                 </p>
               </div>
               <button
                 onClick={handleDownloadConfig}
-                className="btn-tactile inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-white/80 dark:bg-card px-3 py-1.5 text-xs font-bold text-foreground shadow-2xs hover:bg-white"
+                className="h-8 px-2.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
               >
-                <Download className="h-3 w-3 text-muted-foreground" />
+                <Download className="w-3.5 h-3.5 text-muted-foreground" />
                 <span>Export JSON</span>
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Footer (Recipe 5.7) */}
+        <div className="p-4 bg-muted/20 border-t border-border/40 flex justify-end">
+          <button
+            onClick={onClose}
+            className="h-9 px-4 rounded-md border border-border bg-card text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
