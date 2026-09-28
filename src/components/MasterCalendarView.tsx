@@ -174,16 +174,16 @@ export function MasterCalendarView({
                   </div>
 
                   <div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
                         {evt.courseCode}
                       </span>
-                      <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug font-sans">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug font-sans">
                         {evt.title}
                       </h3>
                     </div>
-                    <div className="flex items-center gap-2.5 text-xs text-muted-foreground mt-0.5">
-                      <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/80">
+                    <div className="flex items-center gap-2.5 text-xs sm:text-[13px] text-muted-foreground mt-0.5">
+                      <span className="font-mono text-xs tabular-nums font-semibold text-foreground/80">
                         {evt.date.toLocaleDateString("en-US", {
                           weekday: "short",
                           month: "short",
@@ -193,7 +193,7 @@ export function MasterCalendarView({
                         })}
                       </span>
                       {evt.extraInfo && (
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           • {evt.extraInfo}
                         </span>
                       )}
@@ -206,10 +206,10 @@ export function MasterCalendarView({
                     href={evt.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="h-8 px-2.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1"
+                    className="h-9 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shadow-2xs"
                   >
-                    <span>{evt.type === "live" ? "Join Zoom" : "Open"}</span>
-                    <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                    <span>{evt.type === "live" ? "Join Zoom" : "Open in Canvas"}</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                   </a>
                 </div>
               </div>

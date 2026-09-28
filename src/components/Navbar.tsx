@@ -60,41 +60,41 @@ export function Navbar({
           </div>
         </div>
 
-        {/* Canvas Instance Micro-Data Tags (Recipe 5.6) */}
+        {/* Canvas Instance Micro-Data Tags */}
         <div className="hidden md:flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-muted/60 border border-border/80 text-foreground">
+          <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
+              className={`h-2 w-2 rounded-full ${
                 hasDigitalCampus || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
               }`}
             />
             <span>DIGITALCAMPUS</span>
             {(hasDigitalCampus || isDemoMode) && (
-              <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 ml-0.5" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 ml-0.5" />
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-muted/60 border border-border/80 text-foreground">
+          <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
+              className={`h-2 w-2 rounded-full ${
                 hasKenanFlagler || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
               }`}
             />
             <span>KENAN-FLAGLER</span>
             {(hasKenanFlagler || isDemoMode) && (
-              <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 ml-0.5" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 ml-0.5" />
             )}
           </div>
         </div>
 
-        {/* Action Triggers (Recipe 5.5) */}
+        {/* Action Triggers */}
         <div className="flex items-center gap-2">
-          {/* Refresh / Sync Button (Secondary Trigger) */}
+          {/* Refresh / Sync Button */}
           <button
             onClick={onSync}
             disabled={isSyncing}
             aria-label="Synchronize Canvas data"
-            className="h-9 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            className="h-9 px-3 sm:px-3.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 disabled:opacity-50 shadow-2xs"
             title="Refresh Canvas Data"
           >
             <RefreshCw
@@ -103,22 +103,22 @@ export function Navbar({
             <span className="hidden sm:inline">Sync</span>
           </button>
 
-          {/* Export Calendar (.ics) (Secondary Trigger) */}
+          {/* Export Calendar (.ics) */}
           <button
             onClick={onExportCalendar}
             aria-label="Export Master Calendar to iCal"
-            className="h-9 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
+            className="h-9 px-3 sm:px-3.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shadow-2xs"
             title="Export Calendar (.ics)"
           >
             <Calendar className="w-3.5 h-3.5 text-primary" />
             <span className="hidden sm:inline">Export .ics</span>
           </button>
 
-          {/* Cohort Share (Secondary Trigger) */}
+          {/* Cohort Share */}
           <button
             onClick={onOpenCohortShare}
             aria-label="Cohort sharing tools"
-            className="h-9 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
+            className="h-9 px-3 sm:px-3.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shadow-2xs"
             title="Share Schedule with Cohort"
           >
             <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
@@ -128,11 +128,11 @@ export function Navbar({
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Primary Tokens Button (Recipe 5.5 Primary Action) */}
+          {/* Primary Tokens Button */}
           <button
             onClick={onOpenSettings}
             aria-label="Open Token Settings"
-            className="h-9 px-3.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
+            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
           >
             <Key className="w-3.5 h-3.5" />
             <span>Tokens</span>

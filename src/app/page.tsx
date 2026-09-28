@@ -30,7 +30,7 @@ export default function HomePage() {
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [courses, setCourses] = useState<CanvasCourse[]>([]);
   const [bundlesByCourse, setBundlesByCourse] = useState<Record<number, WeeklyBundle[]>>({});
-  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [selectedCourseIds, setSelectedCourseIds] = useState<number[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"weekly" | "calendar">("weekly");
 
@@ -45,12 +45,10 @@ export default function HomePage() {
     const demo = AppStorage.isDemoMode();
     const cachedCourses = AppStorage.getCachedCourses();
     const cachedBundles = AppStorage.getCachedBundles();
-    const savedCourseId = AppStorage.getSelectedCourseId();
     const savedWeek = AppStorage.getSelectedWeek();
 
     setTokens(savedTokens);
     setIsDemoMode(demo);
-    setSelectedCourseId(savedCourseId);
     setSelectedWeek(savedWeek || 1);
 
     const hasAnyToken = Boolean(savedTokens.digitalCampusToken || savedTokens.kenanFlaglerToken);
@@ -59,6 +57,7 @@ export default function HomePage() {
       if (cachedCourses && cachedBundles) {
         setCourses(cachedCourses);
         setBundlesByCourse(cachedBundles);
+        setSelectedCourseIds(cachedCourses.map((c) => c.id));
         setIsLoading(false);
       } else {
         fetchLiveData(savedTokens);
@@ -75,6 +74,7 @@ export default function HomePage() {
     const { courses: mockCourses, weeklyBundles: mockBundles } = getMockMBACoursesData();
     setCourses(mockCourses);
     setBundlesByCourse(mockBundles);
+    setSelectedCourseIds(mockCourses.map((c) => c.id));
     setIsLoading(false);
   };
 
@@ -362,11 +362,18 @@ export default function HomePage() {
           <WeeklyDashboard
             courses={courses}
             bundlesByCourse={bundlesByCourse}
-            selectedCourseId={selectedCourseId}
+            selectedCourseIds={selectedCourseIds}
             selectedWeek={selectedWeek}
-            onSelectCourse={(id) => {
-              setSelectedCourseId(id);
-              if (id !== null) AppStorage.setSelectedCourseId(id);
+            onToggleCourse={(id) => {
+              setSelectedCourseIds((prev) =>
+                prev.includes(id) ? prev.filter((cId) => cId !== id) : [...prev, id]
+              );
+            }}
+            onSelectAllCourses={() => {
+              setSelectedCourseIds(courses.map((c) => c.id));
+            }}
+            onClearAllCourses={() => {
+              setSelectedCourseIds([]);
             }}
             onSelectWeek={(w) => {
               setSelectedWeek(w);
