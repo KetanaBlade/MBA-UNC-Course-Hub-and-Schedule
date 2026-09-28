@@ -41,8 +41,27 @@ export default function RootLayout({
     <html
       lang="en"
       className={`h-full ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
     >
-      <body className="h-full antialiased font-sans bg-[#FBF9F5] text-[#1C1917] selection:bg-[#4B9CD3]/30">
+      <head>
+        {/* Anti-FOUC script for instant theme restoration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('unc_mba_theme');
+                const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="h-full antialiased font-sans bg-background text-foreground selection:bg-[#4B9CD3]/30">
         {children}
       </body>
     </html>

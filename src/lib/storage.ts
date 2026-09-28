@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   SELECTED_COURSE_ID: "unc_mba_selected_course",
   SELECTED_WEEK: "unc_mba_selected_week",
   IS_DEMO_MODE: "unc_mba_demo_mode",
+  THEME: "unc_mba_theme",
 };
 
 export class AppStorage {
@@ -123,9 +124,30 @@ export class AppStorage {
     localStorage.setItem(STORAGE_KEYS.SELECTED_WEEK, week.toString());
   }
 
-  /**
-   * Export cohort schedule mapping configuration as JSON string
-   */
+  static getTheme(): "light" | "dark" {
+    if (typeof window === "undefined") return "light";
+    const stored = localStorage.getItem(STORAGE_KEYS.THEME);
+    if (stored === "dark" || stored === "light") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  static setTheme(theme: "light" | "dark"): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }
+
+  static toggleTheme(): "light" | "dark" {
+    const current = this.getTheme();
+    const next = current === "dark" ? "light" : "dark";
+    this.setTheme(next);
+    return next;
+  }
+
   static exportCohortConfig(): string {
     const data = {
       exportedAt: new Date().toISOString(),

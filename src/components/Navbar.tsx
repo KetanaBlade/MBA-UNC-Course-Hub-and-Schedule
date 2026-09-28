@@ -4,13 +4,13 @@ import React from "react";
 import {
   Calendar,
   CheckCircle2,
-  Download,
   Key,
   RefreshCw,
   Share2,
   Sparkles,
 } from "lucide-react";
 import { StudentAuthTokens } from "@/lib/canvas/types";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface NavbarProps {
   tokens: StudentAuthTokens;
@@ -91,7 +91,7 @@ export function Navbar({
           </div>
         </div>
 
-        {/* Action Controls (Tier 4 Controls with tactile feedback) */}
+        {/* Action Controls & Theme Toggle */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Refresh / Sync Button */}
           <button
@@ -128,6 +128,9 @@ export function Navbar({
             <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Share</span>
           </button>
+
+          {/* Light / Dark Mode Toggle */}
+          <ThemeToggle />
 
           {/* Settings / Tokens */}
           <button

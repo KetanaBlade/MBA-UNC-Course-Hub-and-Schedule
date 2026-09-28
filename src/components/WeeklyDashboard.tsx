@@ -93,8 +93,8 @@ export function WeeklyDashboard({
             onClick={() => onSelectCourse(null)}
             className={`btn-tactile rounded-md px-3 py-1.5 text-xs font-bold transition ${
               selectedCourseId === null
-                ? "bg-[#13294B] text-white shadow-2xs"
-                : "bg-white/80 dark:bg-card text-foreground/80 hover:bg-white border border-border/80"
+                ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
+                : "bg-white/80 dark:bg-card text-foreground/80 hover:bg-white dark:hover:bg-muted/40 border border-border/80"
             }`}
           >
             All MBA Courses
@@ -108,15 +108,15 @@ export function WeeklyDashboard({
                 onClick={() => onSelectCourse(course.id)}
                 className={`btn-tactile inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition ${
                   isSelected
-                    ? "bg-[#13294B] text-white shadow-2xs"
-                    : "bg-white/80 dark:bg-card text-foreground/80 hover:bg-white border border-border/80"
+                    ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
+                    : "bg-white/80 dark:bg-card text-foreground/80 hover:bg-white dark:hover:bg-muted/40 border border-border/80"
                 }`}
               >
                 <span>{course.course_code || course.name}</span>
                 <span
                   className={`micro-tag ${
                     isSelected
-                      ? "bg-white/20 text-white"
+                      ? "bg-white/20 text-white dark:bg-[#13294B]/20 dark:text-[#13294B]"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -154,8 +154,8 @@ export function WeeklyDashboard({
                 onClick={() => onSelectWeek(w)}
                 className={`btn-tactile group flex min-h-[44px] min-w-[62px] flex-col items-center justify-center rounded-md px-3 py-1.5 transition ${
                   isCurrentWeek
-                    ? "bg-[#13294B] text-white shadow-xs font-bold ring-2 ring-[#4B9CD3]/50"
-                    : "bg-card text-foreground/80 border border-border/80 hover:border-border hover:bg-white"
+                    ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-xs font-bold ring-2 ring-[#4B9CD3]/50"
+                    : "bg-card text-foreground/80 border border-border/80 hover:border-border hover:bg-white dark:hover:bg-muted/40"
                 }`}
               >
                 <span className="micro-tag text-[9px] opacity-75">
@@ -168,7 +168,7 @@ export function WeeklyDashboard({
         </div>
       </div>
 
-      {/* De-Boxified Quick Metric Deck (Flattened, no heavy card nesting) */}
+      {/* De-Boxified Quick Metric Deck */}
       <div className="inner-strip p-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
         <div className="p-2 sm:p-2.5">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
@@ -222,7 +222,7 @@ export function WeeklyDashboard({
         </div>
       </div>
 
-      {/* Main Weekly Content Stack (Outer Card Only, De-boxified inside) */}
+      {/* Main Weekly Content Stack */}
       <div className="space-y-5">
         <WeeklyOverviewCard
           announcements={allAnnouncements}

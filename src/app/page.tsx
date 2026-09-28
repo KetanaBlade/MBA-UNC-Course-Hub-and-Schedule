@@ -284,7 +284,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-16 bg-background text-foreground transition-colors duration-200">
       {/* Executive Navbar */}
       <Navbar
         tokens={tokens}
@@ -301,7 +301,7 @@ export default function HomePage() {
         {/* Navigation Mode Sub-header (Tier 1 Display) */}
         <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#13294B] font-sans">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#13294B] dark:text-[#4B9CD3] font-sans">
               Course Hub & Master Schedule
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -315,7 +315,7 @@ export default function HomePage() {
               onClick={() => setActiveTab("weekly")}
               className={`btn-tactile flex min-h-[34px] items-center gap-1.5 rounded-[4px] px-3.5 py-1 text-xs font-bold transition ${
                 activeTab === "weekly"
-                  ? "bg-[#13294B] text-white shadow-2xs"
+                  ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -327,7 +327,7 @@ export default function HomePage() {
               onClick={() => setActiveTab("calendar")}
               className={`btn-tactile flex min-h-[34px] items-center gap-1.5 rounded-[4px] px-3.5 py-1 text-xs font-bold transition ${
                 activeTab === "calendar"
-                  ? "bg-[#13294B] text-white shadow-2xs"
+                  ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
