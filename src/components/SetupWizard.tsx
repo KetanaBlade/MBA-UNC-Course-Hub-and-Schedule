@@ -74,49 +74,49 @@ export function SetupWizard({
       role="dialog"
       aria-modal="true"
       aria-labelledby="wizard-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
     >
-      <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200">
+      <div className="relative w-full max-w-lg rounded-lg bg-card p-6 sm:p-7 shadow-2xl border border-border">
         {/* Close Button */}
         <button
           onClick={onClose}
           aria-label="Close setup dialog"
-          className="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] touch-target"
+          className="btn-tactile absolute right-4 top-4 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground touch-target"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4.5 w-4.5" />
         </button>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#13294B] text-[#4B9CD3]">
-            <Key className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
+            <Key className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h2 id="wizard-title" className="text-xl font-bold tracking-tight text-slate-900">
+            <h2 id="wizard-title" className="text-lg font-bold tracking-tight text-foreground font-sans">
               Canvas Integration Setup
             </h2>
-            <p className="text-xs text-slate-500">UNC Kenan-Flagler Online MBA Cohort Portal</p>
+            <p className="text-xs text-muted-foreground">UNC Kenan-Flagler Online MBA Cohort Portal</p>
           </div>
         </div>
 
-        {/* Why two Canvas sites? Explainer box */}
-        <div className="mt-4 rounded-xl bg-slate-50 p-4 border border-slate-200/80 text-xs text-slate-600 space-y-2">
-          <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-            <HelpCircle className="h-4 w-4 text-[#4B9CD3]" />
+        {/* Explainer Box (De-boxified inner-strip) */}
+        <div className="mt-4 inner-strip p-3.5 text-xs text-muted-foreground space-y-1.5">
+          <div className="flex items-center gap-1.5 font-bold text-foreground">
+            <HelpCircle className="h-3.5 w-3.5 text-[#4B9CD3]" />
             Why does UNC MBA use two Canvas sites?
           </div>
-          <p>
-            The program uses <strong className="text-slate-700">digitalcampus.instructure.com</strong> (for 2U live synchronous delivery and orientation) and <strong className="text-slate-700">kenan-flagler.instructure.com</strong> (for business school core courses & electives). This app automatically stitches both into a single cohesive weekly schedule!
+          <p className="leading-relaxed">
+            The program uses <strong className="text-foreground">digitalcampus.instructure.com</strong> (for 2U live synchronous delivery & orientation) and <strong className="text-foreground">kenan-flagler.instructure.com</strong> (for core courses & electives). This app stitches both into a single weekly schedule.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-5">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           {/* Site 1: DigitalCampus */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="digitalcampus-token"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+                className="block text-xs font-bold uppercase tracking-wider text-foreground/80 font-sans"
               >
                 1. DigitalCampus Canvas Token
               </label>
@@ -124,13 +124,13 @@ export function SetupWizard({
                 href="https://digitalcampus.instructure.com/profile/settings#access_tokens"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-medium text-[#4B9CD3] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#4B9CD3] hover:underline"
               >
                 Generate Token <ExternalLink className="h-3 w-3" />
               </a>
             </div>
-            <p className="text-xs text-slate-500">
-              Account &rarr; Settings &rarr; + New Access Token (Purpose: MBA Hub)
+            <p className="text-[11px] text-muted-foreground">
+              Account &rarr; Settings &rarr; + New Access Token
             </p>
             <div className="relative">
               <input
@@ -138,16 +138,16 @@ export function SetupWizard({
                 type={showDigitalToken ? "text" : "password"}
                 value={digitalToken}
                 onChange={(e) => setDigitalToken(e.target.value)}
-                placeholder="e.g. 1079~abcdef123456..."
-                className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 pr-10 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#4B9CD3] focus:outline-none focus:ring-2 focus:ring-[#4B9CD3]/20"
+                placeholder="1079~abcdef123456..."
+                className="w-full rounded-md border border-border bg-white dark:bg-card px-3 py-2 pr-9 text-xs font-mono text-foreground placeholder:text-muted-foreground/60 focus:border-[#4B9CD3] focus:outline-none focus:ring-1 focus:ring-[#4B9CD3]"
               />
               <button
                 type="button"
                 onClick={() => setShowDigitalToken(!showDigitalToken)}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
                 aria-label={showDigitalToken ? "Hide token" : "Show token"}
               >
-                {showDigitalToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showDigitalToken ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               </button>
             </div>
           </div>
@@ -157,7 +157,7 @@ export function SetupWizard({
             <div className="flex items-center justify-between">
               <label
                 htmlFor="kf-token"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+                className="block text-xs font-bold uppercase tracking-wider text-foreground/80 font-sans"
               >
                 2. Kenan-Flagler Canvas Token
               </label>
@@ -165,12 +165,12 @@ export function SetupWizard({
                 href="https://kenan-flagler.instructure.com/profile/settings#access_tokens"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-medium text-[#4B9CD3] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#4B9CD3] hover:underline"
               >
                 Generate Token <ExternalLink className="h-3 w-3" />
               </a>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-[11px] text-muted-foreground">
               Account &rarr; Settings &rarr; + New Access Token
             </p>
             <div className="relative">
@@ -179,68 +179,67 @@ export function SetupWizard({
                 type={showKfToken ? "text" : "password"}
                 value={kfToken}
                 onChange={(e) => setKfToken(e.target.value)}
-                placeholder="e.g. 1104~xyz789012345..."
-                className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 pr-10 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#4B9CD3] focus:outline-none focus:ring-2 focus:ring-[#4B9CD3]/20"
+                placeholder="1104~xyz789012345..."
+                className="w-full rounded-md border border-border bg-white dark:bg-card px-3 py-2 pr-9 text-xs font-mono text-foreground placeholder:text-muted-foreground/60 focus:border-[#4B9CD3] focus:outline-none focus:ring-1 focus:ring-[#4B9CD3]"
               />
               <button
                 type="button"
                 onClick={() => setShowKfToken(!showKfToken)}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
                 aria-label={showKfToken ? "Hide token" : "Show token"}
               >
-                {showKfToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showKfToken ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               </button>
             </div>
           </div>
 
-          {/* Privacy & FERPA Security Guarantee */}
-          <div className="flex items-start gap-2 rounded-lg bg-emerald-50/80 p-3 text-xs text-emerald-800 border border-emerald-200/60">
+          {/* Zero-Storage Privacy Guarantee */}
+          <div className="flex items-start gap-2 rounded-md bg-emerald-500/10 p-2.5 text-xs text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
             <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold">Zero-Storage Privacy Guarantee: </span>
-              Your tokens are stored strictly in your device&apos;s local browser storage. They are never sent to a shared database or stored on any server.
+            <div className="leading-snug">
+              <span className="font-bold">Zero-Storage Privacy: </span>
+              Tokens reside strictly in your device&apos;s browser localStorage. They are never saved to a database or server disk.
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Messages */}
           {verificationError && (
-            <div className="rounded-lg bg-rose-50 p-3 text-xs font-medium text-rose-800 border border-rose-200">
+            <div className="rounded-md bg-rose-500/10 p-2.5 text-xs font-semibold text-rose-800 dark:text-rose-300 border border-rose-500/20">
               {verificationError}
             </div>
           )}
 
-          {/* Success Message */}
           {verificationSuccess && (
-            <div className="flex items-center gap-2 rounded-lg bg-emerald-100 p-3 text-xs font-medium text-emerald-900">
+            <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              Canvas accounts connected successfully! Loading your courses...
+              Connected successfully! Loading your courses...
             </div>
           )}
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          {/* Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2">
             <button
               type="button"
               onClick={() => {
                 onEnableDemoMode();
                 onClose();
               }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-300 transition touch-target"
+              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted border border-border transition touch-target"
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Explore Demo Mode First
+              <Sparkles className="h-3 w-3 text-amber-500" />
+              Explore Demo Mode
             </button>
 
             <button
               type="submit"
               disabled={isVerifying || (!digitalToken && !kfToken)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-[#13294B] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1a3866] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] disabled:opacity-50 touch-target"
+              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-[#13294B] px-5 py-2 text-xs font-bold text-white shadow-2xs transition hover:bg-[#1a3866] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] disabled:opacity-50 touch-target"
             >
               {isVerifying ? (
                 <>Verifying Accounts...</>
               ) : (
                 <>
-                  <Lock className="h-4 w-4 text-[#4B9CD3]" />
+                  <Lock className="h-3.5 w-3.5 text-[#4B9CD3]" />
                   Save & Connect
                 </>
               )}

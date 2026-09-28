@@ -1,5 +1,20 @@
 import type { Metadata, Viewport } from "next";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "UNC Online MBA | Centralized Course Hub & Calendar",
@@ -23,8 +38,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="h-full antialiased text-slate-900 bg-[#F4F7FA]">
+    <html
+      lang="en"
+      className={`h-full ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="h-full antialiased font-sans bg-[#FBF9F5] text-[#1C1917] selection:bg-[#4B9CD3]/30">
         {children}
       </body>
     </html>

@@ -6,11 +6,7 @@ import {
   Check,
   Download,
   ExternalLink,
-  FileSpreadsheet,
-  FileText,
   FolderTree,
-  Presentation,
-  Video,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { NormalizedReading, ReadingCategory } from "@/lib/canvas/types";
@@ -32,7 +28,6 @@ export function ReadingsSection({
 
   const handleCheckboxClick = (reading: NormalizedReading) => {
     onToggleComplete(reading.id);
-    // If completing the last reading, fire confetti!
     if (!reading.isCompleted && completedCount + 1 === readings.length) {
       try {
         confetti({
@@ -47,51 +42,36 @@ export function ReadingsSection({
     }
   };
 
-  const getCategoryIcon = (category: ReadingCategory) => {
-    switch (category) {
-      case "case":
-        return <FileText className="h-4 w-4 text-purple-600" />;
-      case "slides":
-        return <Presentation className="h-4 w-4 text-amber-600" />;
-      case "spreadsheet":
-        return <FileSpreadsheet className="h-4 w-4 text-emerald-600" />;
-      case "video":
-        return <Video className="h-4 w-4 text-rose-600" />;
-      default:
-        return <BookOpen className="h-4 w-4 text-sky-600" />;
-    }
-  };
-
-  const getCategoryBadge = (category: ReadingCategory) => {
+  const getCategoryChip = (category: ReadingCategory) => {
     switch (category) {
       case "case":
         return (
-          <span className="rounded-sm bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold text-purple-800">
-            HBR / Case
+          <span className="micro-tag bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
+            CASE
           </span>
         );
       case "slides":
         return (
-          <span className="rounded-sm bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-            Slide Deck
+          <span className="micro-tag bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+            SLIDES
           </span>
         );
       case "spreadsheet":
         return (
-          <span className="rounded-sm bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
-            Model / Excel
+          <span className="micro-tag bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+            MODEL
           </span>
         );
       case "video":
         return (
-          <span className="rounded-sm bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-800">
-            Video / Recording
+          <span className="micro-tag bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20">
+            VIDEO
           </span>
         );
       default:
         return (
-          <span className="rounded-sm bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">
-            Reading
+          <span className="micro-tag bg-muted text-muted-foreground border border-border/80">
+            READING
           </span>
         );
     }
@@ -99,33 +79,33 @@ export function ReadingsSection({
 
   if (readings.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center text-xs text-slate-500">
-        <BookOpen className="mx-auto h-6 w-6 text-slate-400 mb-1.5 opacity-60" />
+      <div className="rounded-lg border border-dashed border-border bg-card p-6 text-center text-xs text-muted-foreground">
+        <BookOpen className="mx-auto h-5 w-5 text-muted-foreground/60 mb-1.5" />
         No pre-readings or files identified for Week {weekNumber}.
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-      {/* Header with Reading Progress */}
-      <div className="border-b border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-5">
+    <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
+      {/* Outer Card Header */}
+      <div className="border-b border-border/80 bg-muted/20 px-4 py-3 sm:px-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
               <BookOpen className="h-3.5 w-3.5" />
             </div>
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h3 className="text-base font-bold tracking-tight text-foreground">
               Week {weekNumber} Readings & Course Materials
             </h3>
           </div>
-          <span className="text-xs font-semibold tabular-nums text-slate-700">
-            {completedCount} of {readings.length} completed ({progressPercent}%)
+          <span className="font-mono text-xs font-bold tabular-nums text-foreground">
+            {completedCount}/{readings.length} COMPLETED ({progressPercent}%)
           </span>
         </div>
 
-        {/* Progress bar */}
-        <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+        {/* Progress Bar */}
+        <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
             className="h-full bg-[#059669] transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
@@ -133,25 +113,25 @@ export function ReadingsSection({
         </div>
       </div>
 
-      {/* Readings List */}
-      <div className="divide-y divide-slate-100">
+      {/* De-Boxified List Rows */}
+      <div className="divide-y divide-border/60">
         {readings.map((reading) => {
           return (
             <div
               key={reading.id}
-              className={`flex items-start gap-3 p-4 transition sm:px-5 hover:bg-slate-50/60 ${
-                reading.isCompleted ? "bg-slate-50/40" : ""
+              className={`flex items-start gap-3 p-3.5 sm:p-4 transition hover:bg-muted/10 ${
+                reading.isCompleted ? "opacity-60 bg-muted/5" : ""
               }`}
             >
-              {/* Checkbox */}
+              {/* Tactile Checkbox */}
               <button
                 type="button"
                 onClick={() => handleCheckboxClick(reading)}
                 aria-label={`Mark ${reading.title} as ${reading.isCompleted ? "incomplete" : "complete"}`}
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] ${
+                className={`btn-tactile mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-[3px] border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] ${
                   reading.isCompleted
                     ? "border-[#059669] bg-[#059669] text-white"
-                    : "border-slate-300 bg-white hover:border-slate-400"
+                    : "border-border bg-white dark:bg-card hover:border-foreground/40"
                 }`}
               >
                 {reading.isCompleted && <Check className="h-3.5 w-3.5 stroke-[3]" />}
@@ -159,40 +139,42 @@ export function ReadingsSection({
 
               {/* Title & Metadata */}
               <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span
-                    className={`text-sm font-medium leading-snug ${
+                    className={`text-sm font-semibold leading-snug ${
                       reading.isCompleted
-                        ? "text-slate-500 line-through"
-                        : "text-slate-900"
+                        ? "text-muted-foreground line-through"
+                        : "text-foreground"
                     }`}
                   >
                     {reading.title}
                   </span>
-                  {getCategoryBadge(reading.category)}
+                  {getCategoryChip(reading.category)}
 
                   {/* Rescued from files badge */}
                   {reading.source === "files_tab" && (
-                    <span className="inline-flex items-center gap-1 rounded-sm bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 border border-blue-200/50">
+                    <span className="micro-tag bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
                       <FolderTree className="h-2.5 w-2.5" />
-                      Files Tab Folder
+                      FILES TAB
                     </span>
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
                   {reading.folderPath && (
-                    <span className="font-mono text-[11px] text-slate-400">
+                    <span className="font-mono text-[10px] text-muted-foreground/80">
                       {reading.folderPath}
                     </span>
                   )}
                   {reading.fileSizeFormatted && (
-                    <span>{reading.fileSizeFormatted}</span>
+                    <span className="font-mono text-[10px] tabular-nums">
+                      • {reading.fileSizeFormatted}
+                    </span>
                   )}
                 </div>
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Buttons (Tier 4 Controls) */}
               <div className="flex items-center gap-1.5 shrink-0">
                 {reading.fileUrl ? (
                   <a
@@ -200,10 +182,10 @@ export function ReadingsSection({
                     target="_blank"
                     rel="noreferrer"
                     download
-                    className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+                    className="btn-tactile flex min-h-[34px] items-center justify-center rounded-md border border-border/80 bg-white/80 dark:bg-card px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs hover:bg-white transition"
                     title="Download file"
                   >
-                    <Download className="h-3.5 w-3.5 sm:mr-1 text-slate-500" />
+                    <Download className="h-3 w-3 sm:mr-1 text-muted-foreground" />
                     <span className="hidden sm:inline">Download</span>
                   </a>
                 ) : (
@@ -211,10 +193,10 @@ export function ReadingsSection({
                     href={reading.canvasUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+                    className="btn-tactile flex min-h-[34px] items-center justify-center rounded-md border border-border/80 bg-white/80 dark:bg-card px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs hover:bg-white transition"
                     title="View on Canvas"
                   >
-                    <ExternalLink className="h-3.5 w-3.5 sm:mr-1 text-slate-500" />
+                    <ExternalLink className="h-3 w-3 sm:mr-1 text-muted-foreground" />
                     <span className="hidden sm:inline">Open</span>
                   </a>
                 )}

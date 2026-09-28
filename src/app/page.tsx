@@ -3,11 +3,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Calendar as CalendarIcon,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
   Layers,
-  Sparkles,
 } from "lucide-react";
 import {
   CanvasCourse,
@@ -44,7 +40,6 @@ export default function HomePage() {
   const [showCohortShare, setShowCohortShare] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
-  // Initialize on mount
   useEffect(() => {
     const savedTokens = AppStorage.getTokens();
     const demo = AppStorage.isDemoMode();
@@ -71,7 +66,6 @@ export default function HomePage() {
     } else if (demo) {
       loadMockData();
     } else {
-      // First time user: show Setup Wizard and default to demo preview in background
       loadMockData();
       setShowSetupWizard(true);
     }
@@ -93,7 +87,6 @@ export default function HomePage() {
     const completedItems = AppStorage.getCompletedItems();
 
     try {
-      // 1. Fetch from DigitalCampus if token present
       if (authTokens.digitalCampusToken) {
         try {
           const dcClient = new CanvasApiClient("digitalcampus", authTokens.digitalCampusToken);
@@ -109,7 +102,6 @@ export default function HomePage() {
                 dcClient.getAnnouncements([course.id]).catch(() => []),
               ]);
 
-              // Fetch files for week-related folders
               const folderFilesMap: Record<number, any[]> = {};
               for (const f of folders) {
                 if (f.name.toLowerCase().includes("week") || f.name.toLowerCase().includes("read")) {
@@ -135,7 +127,6 @@ export default function HomePage() {
         }
       }
 
-      // 2. Fetch from Kenan-Flagler if token present
       if (authTokens.kenanFlaglerToken) {
         try {
           const kfClient = new CanvasApiClient("kenan-flagler", authTokens.kenanFlaglerToken);
@@ -182,7 +173,6 @@ export default function HomePage() {
         AppStorage.saveCachedCourses(loadedCourses);
         AppStorage.saveCachedBundles(bundlesMap);
       } else {
-        // Fallback to mock if no active courses returned
         loadMockData();
       }
     } catch (err: unknown) {
@@ -239,7 +229,6 @@ export default function HomePage() {
 
   const handleToggleCompleteReading = (readingId: string) => {
     AppStorage.toggleCompletedItem(readingId);
-    // Update local state in bundles
     setBundlesByCourse((prev) => {
       const next = { ...prev };
       Object.keys(next).forEach((cId) => {
@@ -295,7 +284,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F4F7FA] text-slate-900 pb-16">
+    <div className="min-h-screen pb-16">
       {/* Executive Navbar */}
       <Navbar
         tokens={tokens}
@@ -309,40 +298,40 @@ export default function HomePage() {
 
       {/* Main Container */}
       <main className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-        {/* Navigation Mode Sub-header */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Navigation Mode Sub-header (Tier 1 Display) */}
+        <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#13294B]">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#13294B] font-sans">
               Course Hub & Master Schedule
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Unified cross-instance Canvas intelligence for Kenan-Flagler Online MBA
             </p>
           </div>
 
-          {/* View Mode Toggle: Weekly Hub vs Master Calendar */}
-          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-2xs self-start sm:self-auto">
+          {/* Anchored View Mode Deck */}
+          <div className="flex items-center rounded-md border border-border/80 bg-white/80 dark:bg-card p-0.5 shadow-2xs self-start sm:self-auto">
             <button
               onClick={() => setActiveTab("weekly")}
-              className={`flex min-h-[38px] items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold transition ${
+              className={`btn-tactile flex min-h-[34px] items-center gap-1.5 rounded-[4px] px-3.5 py-1 text-xs font-bold transition ${
                 activeTab === "weekly"
-                  ? "bg-[#13294B] text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#13294B] text-white shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Layers className="h-4 w-4" />
+              <Layers className="h-3.5 w-3.5" />
               <span>Weekly Hub</span>
             </button>
 
             <button
               onClick={() => setActiveTab("calendar")}
-              className={`flex min-h-[38px] items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold transition ${
+              className={`btn-tactile flex min-h-[34px] items-center gap-1.5 rounded-[4px] px-3.5 py-1 text-xs font-bold transition ${
                 activeTab === "calendar"
-                  ? "bg-[#13294B] text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#13294B] text-white shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <CalendarIcon className="h-4 w-4" />
+              <CalendarIcon className="h-3.5 w-3.5" />
               <span>Master Calendar</span>
             </button>
           </div>
@@ -350,11 +339,11 @@ export default function HomePage() {
 
         {/* Sync or Connection Notification */}
         {syncError && (
-          <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-800 flex items-center justify-between">
+          <div className="mb-5 rounded-md border border-rose-500/20 bg-rose-500/10 p-3 text-xs font-semibold text-rose-800 dark:text-rose-300 flex items-center justify-between">
             <span>{syncError}</span>
             <button
               onClick={() => setShowSetupWizard(true)}
-              className="text-[#4B9CD3] font-semibold underline ml-2"
+              className="text-[#4B9CD3] font-bold underline ml-2"
             >
               Check Tokens
             </button>
