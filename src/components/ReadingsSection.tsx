@@ -352,14 +352,14 @@ export function ReadingsSection({
                   reading.isCompleted ? "opacity-60 bg-muted/5" : ""
                 }`}
               >
-                {/* Tactile Checkbox */}
+                {/* Tactile Checkbox (Middle-aligned like action button) */}
                 <button
                   type="button"
                   onClick={() => handleCheckboxClick(reading)}
                   aria-label={`Mark ${reading.title} as ${
                     reading.isCompleted ? "incomplete" : "complete"
                   }`}
-                  className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+                  className={`self-center flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                     reading.isCompleted
                       ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
                       : "border-border bg-card hover:border-primary shadow-2xs"
@@ -370,25 +370,25 @@ export function ReadingsSection({
 
                 {/* Content Details (min-w-0 pr-2 with break-all to prevent extending behind buttons) */}
                 <div className="min-w-0 flex-1 space-y-1.5 pr-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Show course badge if on All Courses tab */}
-                    {selectedCourseTab === "all" && reading.courseCode && courseColor && (
+                  {/* Always stack: Course badge on its own line above title */}
+                  {selectedCourseTab === "all" && reading.courseCode && courseColor && (
+                    <div>
                       <span
-                        className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                        className={`inline-block text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                       >
                         {getCleanCourseName(reading.courseCode, reading.courseName)}
                       </span>
-                    )}
-                    <h3
-                      className={`text-sm sm:text-base font-semibold leading-snug break-all [overflow-wrap:anywhere] ${
-                        reading.isCompleted
-                          ? "text-muted-foreground line-through"
-                          : "text-foreground"
-                      }`}
-                    >
-                      {reading.title}
-                    </h3>
-                  </div>
+                    </div>
+                  )}
+                  <h3
+                    className={`text-sm sm:text-base font-semibold leading-snug break-all [overflow-wrap:anywhere] ${
+                      reading.isCompleted
+                        ? "text-muted-foreground line-through"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {reading.title}
+                  </h3>
 
                   {/* Metadata row */}
                   <div className="flex flex-wrap items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">

@@ -45,12 +45,7 @@ export function TermMilestonesCard({
       );
     }
     if (status === "upcoming") {
-      return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-500/30">
-          <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-          <span>DUE SOON</span>
-        </span>
-      );
+      return null;
     }
     if (status === "overdue") {
       return (
@@ -60,11 +55,7 @@ export function TermMilestonesCard({
         </span>
       );
     }
-    return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-muted/70 text-foreground border border-border">
-        <span>ACTIVE</span>
-      </span>
-    );
+    return null;
   };
 
   const formatDueText = (deliv: NormalizedDeliverable) => {
@@ -144,14 +135,11 @@ export function TermMilestonesCard({
 
                 {/* Content Details */}
                 <div className="space-y-1.5 flex-1 min-w-0">
-                  {/* Line 1: Due Date + Term Project Badge + Status */}
+                  {/* Line 1: Due Date + Status */}
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground font-semibold">
                       <Calendar className="w-3.5 h-3.5 opacity-70" />
                       {formatDueText(deliv)}
-                    </span>
-                    <span className="font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
-                      TERM PROJECT
                     </span>
                     {getStatusBadge(deliv.status, deliv.score, deliv.grade, deliv.isCompleted)}
                   </div>

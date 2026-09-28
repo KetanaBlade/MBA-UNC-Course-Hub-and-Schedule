@@ -49,12 +49,7 @@ export function HomeworkTracker({
       );
     }
     if (status === "upcoming") {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-500/30">
-          <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-          <span>DUE SOON</span>
-        </span>
-      );
+      return null;
     }
     if (status === "overdue") {
       return (
@@ -64,11 +59,7 @@ export function HomeworkTracker({
         </span>
       );
     }
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-muted/70 text-foreground border border-border">
-        <span>TO DO</span>
-      </span>
-    );
+    return null;
   };
 
   const formatDueText = (deliv: NormalizedDeliverable) => {
