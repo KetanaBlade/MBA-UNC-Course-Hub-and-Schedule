@@ -105,8 +105,20 @@ export function WeeklyDashboard({
       return false;
     }
 
-    // Milestone heuristics: keywords or high point value
     const titleLower = d.title.toLowerCase();
+
+    // Regular weekly homework belongs to its week tab, NOT term projects
+    const isWeeklyHomeworkPattern =
+      /\b(?:homework(?:\s*assignment)?|hw|problem\s*set|pset|assignment\s*\d+|quiz\s*\d+|session\s*\d+|reflection\s*journal\s*\d+|weekly)\b/i.test(
+        titleLower
+      ) &&
+      !/\b(?:final|term|capstone|development\s*plan)\b/i.test(titleLower);
+
+    if (isWeeklyHomeworkPattern) {
+      return false;
+    }
+
+    // Milestone heuristics: keywords for term projects
     const isMajorKeyword =
       titleLower.includes("plan") ||
       titleLower.includes("project") ||
@@ -115,13 +127,10 @@ export function WeeklyDashboard({
       titleLower.includes("final") ||
       titleLower.includes("midterm") ||
       titleLower.includes("report") ||
-      titleLower.includes("memo") ||
       titleLower.includes("leadership development") ||
       titleLower.includes("term");
 
-    const isHighPoints = d.pointsPossible >= 30;
-
-    return isMajorKeyword || isHighPoints;
+    return isMajorKeyword;
   });
 
   // Sort chronologically by due date
@@ -153,7 +162,7 @@ export function WeeklyDashboard({
       {/* 1. TOP EXECUTIVE ROW: Filters + KPIs (Left xl:col-span-8) & Dedicated Term Projects Card (Right xl:col-span-4) */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
         {/* Left Side: Filter Deck & KPI Metrics Deck */}
-        <div className="xl:col-span-8 space-y-6 flex flex-col justify-between">
+        <div className="xl:col-span-8 space-y-6 flex flex-col justify-between min-h-0">
           {/* A. ANCHORED FILTER & CHIP CONTROL DECK (NO CHECKBOXES, HIDE CHIPS) */}
           <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
             {/* Active Course Chips */}
@@ -369,7 +378,7 @@ export function WeeklyDashboard({
         </div>
 
         {/* Right Side: Dedicated Term Projects & Major Milestones Card */}
-        <div className="xl:col-span-4 flex flex-col">
+        <div className="xl:col-span-4 flex flex-col min-h-0">
           <TermMilestonesCard
             deliverables={termMilestones}
             onToggleComplete={onToggleCompleteItem}

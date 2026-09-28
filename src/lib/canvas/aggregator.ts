@@ -135,6 +135,16 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     if (/\battendance\b/i.test(assignment.name)) return;
 
     const titleLower = assignment.name.toLowerCase();
+
+    // Regular weekly homework belongs to its week tab, NOT term projects
+    const isWeeklyHomeworkPattern =
+      /\b(?:homework(?:\s*assignment)?|hw|problem\s*set|pset|assignment\s*\d+|quiz\s*\d+|session\s*\d+|reflection\s*journal\s*\d+)\b/i.test(
+        titleLower
+      ) &&
+      !/\b(?:final|term|capstone|development\s*plan)\b/i.test(titleLower);
+
+    if (isWeeklyHomeworkPattern) return;
+
     const isMajorKeyword =
       titleLower.includes("plan") ||
       titleLower.includes("project") ||
@@ -143,13 +153,10 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
       titleLower.includes("final") ||
       titleLower.includes("midterm") ||
       titleLower.includes("report") ||
-      titleLower.includes("memo") ||
       titleLower.includes("leadership development") ||
       titleLower.includes("term");
 
-    const isHighPoints = (assignment.points_possible || 0) >= 30;
-
-    if (isMajorKeyword || isHighPoints) {
+    if (isMajorKeyword) {
       const { dueInDays, dueInHours, status } = calculateDueUrgency(
         assignment.due_at,
         assignment.submission?.workflow_state,
@@ -301,9 +308,9 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const weekDeliverables: NormalizedDeliverable[] = [];
 
     assignments.forEach((assignment) => {
-      // Move attendance tracking items to coursework readings instead of homework deliverables
+      // Ensure attendance assignment is accessible in readings sequentially
       const isAttendance = /\battendance\b/i.test(assignment.name);
-      if (isAttendance) {
+      if (isAttendance && !addedUrls.has(assignment.name.toLowerCase())) {
         readings.push({
           id: `assign-att-${assignment.id}`,
           title: assignment.name,
@@ -318,8 +325,8 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             completedItemIds.has(`assign-att-${assignment.id}`),
           courseCode: course.course_code,
           courseName: course.name,
+          pointsPossible: assignment.points_possible,
         });
-        return;
       }
 
       let assignWeek =
@@ -378,6 +385,10 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     // 1. Primary Source: Canvas Calendar Events
     if (calendarEvents && calendarEvents.length > 0) {
       calendarEvents.forEach((ev) => {
+        // Exclude attendance items from Live Zoom Sessions - they are deliverables/coursework!
+        if (/\battendance\b/i.test(ev.title || "")) return;
+        if (/\battendance\b/i.test(ev.description || "")) return;
+
         // Priority 1: Match week number from title or description
         let evWeek = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
 
@@ -423,6 +434,25 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             });
           }
 
+          // Check meeting duration: live class sessions run for 1-2 hours.
+          // Canvas assignment entries have start_at === end_at (e.g. 6:36 PM - 6:36 PM)
+          const startTime = ev.start_at ? new Date(ev.start_at).getTime() : 0;
+          const endTime = ev.end_at ? new Date(ev.end_at).getTime() : 0;
+          const durationMinutes = (endTime - startTime) / (1000 * 60);
+
+          // If start == end (0 min duration) and no Zoom link, it is an assignment due-date marker, NOT a live session!
+          if (durationMinutes <= 5 && !zoomUrl) {
+            return;
+          }
+
+          // If this event matches a course assignment title and has no zoom link, skip it from live sessions
+          const isAssignmentMatch = assignments.some(
+            (a) => a.name.toLowerCase().trim() === ev.title?.toLowerCase().trim()
+          );
+          if (isAssignmentMatch && !zoomUrl) {
+            return;
+          }
+
           const sessionKey = `${course.id}-${ev.id}`.toLowerCase();
           if (!addedLiveKeys.has(sessionKey)) {
             addedLiveKeys.add(sessionKey);
@@ -450,18 +480,18 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
         const modWeek = extractWeekNumber(mod.name);
         if (mod.items) {
           mod.items.forEach((item) => {
+            // NEVER treat attendance as a live zoom session
+            if (/\battendance\b/i.test(item.title)) return;
+
             const itemWeek = extractWeekNumber(item.title) || modWeek;
-            const titleLower = item.title.toLowerCase();
-            const isSyncSession =
-              /\b(?:sync|synchronous|live\s*session|live\s*class|zoom|virtual\s*class)\b/i.test(titleLower) ||
-              Boolean(item.external_url?.includes("zoom.us"));
 
-            if (isSyncSession && (itemWeek === weekNum || modWeek === weekNum)) {
-              const zoomUrl =
-                item.external_url ||
-                (item.url?.includes("zoom.us") ? item.url : undefined) ||
-                (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
+            // ONLY consider it a live session if it has an actual zoom.us link!
+            const zoomUrl =
+              (item.external_url?.includes("zoom.us") ? item.external_url : undefined) ||
+              (item.url?.includes("zoom.us") ? item.url : undefined) ||
+              (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
 
+            if (zoomUrl && (itemWeek === weekNum || modWeek === weekNum)) {
               const sessionKey = `${course.id}-${item.title}`.toLowerCase();
               if (!addedLiveKeys.has(sessionKey)) {
                 addedLiveKeys.add(sessionKey);

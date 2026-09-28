@@ -90,12 +90,23 @@ export default function HomePage() {
   ): CanvasCalendarEvent[] => {
     const courseCodeLower = (course.course_code || "").toLowerCase();
     const courseNameLower = (course.name || "").toLowerCase();
-    const courseNum = course.course_code?.match(/\d{3}/)?.[0];
+    const courseNum =
+      course.course_code?.match(/\b(\d{3})\b/)?.[1] ||
+      course.name?.match(/\b(\d{3})\b/)?.[1];
     const moduleItemTitles = new Set(
       modules.flatMap((m) => m.items || []).map((i) => (i.title || "").toLowerCase().trim())
     );
 
     return events.filter((ev) => {
+      // 0. If the event title or context explicitly specifies another 3-digit course number, check strictly!
+      const evCourseNumMatch = `${ev.title || ""} ${ev.context_name || ""}`.match(/\b(?:mba\s*)?(\d{3})\b/i);
+      const evCourseNum = evCourseNumMatch?.[1];
+      if (courseNum && evCourseNum) {
+        if (evCourseNum !== courseNum) {
+          return false; // Mismatched course number (e.g. event has 801, but course is 714)
+        }
+      }
+
       // 1. Direct course ID or effective context
       if (ev.course_id && ev.course_id === course.id) return true;
       if (ev.context_code === `course_${course.id}` || ev.effective_context_code === `course_${course.id}`) {
@@ -105,34 +116,51 @@ export default function HomePage() {
         return true;
       }
 
-      // 2. Context name match
+      // 2. Exact course number match (e.g. "801" in title or context)
+      if (courseNum && evCourseNum === courseNum) {
+        return true;
+      }
+
+      // 3. Context name match
       const contextName = (ev.context_name || "").toLowerCase();
       if (contextName && (contextName.includes(courseCodeLower) || contextName.includes(courseNameLower))) {
         return true;
       }
-      if (courseNum && contextName.includes(courseNum)) {
-        return true;
-      }
 
-      // 3. Text in title or description
-      const text = `${ev.title || ""} ${ev.description || ""}`.toLowerCase();
-      if (courseCodeLower && text.includes(courseCodeLower)) return true;
-      if (courseNameLower && text.includes(courseNameLower)) return true;
-      if (courseNum && text.includes(courseNum)) return true;
-
-      // 4. Exact module item title match (e.g. module has "Synchronous Session 1" and calendar event is "Synchronous Session 1")
+      // 4. Exact course code in title
       const evTitleClean = (ev.title || "").toLowerCase().trim();
-      if (evTitleClean && moduleItemTitles.has(evTitleClean)) {
-        return true;
-      }
+      if (courseCodeLower && evTitleClean.includes(courseCodeLower)) return true;
 
-      // 5. If title has "synchronous" or "live session" or "zoom"
-      if (/\b(?:sync|synchronous|live\s*session|zoom)\b/i.test(evTitleClean)) {
-        if (courseNum && text.includes(courseNum)) return true;
-        // If event mentions course keywords
-        if (courseNameLower.split(" ").some((w) => w.length > 4 && text.includes(w))) {
+      // 5. Significant course name match (ignore generic terms like "business", "school", "online", "mba")
+      const stopWords = new Set([
+        "business",
+        "school",
+        "online",
+        "mba",
+        "kenan",
+        "flagler",
+        "and",
+        "the",
+        "for",
+        "with",
+        "session",
+        "class",
+        "management",
+      ]);
+      const distinctiveCourseWords = courseNameLower
+        .split(/[^a-z0-9]+/)
+        .filter((w) => w.length >= 4 && !stopWords.has(w));
+
+      if (distinctiveCourseWords.length > 0) {
+        const text = `${ev.title || ""} ${ev.description || ""}`.toLowerCase();
+        if (distinctiveCourseWords.some((w) => text.includes(w))) {
           return true;
         }
+      }
+
+      // 6. Exact module item title match
+      if (evTitleClean && moduleItemTitles.has(evTitleClean)) {
+        return true;
       }
 
       return false;

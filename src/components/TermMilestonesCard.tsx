@@ -84,9 +84,9 @@ export function TermMilestonesCard({
   };
 
   return (
-    <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col h-full transition-all">
+    <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col h-full min-h-0 transition-all">
       {/* Executive Card Header */}
-      <div className="p-4 sm:p-5 border-b border-border bg-card">
+      <div className="p-4 sm:p-5 border-b border-border bg-card shrink-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
@@ -106,8 +106,8 @@ export function TermMilestonesCard({
         </p>
       </div>
 
-      {/* Deliverables List */}
-      <div className="overflow-y-auto max-h-[300px] xl:max-h-[340px] divide-y divide-border/60 flex-1">
+      {/* Deliverables List (Scrollable) */}
+      <div className="overflow-y-auto max-h-[300px] xl:max-h-[340px] divide-y divide-border/60 flex-1 min-h-0">
         {deliverables.length === 0 ? (
           <div className="p-6 text-center text-xs sm:text-sm text-muted-foreground space-y-1">
             <p className="font-semibold text-foreground">No active term projects.</p>

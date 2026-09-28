@@ -26,8 +26,6 @@ export function HomeworkTracker({
   weekNumber,
   onToggleComplete,
 }: HomeworkTrackerProps) {
-  const [showAll, setShowAll] = useState(false);
-
   const getStatusBadge = (
     status: DeliverableStatus,
     score?: number | null,
@@ -146,12 +144,10 @@ export function HomeworkTracker({
     );
   }
 
-  const visibleDeliverables = showAll ? deliverables : deliverables.slice(0, 5);
-
   return (
-    <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
-      {/* Clean Full-Width Header */}
-      <div className="p-4 sm:p-5 border-b border-border bg-card">
+    <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col transition-all">
+      {/* Clean Full-Width Sticky Header */}
+      <div className="sticky top-0 z-10 p-4 sm:p-5 border-b border-border bg-card shrink-0">
         <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
           Week {weekNumber} Assignments and Live Sessions{" "}
           <span className="text-primary font-mono text-base font-bold">
@@ -163,8 +159,8 @@ export function HomeworkTracker({
         </p>
       </div>
 
-      {/* Scannable Deliverables & Live Sessions List */}
-      <div className="divide-y divide-border/60">
+      {/* Scannable Deliverables & Live Sessions List (Scrollable) */}
+      <div className="overflow-y-auto max-h-[760px] divide-y divide-border/60 flex-1 min-h-0">
         {/* Live Synchronous Sessions from Canvas Calendar */}
         {liveSessions.map((session) => {
           const courseColor = getCourseColor(session.courseCode);
@@ -229,7 +225,7 @@ export function HomeworkTracker({
             </div>
           );
         })}
-        {visibleDeliverables.map((deliv) => {
+        {deliverables.map((deliv) => {
           const courseColor = getCourseColor(deliv.courseCode);
           const isFinished =
             deliv.status === "graded" || deliv.status === "submitted" || deliv.isCompleted;
@@ -306,18 +302,6 @@ export function HomeworkTracker({
           );
         })}
       </div>
-
-      {/* Show more button if > 5 */}
-      {deliverables.length > 5 && !showAll && (
-        <div className="p-3 border-t border-border bg-muted/5 flex justify-center">
-          <button
-            onClick={() => setShowAll(true)}
-            className="text-xs font-bold text-primary hover:underline cursor-pointer"
-          >
-            Show all {deliverables.length} deliverables
-          </button>
-        </div>
-      )}
     </div>
   );
 }
