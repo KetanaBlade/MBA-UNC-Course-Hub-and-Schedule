@@ -160,6 +160,7 @@ export interface NormalizedDeliverable {
   submissionTypes: string[];
   dueInDays?: number;
   dueInHours?: number;
+  isCompleted?: boolean;
 }
 
 export interface NormalizedLiveSession {

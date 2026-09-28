@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { Download, ExternalLink, FileSpreadsheet, FileText, Search } from "lucide-react";
+import { Check, Download, ExternalLink, FileSpreadsheet, FileText, Search } from "lucide-react";
 import { NormalizedReading } from "@/lib/canvas/types";
 import { getCourseColor } from "@/lib/courseColors";
 
 interface CourseFilesCardProps {
   files: NormalizedReading[];
   weekNumber: number;
+  onToggleComplete: (id: string) => void;
 }
 
-export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
+export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseFilesCardProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredFiles = files.filter((f) => {
@@ -66,8 +67,25 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
             return (
               <div
                 key={file.id}
-                className="p-3.5 sm:p-4 flex items-start justify-between gap-3 transition-colors hover:bg-muted/10"
+                className={`p-3.5 sm:p-4 flex items-start gap-3 transition-colors hover:bg-muted/10 ${
+                  file.isCompleted ? "opacity-60 bg-muted/5" : ""
+                }`}
               >
+                {/* Tactile Checkbox */}
+                <button
+                  type="button"
+                  onClick={() => onToggleComplete(file.id)}
+                  aria-label={`Mark ${file.title} as ${file.isCompleted ? "incomplete" : "complete"}`}
+                  className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                    file.isCompleted
+                      ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
+                      : "border-border bg-card hover:border-primary"
+                  }`}
+                >
+                  {file.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                </button>
+
+                {/* Details */}
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     {file.courseCode && courseColor && (
@@ -77,7 +95,11 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
                         {file.courseCode}
                       </span>
                     )}
-                    <h4 className="text-sm sm:text-base font-semibold text-foreground leading-snug break-words">
+                    <h4
+                      className={`text-sm sm:text-base font-semibold leading-snug break-words ${
+                        file.isCompleted ? "text-muted-foreground line-through" : "text-foreground"
+                      }`}
+                    >
                       {file.title}
                     </h4>
                   </div>
@@ -107,27 +129,30 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
                   </div>
                 </div>
 
-                <div className="shrink-0 flex items-center gap-1.5 self-center">
-                  {file.fileUrl ? (
+                {/* Stacked View & Download Buttons */}
+                <div className="shrink-0 flex flex-col gap-1 items-end self-center">
+                  <a
+                    href={file.canvasUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                    title="View on Canvas"
+                  >
+                    <span>View</span>
+                    <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                  </a>
+
+                  {file.fileUrl && (
                     <a
                       href={file.fileUrl}
                       target="_blank"
                       rel="noreferrer"
                       download
-                      className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
+                      className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                      title="Download file"
                     >
-                      <Download className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>Download</span>
-                    </a>
-                  ) : (
-                    <a
-                      href={file.canvasUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span>View</span>
+                      <Download className="w-3 h-3 text-muted-foreground" />
                     </a>
                   )}
                 </div>

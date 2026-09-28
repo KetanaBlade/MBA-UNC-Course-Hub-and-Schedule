@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import {
   CanvasCourse,
+  DeliverableStatus,
   NormalizedDeliverable,
   NormalizedLiveSession,
   StudentAuthTokens,
@@ -227,30 +228,53 @@ export default function HomePage() {
     loadMockData();
   };
 
-  const handleToggleCompleteReading = (readingId: string) => {
-    AppStorage.toggleCompletedItem(readingId);
+  const handleToggleCompleteItem = (itemId: string) => {
+    AppStorage.toggleCompletedItem(itemId);
     setBundlesByCourse((prev) => {
       const next = { ...prev };
       Object.keys(next).forEach((cId) => {
         const courseId = Number(cId);
         next[courseId] = next[courseId].map((bundle) => {
           let hasChange = false;
+
+          // Check readings & files
           const updatedReadings = bundle.readings.map((r) => {
-            if (r.id === readingId) {
+            if (r.id === itemId) {
               hasChange = true;
               return { ...r, isCompleted: !r.isCompleted };
             }
             return r;
           });
+
+          // Check deliverables
+          const updatedDeliverables = bundle.deliverables.map((d) => {
+            if (d.id === itemId) {
+              hasChange = true;
+              const nextCompleted = !d.isCompleted;
+              return {
+                ...d,
+                isCompleted: nextCompleted,
+                status: (nextCompleted ? "submitted" : "unsubmitted") as DeliverableStatus,
+              };
+            }
+            return d;
+          });
+
           if (!hasChange) return bundle;
 
-          const completedCount = updatedReadings.filter((r) => r.isCompleted).length;
+          const completedReadingsCount = updatedReadings.filter((r) => r.isCompleted).length;
+          const submittedCount = updatedDeliverables.filter(
+            (d) => d.status === "submitted" || d.status === "graded" || d.isCompleted
+          ).length;
+
           return {
             ...bundle,
             readings: updatedReadings,
+            deliverables: updatedDeliverables,
             stats: {
               ...bundle.stats,
-              completedReadingsCount: completedCount,
+              completedReadingsCount,
+              submittedCount,
             },
           };
         });
@@ -374,13 +398,16 @@ export default function HomePage() {
               setSelectedWeek(w);
               AppStorage.setSelectedWeek(w);
             }}
-            onToggleCompleteReading={handleToggleCompleteReading}
+            onToggleCompleteItem={handleToggleCompleteItem}
           />
         ) : (
           <MasterCalendarView
+            courses={courses}
+            bundlesByCourse={bundlesByCourse}
             deliverables={allDeliverables}
             liveSessions={allLiveSessions}
             onExportICS={handleExportCalendar}
+            onToggleCompleteItem={handleToggleCompleteItem}
           />
         )}
       </main>

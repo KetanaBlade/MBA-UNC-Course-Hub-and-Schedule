@@ -289,32 +289,18 @@ export function ReadingsSection({
                         </div>
                       </div>
 
-                      {/* Action Trigger */}
+                      {/* Action Trigger - View on Canvas */}
                       <div className="flex items-center gap-1.5 shrink-0 self-center">
-                        {reading.fileUrl ? (
-                          <a
-                            href={reading.fileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            download
-                            className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
-                            title="Download file"
-                          >
-                            <Download className="w-3.5 h-3.5 text-muted-foreground" />
-                            <span className="hidden sm:inline">Download</span>
-                          </a>
-                        ) : (
-                          <a
-                            href={reading.canvasUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
-                            title="Open on Canvas"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                            <span className="hidden sm:inline">Open</span>
-                          </a>
-                        )}
+                        <a
+                          href={reading.canvasUrl || reading.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
+                          title="Open and view on Canvas"
+                        >
+                          <span>View</span>
+                          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                        </a>
                       </div>
                     </div>
                   );
