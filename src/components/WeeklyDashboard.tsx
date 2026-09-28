@@ -17,7 +17,7 @@ import { WeeklyOverviewCard } from "./WeeklyOverviewCard";
 import { ReadingsSection } from "./ReadingsSection";
 import { HomeworkTracker } from "./HomeworkTracker";
 import { CourseFilesCard } from "./CourseFilesCard";
-import { getCourseColor, getCleanCourseCode } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
 
 interface WeeklyDashboardProps {
   courses: CanvasCourse[];
@@ -131,20 +131,23 @@ export function WeeklyDashboard({
             ) : (
               activeCourses.map((course) => {
                 const cleanCode = getCleanCourseCode(course.course_code, course.name);
+                const cleanName = getCleanCourseName(course.course_code, course.name);
                 const courseColor = getCourseColor(course.course_code || course.id);
 
                 return (
                   <span
                     key={course.id}
-                    className={`font-mono text-xs font-bold uppercase pl-2.5 pr-1.5 py-1 rounded-md border inline-flex items-center gap-1.5 transition-all shadow-2xs ${courseColor.badge}`}
+                    className={`text-xs font-semibold pl-2.5 pr-1.5 py-1 rounded-md border inline-flex items-center gap-1.5 transition-all shadow-2xs ${courseColor.badge}`}
                   >
-                    <span>{cleanCode}</span>
+                    <span className="font-mono font-bold uppercase">{cleanCode}</span>
+                    <span className="opacity-40">•</span>
+                    <span className="font-medium truncate max-w-[160px] sm:max-w-[220px]">{cleanName}</span>
                     <button
                       type="button"
                       onClick={() => onToggleCourse(course.id)}
-                      title={`Hide ${cleanCode}`}
-                      aria-label={`Hide ${cleanCode}`}
-                      className="hover:opacity-75 p-0.5 rounded cursor-pointer transition-opacity"
+                      title={`Hide ${cleanCode} ${cleanName}`}
+                      aria-label={`Hide ${cleanCode} ${cleanName}`}
+                      className="hover:opacity-75 p-0.5 rounded cursor-pointer transition-opacity ml-0.5"
                     >
                       <X className="w-3.5 h-3.5 stroke-[2.5]" />
                     </button>
@@ -175,17 +178,20 @@ export function WeeklyDashboard({
                 <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 pl-5">
                   {hiddenCourses.map((course) => {
                     const cleanCode = getCleanCourseCode(course.course_code, course.name);
+                    const cleanName = getCleanCourseName(course.course_code, course.name);
                     const courseColor = getCourseColor(course.course_code || course.id);
                     return (
                       <button
                         key={course.id}
                         type="button"
                         onClick={() => onToggleCourse(course.id)}
-                        className={`inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1 rounded-md text-xs font-mono font-bold uppercase border opacity-60 hover:opacity-100 transition-all cursor-pointer ${courseColor.badge}`}
-                        title={`Restore ${cleanCode}`}
+                        className={`inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-1 rounded-md text-xs border opacity-60 hover:opacity-100 transition-all cursor-pointer ${courseColor.badge}`}
+                        title={`Restore ${cleanCode} ${cleanName}`}
                       >
                         <Plus className="w-3 h-3 stroke-[2.5]" />
-                        <span>{cleanCode}</span>
+                        <span className="font-mono font-bold uppercase">{cleanCode}</span>
+                        <span className="opacity-40">•</span>
+                        <span className="font-medium truncate max-w-[140px]">{cleanName}</span>
                       </button>
                     );
                   })}
@@ -258,18 +264,18 @@ export function WeeklyDashboard({
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
             {submittedDeliverablesCount} / {totalDeliverablesCount}
           </div>
-          <p className="text-xs text-muted-foreground">submitted for Week {selectedWeek}</p>
+          <p className="text-xs text-muted-foreground">Submitted for Week {selectedWeek}</p>
         </div>
 
         {/* Readings Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
           <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
-            Readings & Cases
+            Coursework & Lectures
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
             {completedReadingsCount} / {totalReadingsCount}
           </div>
-          <p className="text-xs text-muted-foreground">items marked complete</p>
+          <p className="text-xs text-muted-foreground">Completed for Week {selectedWeek}</p>
         </div>
 
         {/* Live Zoom Metric */}
@@ -280,7 +286,7 @@ export function WeeklyDashboard({
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
             {activeBundles.flatMap((b) => b.liveSessions).length}
           </div>
-          <p className="text-xs text-muted-foreground">sessions scheduled</p>
+          <p className="text-xs text-muted-foreground">Sessions scheduled</p>
         </div>
 
         {/* Completion Rate Metric */}
@@ -298,7 +304,7 @@ export function WeeklyDashboard({
               : 100}
             %
           </div>
-          <p className="text-xs text-muted-foreground">term progress</p>
+          <p className="text-xs text-muted-foreground">Term progress</p>
         </div>
       </div>
 

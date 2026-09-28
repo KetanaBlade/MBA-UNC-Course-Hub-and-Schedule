@@ -55,6 +55,11 @@ export interface CanvasModuleItem {
   page_url?: string;
   external_url?: string;
   content_id?: number;
+  completion_requirement?: {
+    type?: string;
+    completed?: boolean;
+    min_score?: number;
+  };
 }
 
 export interface CanvasModule {

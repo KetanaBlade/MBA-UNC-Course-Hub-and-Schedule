@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Check, Download, ExternalLink, FileSpreadsheet, FileText, Search } from "lucide-react";
 import { NormalizedReading } from "@/lib/canvas/types";
-import { getCourseColor } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseName } from "@/lib/courseColors";
 
 interface CourseFilesCardProps {
   files: NormalizedReading[];
@@ -90,9 +90,9 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                   <div className="flex flex-wrap items-center gap-2">
                     {file.courseCode && courseColor && (
                       <span
-                        className={`font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                        className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                       >
-                        {file.courseCode}
+                        {getCleanCourseName(file.courseCode, file.courseName)}
                       </span>
                     )}
                     <h4

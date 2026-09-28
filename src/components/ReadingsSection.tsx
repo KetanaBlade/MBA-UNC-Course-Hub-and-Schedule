@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { NormalizedReading, ReadingCategory } from "@/lib/canvas/types";
-import { getCourseColor } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
 
 interface ReadingsSectionProps {
   readings: NormalizedReading[];
@@ -223,10 +223,10 @@ export function ReadingsSection({
                       <span
                         className={`font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                       >
-                        {courseCode}
+                        {getCleanCourseCode(courseCode, courseGroup.courseName)}
                       </span>
                       <span className="text-xs sm:text-sm font-bold text-foreground">
-                        {courseGroup.courseName}
+                        {getCleanCourseName(courseCode, courseGroup.courseName)}
                       </span>
                     </div>
                     <span className="font-mono text-xs text-muted-foreground font-semibold">
@@ -265,9 +265,9 @@ export function ReadingsSection({
                         <div className="flex flex-wrap items-center gap-2">
                           {courseKeys.length === 1 && reading.courseCode && (
                             <span
-                              className={`font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                              className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                             >
-                              {reading.courseCode}
+                              {getCleanCourseName(reading.courseCode, reading.courseName)}
                             </span>
                           )}
                           <h3

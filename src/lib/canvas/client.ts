@@ -18,11 +18,15 @@ export class CanvasApiClient {
     this.token = token.trim();
   }
 
-  private async request<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
+  private async request<T>(endpoint: string, params?: Record<string, string | string[]>): Promise<T> {
     const url = new URL(`/api/canvas/${this.instance}/${endpoint}`, window.location.origin);
     if (params) {
       Object.entries(params).forEach(([key, val]) => {
-        url.searchParams.append(key, val);
+        if (Array.isArray(val)) {
+          val.forEach((v) => url.searchParams.append(key, v));
+        } else {
+          url.searchParams.append(key, val);
+        }
       });
     }
 
@@ -98,7 +102,7 @@ export class CanvasApiClient {
    */
   async getModules(courseId: number): Promise<CanvasModule[]> {
     return this.request<CanvasModule[]>(`courses/${courseId}/modules`, {
-      "include[]": "items",
+      "include[]": ["items", "content_details"],
       per_page: "50",
     });
   }

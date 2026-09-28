@@ -18,7 +18,7 @@ import {
   NormalizedLiveSession,
   WeeklyBundle,
 } from "@/lib/canvas/types";
-import { getCourseColor } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseName } from "@/lib/courseColors";
 
 interface MasterCalendarViewProps {
   courses?: CanvasCourse[];
@@ -242,8 +242,8 @@ export function MasterCalendarView({
                             className="p-3.5 rounded-lg border border-purple-500/30 bg-purple-500/10 flex items-center justify-between gap-3"
                           >
                             <div className="space-y-1 min-w-0">
-                              <span className="font-mono text-xs font-bold uppercase text-purple-900 dark:text-purple-300">
-                                {session.courseCode}
+                              <span className="text-xs font-bold uppercase text-purple-900 dark:text-purple-300">
+                                {getCleanCourseName(session.courseCode, session.courseName)}
                               </span>
                               <h4 className="text-sm font-bold text-foreground truncate">
                                 {session.title}
@@ -308,9 +308,9 @@ export function MasterCalendarView({
                               <div className="space-y-1 flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span
-                                    className={`font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                                    className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                                   >
-                                    {deliv.courseCode}
+                                    {getCleanCourseName(deliv.courseCode, deliv.courseName)}
                                   </span>
                                   <h4
                                     className={`text-sm sm:text-base font-bold ${
@@ -411,9 +411,9 @@ export function MasterCalendarView({
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
-                          className={`font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                          className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                         >
-                          {evt.courseCode}
+                          {getCleanCourseName(evt.courseCode, evt.courseName)}
                         </span>
                         <h4
                           className={`text-sm sm:text-base font-bold ${

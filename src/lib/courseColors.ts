@@ -92,3 +92,44 @@ export function getCleanCourseCode(rawCode?: string | null, rawName?: string | n
   // Fallback: take first 14 chars
   return text.split(/[-–:]/)[0].trim().slice(0, 14);
 }
+
+/**
+ * Extracts a clean, human-readable course name with course numbers and section prefixes stripped out.
+ * Useful for chips inside task lists, coursework items, and deliverables.
+ *
+ * Examples:
+ *   "973D MBA 714 BUSINESS STATISTICS AND ANALYTICS 2026-0926" -> "Business Statistics & Analytics"
+ *   "973D MBA 744 CUSTOMER VALUE STRATEGIES 2026-0926" -> "Customer Value Strategies"
+ *   "MBA707-973B: ORIENTATION" -> "Orientation"
+ *   "Digital Campus Technology Tutorial" -> "Technology Tutorial"
+ */
+export function getCleanCourseName(rawCode?: string | null, rawName?: string | null): string {
+  const text = (rawName || rawCode || "").trim();
+
+  // Common UNC MBA courses
+  if (/business statistics/i.test(text) || /mba\s*714/i.test(text)) return "Business Statistics & Analytics";
+  if (/customer value/i.test(text) || /mba\s*744/i.test(text)) return "Customer Value Strategies";
+  if (/financial accounting/i.test(text) || /mba\s*701/i.test(text)) return "Financial Accounting";
+  if (/operations/i.test(text) || /mba\s*703/i.test(text)) return "Operations Management";
+  if (/leading/i.test(text) || /mba\s*710/i.test(text)) return "Leading Organizations";
+  if (/orientation/i.test(text)) return "Orientation";
+  if (/technology|tutorial/i.test(text)) return "Technology Tutorial";
+
+  // General cleaner: strip leading section numbers like "973D", course prefixes like "MBA 714", and trailing term codes like "2026-0926"
+  let cleaned = text
+    .replace(/^[0-9A-Z]{3,5}\s+/i, "")
+    .replace(/^MBA\s*\d{3}[A-Z]?(?:[-:][0-9A-Z]+)?[:\s-]*/i, "")
+    .replace(/\s*\d{4}[-_]\d{2,4}$/i, "")
+    .trim();
+
+  // Title-case if in all-caps
+  if (cleaned === cleaned.toUpperCase() && cleaned.length > 3) {
+    cleaned = cleaned
+      .toLowerCase()
+      .split(" ")
+      .map((w) => (w === "and" ? "&" : w.charAt(0).toUpperCase() + w.slice(1)))
+      .join(" ");
+  }
+
+  return cleaned || text;
+}

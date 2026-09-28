@@ -10,7 +10,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { DeliverableStatus, NormalizedDeliverable } from "@/lib/canvas/types";
-import { getCourseColor } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseName } from "@/lib/courseColors";
 
 interface HomeworkTrackerProps {
   deliverables: NormalizedDeliverable[];
@@ -158,9 +158,9 @@ export function HomeworkTracker({
                 {/* Line 1: Course code + Status badge */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                    className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                   >
-                    {deliv.courseCode}
+                    {getCleanCourseName(deliv.courseCode, deliv.courseName)}
                   </span>
                   {getStatusBadge(deliv.status, deliv.score, deliv.grade, deliv.isCompleted)}
                 </div>

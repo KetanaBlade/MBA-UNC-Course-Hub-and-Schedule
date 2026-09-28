@@ -28,7 +28,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 24 10% 10%;
     
-    --primary: 15 85% 45%;      /* #D44E18 - Terracotta Coral (WCAG AA 4.5:1+) */
+    --primary: 208 72% 38%;     /* #1B6A9E - Warm Carolina Cerulean (WCAG AA 6.1:1 on white, 5.2:1 on cream) */
     --primary-foreground: 0 0% 100%;
     
     --secondary: 44 25% 90%;
@@ -41,7 +41,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 44 20% 75%;       /* Crisp 1px border with clear definition */
     --input: 44 20% 75%;
-    --ring: 15 85% 45%;
+    --ring: 208 72% 38%;
     --radius: 0.5rem;
   }
 
@@ -97,7 +97,7 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: -2;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cg fill='none' stroke='%23D44E18' stroke-width='1'%3E%3Ccircle cx='820' cy='140' r='20' stroke-opacity='0.26'/%3E%3Ccircle cx='820' cy='140' r='68' stroke-opacity='0.22'/%3E%3Ccircle cx='820' cy='140' r='132' stroke-opacity='0.18'/%3E%3Ccircle cx='820' cy='140' r='214' stroke-opacity='0.14'/%3E%3Ccircle cx='820' cy='140' r='320' stroke-opacity='0.11'/%3E%3Ccircle cx='820' cy='140' r='456' stroke-opacity='0.08'/%3E%3Ccircle cx='160' cy='780' r='24' stroke-opacity='0.24'/%3E%3Ccircle cx='160' cy='780' r='86' stroke-opacity='0.18'/%3E%3Ccircle cx='160' cy='780' r='174' stroke-opacity='0.14'/%3E%3Ccircle cx='160' cy='780' r='294' stroke-opacity='0.10'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cg fill='none' stroke='%231B6A9E' stroke-width='1'%3E%3Ccircle cx='820' cy='140' r='20' stroke-opacity='0.26'/%3E%3Ccircle cx='820' cy='140' r='68' stroke-opacity='0.22'/%3E%3Ccircle cx='820' cy='140' r='132' stroke-opacity='0.18'/%3E%3Ccircle cx='820' cy='140' r='214' stroke-opacity='0.14'/%3E%3Ccircle cx='820' cy='140' r='320' stroke-opacity='0.11'/%3E%3Ccircle cx='820' cy='140' r='456' stroke-opacity='0.08'/%3E%3Ccircle cx='160' cy='780' r='24' stroke-opacity='0.24'/%3E%3Ccircle cx='160' cy='780' r='86' stroke-opacity='0.18'/%3E%3Ccircle cx='160' cy='780' r='174' stroke-opacity='0.14'/%3E%3Ccircle cx='160' cy='780' r='294' stroke-opacity='0.10'/%3E%3C/g%3E%3C/svg%3E");
   background-size: cover;
   background-position: center;
 }

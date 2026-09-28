@@ -120,6 +120,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
           addedUrls.add(item.title.toLowerCase());
           const id = `mod-item-${item.id}`;
 
+          const isCanvasCompleted = Boolean(item.completion_requirement?.completed);
           readings.push({
             id,
             title: item.title,
@@ -127,7 +128,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             category: categorizeResource(item.title, undefined, "module_item"),
             canvasUrl: itemUrl,
             fileUrl: item.external_url || item.url,
-            isCompleted: completedItemIds.has(id),
+            isCompleted: isCanvasCompleted || completedItemIds.has(id),
             courseCode: course.course_code,
             courseName: course.name,
           });
