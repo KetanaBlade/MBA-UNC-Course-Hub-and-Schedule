@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Calendar,
-  CheckCircle,
   CheckSquare,
   FileSpreadsheet,
   FileText,
@@ -43,7 +41,7 @@ export function WeeklyDashboard({
   onToggleCompleteReading,
 }: WeeklyDashboardProps) {
   const [onlyPending, setOnlyPending] = useState(false);
-  const [mobileTab, setMobileTab] = useState<"readings" | "files" | "actions">("readings");
+  const [mobileTab, setMobileTab] = useState<"actions" | "readings" | "files">("actions");
 
   // Fixed standard 5-week Kenan-Flagler quarter term
   const weekNumbers = [1, 2, 3, 4, 5];
@@ -67,7 +65,7 @@ export function WeeklyDashboard({
     );
   }
 
-  // Separate readings into: Column 1 (Course Readings & Cases) and Column 2 (Rescued Files Tab items)
+  // Separate readings into: Left Pane (Course Readings & Cases) and Right Pane (Rescued Files Tab items)
   const leftPaneReadings = allReadings.filter((r) => r.source !== "files_tab");
   const rightPaneFiles = allReadings.filter((r) => r.source === "files_tab");
 
@@ -97,7 +95,7 @@ export function WeeklyDashboard({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-primary" />
-              <span className="text-xs sm:text-sm font-bold text-foreground font-sans">
+              <span className="text-xs sm:text-sm font-bold text-foreground">
                 Filter Courses ({selectedCourseIds.length} of {courses.length} Active):
               </span>
             </div>
@@ -129,10 +127,10 @@ export function WeeklyDashboard({
                   key={course.id}
                   onClick={() => onToggleCourse(course.id)}
                   aria-pressed={isIncluded}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all cursor-pointer border ${
                     isIncluded
                       ? "bg-card border-primary text-foreground shadow-2xs ring-1 ring-primary/40 font-bold"
-                      : "bg-muted/30 border-border text-muted-foreground opacity-60 hover:opacity-90"
+                      : "bg-muted/30 border-border text-muted-foreground opacity-60 hover:opacity-90 font-medium"
                   }`}
                 >
                   {isIncluded ? (
@@ -198,13 +196,12 @@ export function WeeklyDashboard({
         </div>
       </div>
 
-      {/* 2. SOLID WHITE KPI METRIC DECK (HIGH VISIBILITY) */}
+      {/* 2. SOLID WHITE KPI METRIC DECK (CLEAN, NO ICONS) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {/* Deliverables Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-muted-foreground">
-            <span>Deliverables</span>
-            <GraduationCap className="w-4 h-4 text-primary" />
+          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+            Deliverables
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
             {submittedDeliverablesCount} / {totalDeliverablesCount}
@@ -214,9 +211,8 @@ export function WeeklyDashboard({
 
         {/* Readings Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-muted-foreground">
-            <span>Readings & Cases</span>
-            <FileText className="w-4 h-4 text-primary" />
+          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+            Readings & Cases
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
             {completedReadingsCount} / {totalReadingsCount}
@@ -226,9 +222,8 @@ export function WeeklyDashboard({
 
         {/* Live Zoom Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-muted-foreground">
-            <span>Live Zoom</span>
-            <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+            Live Zoom
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
             {activeBundles.flatMap((b) => b.liveSessions).length}
@@ -238,9 +233,8 @@ export function WeeklyDashboard({
 
         {/* Completion Rate Metric */}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-muted-foreground">
-            <span>Overall Pace</span>
-            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <div className="text-xs sm:text-sm font-bold text-muted-foreground">
+            Overall Pace
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
             {totalDeliverablesCount + totalReadingsCount > 0
@@ -258,6 +252,18 @@ export function WeeklyDashboard({
 
       {/* 3. MOBILE VIEWPORT TAB SWITCHER (xl:hidden) */}
       <div className="xl:hidden flex items-center bg-card border border-border p-1 rounded-lg">
+        <button
+          onClick={() => setMobileTab("actions")}
+          className={`flex-1 py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
+            mobileTab === "actions"
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>Briefings & Tasks ({allDeliverables.length})</span>
+        </button>
+
         <button
           onClick={() => setMobileTab("readings")}
           className={`flex-1 py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
@@ -281,23 +287,32 @@ export function WeeklyDashboard({
           <FileSpreadsheet className="w-4 h-4" />
           <span>Files ({rightPaneFiles.length})</span>
         </button>
-
-        <button
-          onClick={() => setMobileTab("actions")}
-          className={`flex-1 py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
-            mobileTab === "actions"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <GraduationCap className="w-4 h-4" />
-          <span>Tasks & Zoom ({allDeliverables.length})</span>
-        </button>
       </div>
 
-      {/* 4. THREE-COLUMN PANORAMIC DASHBOARD LAYOUT */}
+      {/* 4. THREE-COLUMN PANORAMIC LAYOUT:
+             - COLUMN 1 (FAR LEFT): Briefings & Homework (Priority Actions)
+             - COLUMN 2 (CENTER): Course Readings & Cases (Primary Study)
+             - COLUMN 3 (FAR RIGHT): Course Files & Documents (Reference Assets)
+      */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 items-start">
-        {/* COLUMN 1: Course Readings & Cases Checklist (xl:col-span-5) */}
+        {/* COLUMN 1: Priority Actions (Briefings, Zoom & Homework) -> FAR LEFT (xl:col-span-3) */}
+        <div
+          className={`xl:col-span-3 md:col-span-2 space-y-6 ${
+            mobileTab === "actions" ? "block" : "hidden xl:block"
+          }`}
+        >
+          <WeeklyOverviewCard
+            announcements={allAnnouncements}
+            weekNumber={selectedWeek}
+          />
+
+          <HomeworkTracker
+            deliverables={allDeliverables}
+            weekNumber={selectedWeek}
+          />
+        </div>
+
+        {/* COLUMN 2: Course Readings & Cases Checklist -> CENTER (xl:col-span-5) */}
         <div
           className={`xl:col-span-5 md:col-span-1 ${
             mobileTab === "readings" ? "block" : "hidden xl:block"
@@ -310,7 +325,7 @@ export function WeeklyDashboard({
           />
         </div>
 
-        {/* COLUMN 2: Rescued Course Files & Models (xl:col-span-4 - NO LONGER BURIED!) */}
+        {/* COLUMN 3: Course Files & Supplemental Models -> FAR RIGHT (xl:col-span-4) */}
         <div
           className={`xl:col-span-4 md:col-span-1 ${
             mobileTab === "files" ? "block" : "hidden xl:block"
@@ -318,25 +333,6 @@ export function WeeklyDashboard({
         >
           <CourseFilesCard
             files={rightPaneFiles}
-            weekNumber={selectedWeek}
-          />
-        </div>
-
-        {/* COLUMN 3: Action Center: Zoom Briefings + Homework (xl:col-span-3) */}
-        <div
-          className={`xl:col-span-3 md:col-span-2 space-y-6 ${
-            mobileTab === "actions" ? "block" : "hidden xl:block"
-          }`}
-        >
-          {/* Briefings & Zoom notes */}
-          <WeeklyOverviewCard
-            announcements={allAnnouncements}
-            weekNumber={selectedWeek}
-          />
-
-          {/* Homework & Deliverables */}
-          <HomeworkTracker
-            deliverables={allDeliverables}
             weekNumber={selectedWeek}
           />
         </div>

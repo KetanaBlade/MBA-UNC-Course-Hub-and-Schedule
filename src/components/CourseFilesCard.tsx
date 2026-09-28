@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Download, ExternalLink, FileSpreadsheet, FileText, FolderTree, Search } from "lucide-react";
+import { Download, ExternalLink, FileSpreadsheet, FileText, Search } from "lucide-react";
 import { NormalizedReading } from "@/lib/canvas/types";
 import { getCourseColor } from "@/lib/courseColors";
 
@@ -12,7 +12,6 @@ interface CourseFilesCardProps {
 
 export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [showAll, setShowAll] = useState(false);
 
   const filteredFiles = files.filter((f) => {
     if (!searchTerm.trim()) return true;
@@ -24,52 +23,47 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
     );
   });
 
-  const displayList = showAll ? filteredFiles : filteredFiles.slice(0, 5);
-
   return (
-    <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
-      {/* Header */}
-      <div className="p-4 sm:p-5 border-b border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <FolderTree className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold text-foreground tracking-tight font-sans">
-              Week {weekNumber} Course Files & Models
+    <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col h-full transition-all">
+      {/* Sticky Header: Clean, no icon, no wrapped tags */}
+      <div className="sticky top-0 z-20 bg-card border-b border-border p-4 sm:p-5 space-y-3">
+        <div>
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+              Week {weekNumber} Course Files
             </h2>
+            <span className="font-mono text-xs font-semibold text-muted-foreground shrink-0">
+              {files.length} {files.length === 1 ? "file" : "files"}
+            </span>
           </div>
-          <p className="text-xs sm:text-[13px] font-medium text-muted-foreground font-sans">
-            Files rescued from Canvas &apos;Files&apos; folders (spreadsheets, slide decks, and data)
+          <p className="text-xs sm:text-[13px] text-muted-foreground mt-1">
+            Spreadsheets, slide decks, and data rescued from Files folders
           </p>
         </div>
-        <span className="font-mono text-xs font-bold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground self-start sm:self-auto">
-          {files.length} {files.length === 1 ? "FILE" : "FILES"}
-        </span>
-      </div>
 
-      {/* Optional Search if more than 4 files */}
-      {files.length > 4 && (
-        <div className="p-3 border-b border-border bg-muted/10">
+        {/* Search Bar */}
+        <div className="pt-0.5">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+            <Search className="w-4 h-4 absolute left-3 top-2 text-muted-foreground" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search files by name or folder..."
-              className="w-full h-9 pl-9 pr-3 text-xs sm:text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-8 pl-9 pr-3 text-xs sm:text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Files List */}
-      {filteredFiles.length === 0 ? (
-        <div className="p-6 text-center text-xs sm:text-sm text-muted-foreground">
-          No course files identified for Week {weekNumber}.
-        </div>
-      ) : (
-        <div className="divide-y divide-border/60">
-          {displayList.map((file) => {
+      {/* Scrollable Files List (max-h-[760px]) */}
+      <div className="overflow-y-auto max-h-[760px] divide-y divide-border/60">
+        {filteredFiles.length === 0 ? (
+          <div className="p-8 text-center text-xs sm:text-sm text-muted-foreground">
+            No course files found for Week {weekNumber}.
+          </div>
+        ) : (
+          filteredFiles.map((file) => {
             const courseColor = file.courseCode ? getCourseColor(file.courseCode) : null;
             return (
               <div
@@ -90,7 +84,7 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
                     </h4>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-sans">
+                  <div className="flex flex-wrap items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">
                     {file.category === "spreadsheet" ? (
                       <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-emerald-800 dark:text-emerald-300">
                         <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -122,7 +116,7 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
                       target="_blank"
                       rel="noreferrer"
                       download
-                      className="h-8 px-3 rounded-md border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                      className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
                     >
                       <Download className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>Download</span>
@@ -132,7 +126,7 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
                       href={file.canvasUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="h-8 px-3 rounded-md border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                      className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
                     >
                       <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>View</span>
@@ -141,21 +135,9 @@ export function CourseFilesCard({ files, weekNumber }: CourseFilesCardProps) {
                 </div>
               </div>
             );
-          })}
-        </div>
-      )}
-
-      {/* Show more button if > 5 */}
-      {filteredFiles.length > 5 && !showAll && (
-        <div className="p-3 border-t border-border bg-muted/5 flex justify-center">
-          <button
-            onClick={() => setShowAll(true)}
-            className="text-xs font-bold text-primary hover:underline cursor-pointer"
-          >
-            Show all {filteredFiles.length} files
-          </button>
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Bell,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -27,57 +26,46 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
 
   if (!announcements || announcements.length === 0) {
     return (
-      <div className="border border-border rounded-lg bg-card p-6 text-center text-xs sm:text-sm text-muted-foreground shadow-xs">
-        <Bell className="mx-auto w-6 h-6 text-muted-foreground/60 mb-2" />
-        No specific briefings or announcements posted for Week {weekNumber} yet.
+      <div className="border border-border rounded-lg bg-card p-5 text-center text-xs sm:text-sm text-muted-foreground shadow-xs">
+        No briefings or announcements posted for Week {weekNumber}.
       </div>
     );
   }
 
   return (
     <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
-      {/* Card Header */}
-      <div className="p-4 sm:p-5 border-b border-border bg-card flex items-center justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold text-foreground tracking-tight font-sans">
-              Week {weekNumber} Briefings & Notes
-            </h2>
-          </div>
-          <p className="text-xs sm:text-[13px] font-medium text-muted-foreground font-sans">
-            Important announcements, live Zoom links, and weekly guidance
-          </p>
+      {/* Clean Header: No icon, no awkward wrapping badge */}
+      <div className="p-4 sm:p-5 border-b border-border bg-card">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+            Week {weekNumber} Briefings
+          </h2>
+          <span className="font-mono text-xs font-semibold text-muted-foreground shrink-0">
+            {announcements.length} {announcements.length === 1 ? "note" : "notes"}
+          </span>
         </div>
-        <span className="font-mono text-xs font-bold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
-          {announcements.length} {announcements.length === 1 ? "NOTE" : "NOTES"}
-        </span>
+        <p className="text-xs sm:text-[13px] text-muted-foreground mt-1">
+          Announcements, guidance, and Zoom links
+        </p>
       </div>
 
       {/* Prominent Quick-Join Zoom Banner if available */}
       {primaryZoom?.zoomUrl && (
-        <div className="p-3 sm:p-4 bg-primary/10 border-b border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-              <Video className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold text-foreground">
-                Synchronous Live Session Scheduled
-              </h4>
-              <p className="text-xs text-muted-foreground">
-                Week {weekNumber} live discussion session
-              </p>
-            </div>
+        <div className="p-3 sm:p-4 bg-primary/10 border-b border-primary/20 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              Live Session Scheduled
+            </span>
+            <span className="font-mono text-[11px] text-muted-foreground">Week {weekNumber}</span>
           </div>
           <a
             href={primaryZoom.zoomUrl}
             target="_blank"
             rel="noreferrer"
-            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 self-stretch sm:self-auto"
+            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 w-full"
           >
             <Video className="w-4 h-4" />
-            <span>Join Live Zoom</span>
+            <span>Join Live Class on Zoom</span>
           </a>
         </div>
       )}
@@ -87,15 +75,15 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
         {announcements.map((ann) => {
           const isExpanded = expandedId === ann.id;
           return (
-            <div key={ann.id} className="p-4 sm:p-5 transition-colors hover:bg-muted/10">
+            <div key={ann.id} className="p-4 transition-colors hover:bg-muted/10">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1 min-w-0 flex-1">
-                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug tracking-tight font-sans">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug tracking-tight">
                     {ann.title}
                   </h3>
-                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1 font-sans">
-                      <User className="w-3.5 h-3.5 text-muted-foreground/70" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 font-medium">
+                      <User className="w-3 h-3 text-muted-foreground/70" />
                       {ann.authorName}
                     </span>
                     <span>•</span>
@@ -133,9 +121,9 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                     transition={{ duration: 0.16, ease: [0.25, 1, 0.5, 1] }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3.5 pt-3.5 border-t border-border/60">
+                    <div className="mt-3 pt-3 border-t border-border/60">
                       <div
-                        className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-sans [&_a]:text-primary [&_a]:underline space-y-2.5"
+                        className="text-xs sm:text-[13px] text-foreground/90 leading-relaxed [&_a]:text-primary [&_a]:underline space-y-2"
                         dangerouslySetInnerHTML={{ __html: ann.message }}
                       />
                       <div className="mt-3 flex justify-end">
@@ -143,7 +131,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                           href={ann.canvasUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="h-7 px-3 rounded-md border border-border bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground text-xs font-semibold transition-all flex items-center gap-1.5"
+                          className="h-7 px-2.5 rounded-md border border-border bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground text-xs font-semibold transition-all flex items-center gap-1.5"
                         >
                           <span>Open in Canvas</span>
                           <ExternalLink className="w-3 h-3" />
