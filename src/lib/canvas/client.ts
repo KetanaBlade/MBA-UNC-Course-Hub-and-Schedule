@@ -141,34 +141,56 @@ export class CanvasApiClient {
    */
   async getCalendarEvents(courseIds?: number[]): Promise<CanvasCalendarEvent[]> {
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30); // 30 days back
+    startDate.setDate(startDate.getDate() - 90); // 90 days back (term start)
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 90); // 90 days forward
+    endDate.setDate(endDate.getDate() + 180); // 180 days forward (full term & finals)
 
-    const params: Record<string, string | string[]> = {
-      type: "event",
-      all_events: "true",
-      start_date: startDate.toISOString().split("T")[0],
-      end_date: endDate.toISOString().split("T")[0],
-      per_page: "100",
-    };
+    const allEvents: CanvasCalendarEvent[] = [];
+    const seenIds = new Set<number>();
 
-    if (courseIds && courseIds.length > 0) {
-      params["context_codes[]"] = courseIds.map((id) => `course_${id}`);
+    // 1. Fetch all events across the student's entire calendar (includes sections, personal, and enrolled courses)
+    try {
+      const userEvents = await this.request<CanvasCalendarEvent[]>("calendar_events", {
+        all_events: "true",
+        start_date: startDate.toISOString().split("T")[0],
+        end_date: endDate.toISOString().split("T")[0],
+        per_page: "100",
+      });
+      if (Array.isArray(userEvents)) {
+        userEvents.forEach((ev) => {
+          if (ev.id && !seenIds.has(ev.id)) {
+            seenIds.add(ev.id);
+            allEvents.push(ev);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("Global calendar_events query failed:", err);
     }
 
-    try {
-      const events = await this.request<CanvasCalendarEvent[]>("calendar_events", params);
-      return events || [];
-    } catch (err) {
-      console.warn("Calendar events fetch with context_codes failed, falling back to all_events:", err);
+    // 2. Also fetch with explicit context codes if provided to guarantee course-specific calendar items
+    if (courseIds && courseIds.length > 0) {
       try {
-        delete params["context_codes[]"];
-        const fallbackEvents = await this.request<CanvasCalendarEvent[]>("calendar_events", params);
-        return fallbackEvents || [];
-      } catch {
-        return [];
+        const courseEvents = await this.request<CanvasCalendarEvent[]>("calendar_events", {
+          all_events: "true",
+          start_date: startDate.toISOString().split("T")[0],
+          end_date: endDate.toISOString().split("T")[0],
+          per_page: "100",
+          "context_codes[]": courseIds.map((id) => `course_${id}`),
+        });
+        if (Array.isArray(courseEvents)) {
+          courseEvents.forEach((ev) => {
+            if (ev.id && !seenIds.has(ev.id)) {
+              seenIds.add(ev.id);
+              allEvents.push(ev);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Context-coded calendar_events query failed:", err);
       }
     }
+
+    return allEvents;
   }
 }

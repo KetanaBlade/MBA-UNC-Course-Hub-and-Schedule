@@ -113,6 +113,9 @@ export interface CanvasCalendarEvent {
   end_at: string;
   description: string;
   context_code: string;
+  context_name?: string;
+  effective_context_code?: string;
+  course_id?: number;
   location_name?: string;
   location_address?: string;
   html_url: string;

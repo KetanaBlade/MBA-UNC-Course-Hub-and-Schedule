@@ -77,6 +77,10 @@ async function handleProxy(
     });
 
     const data = await response.text();
+    if (apiPath.includes("calendar_events")) {
+      console.log(`[PROXY CALENDAR_EVENTS] status=${response.status} length=${data.length}`);
+      console.log(`[PROXY CALENDAR_EVENTS DATA]: ${data.slice(0, 1000)}`);
+    }
     const responseHeaders = new Headers();
     responseHeaders.set("Content-Type", "application/json");
 

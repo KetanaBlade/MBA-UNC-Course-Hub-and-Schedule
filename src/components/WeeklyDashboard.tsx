@@ -12,7 +12,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { CanvasCourse, WeeklyBundle } from "@/lib/canvas/types";
+import { CanvasCourse, NormalizedDeliverable, WeeklyBundle } from "@/lib/canvas/types";
 import { WeeklyOverviewCard } from "./WeeklyOverviewCard";
 import { ReadingsSection } from "./ReadingsSection";
 import { HomeworkTracker } from "./HomeworkTracker";
@@ -76,6 +76,47 @@ export function WeeklyDashboard({
   // Separate readings into: Left Pane (Course Readings & Cases) and Right Pane (Rescued Files Tab items)
   const leftPaneReadings = allReadings.filter((r) => r.source !== "files_tab");
   const rightPaneFiles = allReadings.filter((r) => r.source === "files_tab");
+
+  // Extract all deliverables across all weeks of active courses to identify Term Projects / Major Milestones
+  const allQuarterDeliverablesMap = new Map<string, NormalizedDeliverable>();
+  selectedCourseIds.forEach((courseId) => {
+    const courseBundles = bundlesByCourse[courseId] || [];
+    courseBundles.forEach((bundle) => {
+      bundle.deliverables.forEach((deliv) => {
+        if (!allQuarterDeliverablesMap.has(deliv.id)) {
+          allQuarterDeliverablesMap.set(deliv.id, deliv);
+        }
+      });
+    });
+  });
+
+  // Term Projects & Major Milestones (e.g. Leadership Development Plan Due Nov 8)
+  const termMilestones = Array.from(allQuarterDeliverablesMap.values()).filter((d) => {
+    // Exclude if already in this week's active deliverables list
+    const isInCurrentWeek = allDeliverables.some((cur) => cur.id === d.id);
+    if (isInCurrentWeek) return false;
+
+    // Check if due in future weeks or later in the term (> 7 days ahead)
+    if (d.dueInDays !== undefined && d.dueInDays <= 7) return false;
+
+    // Milestone heuristics: keywords or high point value
+    const titleLower = d.title.toLowerCase();
+    const isMajorKeyword =
+      titleLower.includes("plan") ||
+      titleLower.includes("project") ||
+      titleLower.includes("paper") ||
+      titleLower.includes("capstone") ||
+      titleLower.includes("final") ||
+      titleLower.includes("midterm") ||
+      titleLower.includes("report") ||
+      titleLower.includes("memo") ||
+      titleLower.includes("leadership development") ||
+      titleLower.includes("term");
+
+    const isHighPoints = d.pointsPossible >= 30;
+
+    return isMajorKeyword || isHighPoints;
+  });
 
   const totalDeliverablesCount = activeBundles.reduce(
     (sum, b) => sum + b.stats.totalDeliverables,
@@ -367,6 +408,7 @@ export function WeeklyDashboard({
 
           <HomeworkTracker
             deliverables={allDeliverables}
+            termMilestones={termMilestones}
             liveSessions={allLiveSessions}
             weekNumber={selectedWeek}
             onToggleComplete={onToggleCompleteItem}

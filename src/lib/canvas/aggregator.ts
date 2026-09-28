@@ -210,6 +210,27 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const weekDeliverables: NormalizedDeliverable[] = [];
 
     assignments.forEach((assignment) => {
+      // Move attendance tracking items to coursework readings instead of homework deliverables
+      const isAttendance = /\battendance\b/i.test(assignment.name);
+      if (isAttendance) {
+        readings.push({
+          id: `assign-att-${assignment.id}`,
+          title: assignment.name,
+          source: "module_item",
+          category: "reading",
+          canvasUrl:
+            assignment.html_url ||
+            `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/courses/${course.id}/assignments/${assignment.id}`,
+          isCompleted:
+            assignment.submission?.workflow_state === "graded" ||
+            assignment.submission?.workflow_state === "submitted" ||
+            completedItemIds.has(`assign-att-${assignment.id}`),
+          courseCode: course.course_code,
+          courseName: course.name,
+        });
+        return;
+      }
+
       const assignWeek =
         assignmentModuleWeekMap.get(assignment.id) ||
         extractWeekNumber(assignment.name);
@@ -252,17 +273,50 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     // 1. Primary Source: Canvas Calendar Events
     if (calendarEvents && calendarEvents.length > 0) {
       calendarEvents.forEach((ev) => {
-        // Match week number by title or description
-        const evWeek = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
+        // Priority 1: Match week number from title or description
+        let evWeek = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
+
+        // Priority 2: Match by date if within week due date span
+        if (!evWeek && ev.start_at) {
+          const evDate = new Date(ev.start_at);
+          if (!isNaN(evDate.getTime())) {
+            const weekDueDates = weekDeliverables
+              .filter((d) => d.dueAt)
+              .map((d) => new Date(d.dueAt!).getTime());
+            if (weekDueDates.length > 0) {
+              const minDue = Math.min(...weekDueDates);
+              const maxDue = Math.max(...weekDueDates);
+              const weekStart = minDue - 7 * 86400000;
+              const weekEnd = maxDue + 86400000;
+              if (evDate.getTime() >= weekStart && evDate.getTime() <= weekEnd) {
+                evWeek = weekNum;
+              }
+            }
+          }
+        }
 
         if (evWeek === weekNum) {
           // Extract Zoom links from location, description, or url
-          const allText = `${ev.location_name || ""} ${ev.location_address || ""} ${ev.description || ""} ${ev.url || ""}`;
+          const allText = `${ev.location_name || ""} ${ev.location_address || ""} ${ev.description || ""} ${ev.url || ""} ${ev.html_url || ""}`;
           const zoomUrls = extractZoomLinks(allText);
           const directZoom = [ev.location_name, ev.location_address, ev.url].find(
             (loc) => loc && /zoom\.us/i.test(loc)
           );
-          const zoomUrl = directZoom || zoomUrls[0];
+          let zoomUrl: string | undefined = directZoom || zoomUrls[0];
+
+          // Fallback Zoom link from course module items or announcements if not directly in calendar event
+          if (!zoomUrl) {
+            modules.forEach((mod) => {
+              mod.items?.forEach((item) => {
+                if (
+                  (item.title.toLowerCase().includes("zoom") || item.title.toLowerCase().includes("synchronous")) &&
+                  (item.external_url?.includes("zoom.us") || item.url?.includes("zoom.us"))
+                ) {
+                  zoomUrl = item.external_url || item.url;
+                }
+              });
+            });
+          }
 
           const sessionKey = `${course.id}-${ev.id}`.toLowerCase();
           if (!addedLiveKeys.has(sessionKey)) {
@@ -275,7 +329,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
               startAt: ev.start_at || new Date().toISOString(),
               endAt: ev.end_at || ev.start_at || new Date().toISOString(),
               zoomUrl,
-              location: ev.location_name || ev.location_address || (zoomUrl ? "Zoom" : undefined),
+              location: ev.location_name || ev.location_address || (zoomUrl ? "Zoom Online Classroom" : undefined),
               canvasUrl:
                 ev.html_url ||
                 `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/calendar?event_id=${ev.id}&include_contexts=course_${course.id}`,

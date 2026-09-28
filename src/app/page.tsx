@@ -6,7 +6,9 @@ import {
   Layers,
 } from "lucide-react";
 import {
+  CanvasCalendarEvent,
   CanvasCourse,
+  CanvasModule,
   DeliverableStatus,
   NormalizedDeliverable,
   NormalizedLiveSession,
@@ -81,6 +83,62 @@ export default function HomePage() {
     setIsLoading(false);
   };
 
+  const filterEventsForCourse = (
+    events: CanvasCalendarEvent[],
+    course: CanvasCourse,
+    modules: CanvasModule[]
+  ): CanvasCalendarEvent[] => {
+    const courseCodeLower = (course.course_code || "").toLowerCase();
+    const courseNameLower = (course.name || "").toLowerCase();
+    const courseNum = course.course_code?.match(/\d{3}/)?.[0];
+    const moduleItemTitles = new Set(
+      modules.flatMap((m) => m.items || []).map((i) => (i.title || "").toLowerCase().trim())
+    );
+
+    return events.filter((ev) => {
+      // 1. Direct course ID or effective context
+      if (ev.course_id && ev.course_id === course.id) return true;
+      if (ev.context_code === `course_${course.id}` || ev.effective_context_code === `course_${course.id}`) {
+        return true;
+      }
+      if (ev.context_code?.includes(String(course.id))) {
+        return true;
+      }
+
+      // 2. Context name match
+      const contextName = (ev.context_name || "").toLowerCase();
+      if (contextName && (contextName.includes(courseCodeLower) || contextName.includes(courseNameLower))) {
+        return true;
+      }
+      if (courseNum && contextName.includes(courseNum)) {
+        return true;
+      }
+
+      // 3. Text in title or description
+      const text = `${ev.title || ""} ${ev.description || ""}`.toLowerCase();
+      if (courseCodeLower && text.includes(courseCodeLower)) return true;
+      if (courseNameLower && text.includes(courseNameLower)) return true;
+      if (courseNum && text.includes(courseNum)) return true;
+
+      // 4. Exact module item title match (e.g. module has "Synchronous Session 1" and calendar event is "Synchronous Session 1")
+      const evTitleClean = (ev.title || "").toLowerCase().trim();
+      if (evTitleClean && moduleItemTitles.has(evTitleClean)) {
+        return true;
+      }
+
+      // 5. If title has "synchronous" or "live session" or "zoom"
+      if (/\b(?:sync|synchronous|live\s*session|zoom)\b/i.test(evTitleClean)) {
+        if (courseNum && text.includes(courseNum)) return true;
+        // If event mentions course keywords
+        if (courseNameLower.split(" ").some((w) => w.length > 4 && text.includes(w))) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+  };
+
   const fetchLiveData = async (authTokens: StudentAuthTokens) => {
     setIsSyncing(true);
     setSyncError(null);
@@ -117,16 +175,7 @@ export default function HomePage() {
                 }
               }
 
-              const courseCalEvents = dcCalendarEvents.filter((ev) => {
-                if (ev.context_code === `course_${course.id}` || ev.context_code?.endsWith(`_${course.id}`)) {
-                  return true;
-                }
-                const text = `${ev.title || ""} ${ev.description || ""}`.toLowerCase();
-                return (
-                  text.includes(course.course_code.toLowerCase()) ||
-                  text.includes(course.name.toLowerCase())
-                );
-              });
+              const courseCalEvents = filterEventsForCourse(dcCalendarEvents, course, modules);
 
               bundlesMap[course.id] = aggregateCourseIntoWeeks({
                 course,
@@ -174,16 +223,7 @@ export default function HomePage() {
                 }
               }
 
-              const courseCalEvents = kfCalendarEvents.filter((ev) => {
-                if (ev.context_code === `course_${course.id}` || ev.context_code?.endsWith(`_${course.id}`)) {
-                  return true;
-                }
-                const text = `${ev.title || ""} ${ev.description || ""}`.toLowerCase();
-                return (
-                  text.includes(course.course_code.toLowerCase()) ||
-                  text.includes(course.name.toLowerCase())
-                );
-              });
+              const courseCalEvents = filterEventsForCourse(kfCalendarEvents, course, modules);
 
               bundlesMap[course.id] = aggregateCourseIntoWeeks({
                 course,
