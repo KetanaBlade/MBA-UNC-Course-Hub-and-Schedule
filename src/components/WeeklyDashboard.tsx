@@ -8,7 +8,7 @@ import {
   Filter,
   GraduationCap,
 } from "lucide-react";
-import { CanvasCourse, WeeklyBundle } from "@/lib/canvas/types";
+import { CanvasCourse, WeeklyBundle, NormalizedReading } from "@/lib/canvas/types";
 import { WeeklyOverviewCard } from "./WeeklyOverviewCard";
 import { ReadingsSection } from "./ReadingsSection";
 import { HomeworkTracker } from "./HomeworkTracker";
@@ -80,15 +80,28 @@ export function WeeklyDashboard({
     0
   );
 
+  const readingsByCourse: Record<string, { courseName: string; readings: typeof allReadings }> = {};
+  activeBundles.forEach((b) => {
+    const code = b.courseCode;
+    if (!readingsByCourse[code]) {
+      readingsByCourse[code] = { courseName: b.courseName, readings: [] };
+    }
+    let bundleReadings = b.readings;
+    if (onlyPending) {
+      bundleReadings = bundleReadings.filter((r) => !r.isCompleted);
+    }
+    readingsByCourse[code].readings.push(...bundleReadings);
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Anchored Filter & Control Toolbar (Recipe 5.3) */}
       <div className="bg-muted/20 border border-border/70 rounded-md p-3 sm:p-3.5 flex flex-wrap items-center justify-between gap-3">
         {/* Segmented Course Controls */}
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={() => onSelectCourse(null)}
-            className={`px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer ${
+            className={`font-sans px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer ${
               selectedCourseId === null
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -103,7 +116,7 @@ export function WeeklyDashboard({
               <button
                 key={course.id}
                 onClick={() => onSelectCourse(course.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer ${
+                className={`font-sans inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer ${
                   isSelected
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -128,7 +141,7 @@ export function WeeklyDashboard({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setOnlyPending(!onlyPending)}
-            className={`h-8 px-2.5 rounded-md border border-border text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 ${
+            className={`font-sans h-8 px-2.5 rounded-md border border-border text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 ${
               onlyPending
                 ? "bg-primary/10 border-primary/40 text-primary"
                 : "bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -149,13 +162,14 @@ export function WeeklyDashboard({
               <button
                 key={w}
                 onClick={() => onSelectWeek(w)}
-                className={`h-10 min-w-[70px] px-3.5 rounded-md text-xs font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center ${
+                aria-label={`Select Week ${w}`}
+                className={`h-9 min-w-[56px] px-2.5 rounded-md text-xs font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center ${
                   isCurrentWeek
                     ? "bg-primary text-primary-foreground shadow-xs ring-2 ring-primary/40"
                     : "border border-border/70 bg-card hover:bg-muted/40 text-foreground"
                 }`}
               >
-                <span className="font-mono text-[9px] uppercase tracking-wider opacity-75">
+                <span className="font-mono text-[8px] uppercase tracking-wider opacity-75">
                   WEEK
                 </span>
                 <span className="text-sm font-bold tabular-nums font-mono leading-none">
@@ -168,9 +182,9 @@ export function WeeklyDashboard({
       </div>
 
       {/* De-Boxified Quick Metric Deck (Recipe 5.3 Style Anchored Panel) */}
-      <div className="bg-muted/20 border border-border/70 rounded-md p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="bg-card border border-border/70 rounded-lg shadow-xs p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="space-y-0.5">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Deliverables</span>
             <GraduationCap className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
@@ -181,7 +195,7 @@ export function WeeklyDashboard({
         </div>
 
         <div className="space-y-0.5 sm:border-l sm:border-border/50 sm:pl-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Readings & Cases</span>
             <FileText className="w-3.5 h-3.5 text-primary" />
           </div>
@@ -192,7 +206,7 @@ export function WeeklyDashboard({
         </div>
 
         <div className="space-y-0.5 border-t border-border/50 pt-2 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Live Zoom</span>
             <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           </div>
@@ -203,7 +217,7 @@ export function WeeklyDashboard({
         </div>
 
         <div className="space-y-0.5 border-t border-border/50 pt-2 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Completion Rate</span>
             <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           </div>
@@ -230,6 +244,7 @@ export function WeeklyDashboard({
 
         <ReadingsSection
           readings={allReadings}
+          readingsByCourse={readingsByCourse}
           weekNumber={selectedWeek}
           onToggleComplete={onToggleCompleteReading}
         />

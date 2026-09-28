@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   AlertTriangle,
   Calendar,
@@ -8,6 +8,7 @@ import {
   Clock,
   ExternalLink,
   GraduationCap,
+  ChevronDown,
 } from "lucide-react";
 import { DeliverableStatus, NormalizedDeliverable } from "@/lib/canvas/types";
 
@@ -17,6 +18,8 @@ interface HomeworkTrackerProps {
 }
 
 export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerProps) {
+  const [showAll, setShowAll] = useState(false);
+
   const getStatusBadge = (status: DeliverableStatus, score?: number | null, grade?: string | null) => {
     switch (status) {
       case "graded":
@@ -96,6 +99,8 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
     );
   }
 
+  const visibleDeliverables = showAll ? deliverables : deliverables.slice(0, 4);
+
   return (
     <div className="border border-border/70 rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
       {/* Card Header (Recipe 5.2) */}
@@ -118,38 +123,40 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
 
       {/* De-boxified List Rows */}
       <div className="divide-y divide-border/40">
-        {deliverables.map((deliv) => {
+        {visibleDeliverables.map((deliv) => {
           return (
             <div
               key={deliv.id}
-              className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:bg-muted/15"
+              className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-3 transition hover:bg-muted/10"
             >
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
+              <div className="flex-1 min-w-0 space-y-1.5">
+                {/* Line 1: Course code + Status badge */}
+                <div className="flex items-center gap-2">
                   <span className="font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
                     {deliv.courseCode}
                   </span>
-                  <h3 className="text-sm font-bold text-foreground leading-snug font-sans">
-                    {deliv.title}
-                  </h3>
                   {getStatusBadge(deliv.status, deliv.score, deliv.grade)}
                 </div>
-
+                {/* Line 2: Title - prominent, scannable */}
+                <h3 className="text-sm font-bold text-foreground leading-snug tracking-tight">
+                  {deliv.title}
+                </h3>
+                {/* Line 3: Due date + Points metadata */}
                 <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1 font-mono text-[11px]">
-                    <Calendar className="w-3.5 h-3.5 opacity-70" />
+                    <Calendar className="w-3 h-3 opacity-60" />
                     {formatDueText(deliv)}
                   </span>
                   {deliv.pointsPossible > 0 && (
-                    <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/80">
-                      • {deliv.pointsPossible} PTS
+                    <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/70">
+                      • {deliv.pointsPossible} pts
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Action Button (Recipe 5.5) */}
-              <div className="shrink-0 self-end sm:self-center">
+              {/* Action Button */}
+              <div className="shrink-0 self-end sm:self-start sm:mt-1">
                 <a
                   href={deliv.canvasUrl}
                   target="_blank"
@@ -172,6 +179,18 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
           );
         })}
       </div>
+      
+      {deliverables.length > 4 && !showAll && (
+        <div className="p-3 border-t border-border/40 bg-muted/5 flex justify-center">
+          <button
+            onClick={() => setShowAll(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/20"
+          >
+            Show all {deliverables.length} deliverables
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

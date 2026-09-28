@@ -132,6 +132,8 @@ export interface NormalizedReading {
   fileSizeFormatted?: string;
   folderPath?: string;
   isCompleted: boolean;
+  courseCode?: string;
+  courseName?: string;
 }
 
 export type DeliverableStatus =

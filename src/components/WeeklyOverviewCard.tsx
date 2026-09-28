@@ -56,10 +56,10 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
         {announcements.map((ann) => {
           const isExpanded = expandedId === ann.id;
           return (
-            <div key={ann.id} className="p-4 sm:p-5 transition hover:bg-muted/15">
+            <div key={ann.id} className="p-4 sm:p-5 transition-colors hover:bg-muted/10">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-foreground leading-snug font-sans">
+                  <h3 className="text-sm font-bold text-foreground leading-snug tracking-tight">
                     {ann.title}
                   </h3>
                   <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
@@ -116,7 +116,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                   >
                     <div className="mt-3 pt-3 border-t border-border/40">
                       <div
-                        className="text-xs text-foreground/90 leading-relaxed font-sans [&_a]:text-primary [&_a]:underline space-y-2"
+                        className="text-[13px] text-foreground/90 leading-relaxed font-sans [&_a]:text-primary [&_a]:underline space-y-2"
                         dangerouslySetInnerHTML={{ __html: ann.message }}
                       />
                       <div className="mt-3 flex justify-end">

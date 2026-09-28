@@ -29,14 +29,14 @@
     
     --secondary: 44 30% 90%;
     --secondary-foreground: 24 10% 25%;
-    --muted: 44 20% 92%;
-    --muted-foreground: 24 10% 45%;
+    --muted: 44 20% 90%;        /* Slightly darker for visible tinted areas */
+    --muted-foreground: 24 10% 40%;  /* Slightly darker for better readability */
     --accent: 44 30% 90%;
     --accent-foreground: 24 10% 15%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 44 20% 86%;
-    --input: 44 20% 86%;
+    --border: 44 20% 82%;       /* Darker for stronger card edge visibility */
+    --input: 44 20% 82%;
     --ring: 15 85% 45%;
     --radius: 0.5rem;
   }

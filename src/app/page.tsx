@@ -297,7 +297,7 @@ export default function HomePage() {
       />
 
       {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 space-y-6">
+      <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8 space-y-8">
         {/* Page Header & Hero (Recipe 5.1) */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border/40">
           <div className="space-y-1">

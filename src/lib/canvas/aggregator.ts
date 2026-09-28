@@ -128,6 +128,8 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             canvasUrl: itemUrl,
             fileUrl: item.external_url || item.url,
             isCompleted: completedItemIds.has(id),
+            courseCode: course.course_code,
+            courseName: course.name,
           });
         }
       });
@@ -153,6 +155,8 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
               fileSizeFormatted: formatFileSize(file.size),
               folderPath: f.full_name || f.name,
               isCompleted: completedItemIds.has(id),
+              courseCode: course.course_code,
+              courseName: course.name,
             });
             addedUrls.add(file.display_name.toLowerCase());
           }
@@ -317,6 +321,8 @@ export function getMockMBACoursesData(): {
             folderPath: `Files / Week ${weekNum} / Pre-readings`,
             canvasUrl: `https://digitalcampus.instructure.com/courses/701/files`,
             isCompleted: isPast,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
           {
             id: `mock-read-701-${weekNum}-2`,
@@ -325,6 +331,8 @@ export function getMockMBACoursesData(): {
             category: "reading",
             canvasUrl: `https://digitalcampus.instructure.com/courses/701/modules`,
             isCompleted: isPast || isCurrent,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
           {
             id: `mock-read-701-${weekNum}-3`,
@@ -336,6 +344,8 @@ export function getMockMBACoursesData(): {
             folderPath: `Files / Week ${weekNum}`,
             canvasUrl: `https://digitalcampus.instructure.com/courses/701/files`,
             isCompleted: false,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
         ];
 
@@ -371,6 +381,8 @@ export function getMockMBACoursesData(): {
             folderPath: `Files / Case Studies / Week ${weekNum}`,
             canvasUrl: `https://kenan-flagler.instructure.com/courses/703/files`,
             isCompleted: isPast,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
           {
             id: `mock-read-703-${weekNum}-2`,
@@ -381,6 +393,8 @@ export function getMockMBACoursesData(): {
             fileSizeFormatted: "14.5 MB",
             canvasUrl: `https://kenan-flagler.instructure.com/courses/703/modules`,
             isCompleted: isPast || isCurrent,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
         ];
 
@@ -414,6 +428,8 @@ export function getMockMBACoursesData(): {
             category: "reading",
             canvasUrl: `https://kenan-flagler.instructure.com/courses/710/modules`,
             isCompleted: isPast || isCurrent,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
         ];
         deliverables = [
