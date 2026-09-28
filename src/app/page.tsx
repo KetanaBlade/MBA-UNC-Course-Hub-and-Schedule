@@ -49,6 +49,7 @@ export default function HomePage() {
     const cachedCourses = AppStorage.getCachedCourses();
     const cachedBundles = AppStorage.getCachedBundles();
     const savedWeek = AppStorage.getSelectedWeek();
+    const savedCourseIds = AppStorage.getSelectedCourseIds();
 
     setTokens(savedTokens);
     setIsDemoMode(demo);
@@ -60,7 +61,12 @@ export default function HomePage() {
       if (cachedCourses && cachedBundles) {
         setCourses(cachedCourses);
         setBundlesByCourse(cachedBundles);
-        setSelectedCourseIds(cachedCourses.map((c) => c.id));
+        if (savedCourseIds && Array.isArray(savedCourseIds) && savedCourseIds.length > 0) {
+          const validIds = savedCourseIds.filter((id) => cachedCourses.some((c) => c.id === id));
+          setSelectedCourseIds(validIds.length > 0 ? validIds : cachedCourses.map((c) => c.id));
+        } else {
+          setSelectedCourseIds(cachedCourses.map((c) => c.id));
+        }
         setIsLoading(false);
         // Re-sync with Canvas in the background to ensure calendar events are correlated
         fetchLiveData(savedTokens);
@@ -79,7 +85,13 @@ export default function HomePage() {
     const { courses: mockCourses, weeklyBundles: mockBundles } = getMockMBACoursesData();
     setCourses(mockCourses);
     setBundlesByCourse(mockBundles);
-    setSelectedCourseIds(mockCourses.map((c) => c.id));
+    const savedCourseIds = AppStorage.getSelectedCourseIds();
+    if (savedCourseIds && Array.isArray(savedCourseIds) && savedCourseIds.length > 0) {
+      const validIds = savedCourseIds.filter((id) => mockCourses.some((c) => c.id === id));
+      setSelectedCourseIds(validIds.length > 0 ? validIds : mockCourses.map((c) => c.id));
+    } else {
+      setSelectedCourseIds(mockCourses.map((c) => c.id));
+    }
     setIsLoading(false);
   };
 
@@ -277,6 +289,15 @@ export default function HomePage() {
         setBundlesByCourse(bundlesMap);
         AppStorage.saveCachedCourses(loadedCourses);
         AppStorage.saveCachedBundles(bundlesMap);
+
+        setSelectedCourseIds((prev) => {
+          const savedIds = AppStorage.getSelectedCourseIds();
+          const sourceIds = prev.length > 0 ? prev : (savedIds || []);
+          const valid = sourceIds.filter((id) => loadedCourses.some((c) => c.id === id));
+          const finalIds = valid.length > 0 ? valid : loadedCourses.map((c) => c.id);
+          AppStorage.setSelectedCourseIds(finalIds);
+          return finalIds;
+        });
       } else {
         loadMockData();
       }
@@ -488,15 +509,20 @@ export default function HomePage() {
             selectedCourseIds={selectedCourseIds}
             selectedWeek={selectedWeek}
             onToggleCourse={(id) => {
-              setSelectedCourseIds((prev) =>
-                prev.includes(id) ? prev.filter((cId) => cId !== id) : [...prev, id]
-              );
+              setSelectedCourseIds((prev) => {
+                const updated = prev.includes(id) ? prev.filter((cId) => cId !== id) : [...prev, id];
+                AppStorage.setSelectedCourseIds(updated);
+                return updated;
+              });
             }}
             onSelectAllCourses={() => {
-              setSelectedCourseIds(courses.map((c) => c.id));
+              const allIds = courses.map((c) => c.id);
+              setSelectedCourseIds(allIds);
+              AppStorage.setSelectedCourseIds(allIds);
             }}
             onClearAllCourses={() => {
               setSelectedCourseIds([]);
+              AppStorage.setSelectedCourseIds([]);
             }}
             onSelectWeek={(w) => {
               setSelectedWeek(w);

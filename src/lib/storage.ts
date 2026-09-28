@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   CACHED_COURSES: "unc_mba_cached_courses",
   CACHED_BUNDLES: "unc_mba_cached_bundles",
   SELECTED_COURSE_ID: "unc_mba_selected_course",
+  SELECTED_COURSE_IDS: "unc_mba_selected_courses",
   SELECTED_WEEK: "unc_mba_selected_week",
   IS_DEMO_MODE: "unc_mba_demo_mode",
   THEME: "unc_mba_theme",
@@ -111,6 +112,21 @@ export class AppStorage {
   static setSelectedCourseId(courseId: number): void {
     if (typeof window === "undefined") return;
     localStorage.setItem(STORAGE_KEYS.SELECTED_COURSE_ID, courseId.toString());
+  }
+
+  static getSelectedCourseIds(): number[] | null {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.SELECTED_COURSE_IDS);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  static setSelectedCourseIds(courseIds: number[]): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.SELECTED_COURSE_IDS, JSON.stringify(courseIds));
   }
 
   static getSelectedWeek(): number {
