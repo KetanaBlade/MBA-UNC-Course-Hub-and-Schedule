@@ -43,7 +43,7 @@ export function WeeklyDashboard({
   onToggleCompleteReading,
 }: WeeklyDashboardProps) {
   const [onlyPending, setOnlyPending] = useState(false);
-  const [mobileTab, setMobileTab] = useState<"readings" | "sidebar">("readings");
+  const [mobileTab, setMobileTab] = useState<"readings" | "files" | "actions">("readings");
 
   // Fixed standard 5-week Kenan-Flagler quarter term
   const weekNumbers = [1, 2, 3, 4, 5];
@@ -67,7 +67,7 @@ export function WeeklyDashboard({
     );
   }
 
-  // Separate readings into: Left Pane (Course Readings & Cases) and Right Pane (Rescued Files Tab items)
+  // Separate readings into: Column 1 (Course Readings & Cases) and Column 2 (Rescued Files Tab items)
   const leftPaneReadings = allReadings.filter((r) => r.source !== "files_tab");
   const rightPaneFiles = allReadings.filter((r) => r.source === "files_tab");
 
@@ -256,8 +256,8 @@ export function WeeklyDashboard({
         </div>
       </div>
 
-      {/* 3. MOBILE VIEWPORT TAB SWITCHER (lg:hidden) */}
-      <div className="lg:hidden flex items-center bg-card border border-border p-1 rounded-lg">
+      {/* 3. MOBILE VIEWPORT TAB SWITCHER (xl:hidden) */}
+      <div className="xl:hidden flex items-center bg-card border border-border p-1 rounded-lg">
         <button
           onClick={() => setMobileTab("readings")}
           className={`flex-1 py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
@@ -271,24 +271,36 @@ export function WeeklyDashboard({
         </button>
 
         <button
-          onClick={() => setMobileTab("sidebar")}
+          onClick={() => setMobileTab("files")}
           className={`flex-1 py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
-            mobileTab === "sidebar"
+            mobileTab === "files"
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span>Files ({rightPaneFiles.length})</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab("actions")}
+          className={`flex-1 py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
+            mobileTab === "actions"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <GraduationCap className="w-4 h-4" />
-          <span>Briefings & Tasks ({allDeliverables.length})</span>
+          <span>Tasks & Zoom ({allDeliverables.length})</span>
         </button>
       </div>
 
-      {/* 4. TWO-PANE EXECUTIVE DASHBOARD LAYOUT */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT PANE: Readings & Cases (lg:col-span-7) */}
+      {/* 4. THREE-COLUMN PANORAMIC DASHBOARD LAYOUT */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 items-start">
+        {/* COLUMN 1: Course Readings & Cases Checklist (xl:col-span-5) */}
         <div
-          className={`lg:col-span-7 ${
-            mobileTab === "sidebar" ? "hidden lg:block" : "block"
+          className={`xl:col-span-5 md:col-span-1 ${
+            mobileTab === "readings" ? "block" : "hidden xl:block"
           }`}
         >
           <ReadingsSection
@@ -298,27 +310,33 @@ export function WeeklyDashboard({
           />
         </div>
 
-        {/* RIGHT PANE: Stacked Briefings, Homework, and Course Files (lg:col-span-5) */}
+        {/* COLUMN 2: Rescued Course Files & Models (xl:col-span-4 - NO LONGER BURIED!) */}
         <div
-          className={`lg:col-span-5 space-y-6 ${
-            mobileTab === "readings" ? "hidden lg:block" : "block"
+          className={`xl:col-span-4 md:col-span-1 ${
+            mobileTab === "files" ? "block" : "hidden xl:block"
           }`}
         >
-          {/* Stack 1: Briefings & Zoom notes */}
+          <CourseFilesCard
+            files={rightPaneFiles}
+            weekNumber={selectedWeek}
+          />
+        </div>
+
+        {/* COLUMN 3: Action Center: Zoom Briefings + Homework (xl:col-span-3) */}
+        <div
+          className={`xl:col-span-3 md:col-span-2 space-y-6 ${
+            mobileTab === "actions" ? "block" : "hidden xl:block"
+          }`}
+        >
+          {/* Briefings & Zoom notes */}
           <WeeklyOverviewCard
             announcements={allAnnouncements}
             weekNumber={selectedWeek}
           />
 
-          {/* Stack 2: Homework & Deliverables */}
+          {/* Homework & Deliverables */}
           <HomeworkTracker
             deliverables={allDeliverables}
-            weekNumber={selectedWeek}
-          />
-
-          {/* Stack 3: Rescued Course Files Tab items */}
-          <CourseFilesCard
-            files={rightPaneFiles}
             weekNumber={selectedWeek}
           />
         </div>

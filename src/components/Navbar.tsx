@@ -35,8 +35,8 @@ export function Navbar({
   const hasKenanFlagler = Boolean(tokens.kenanFlaglerToken);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-card/90 backdrop-blur-md text-foreground transition-colors">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-card/95 backdrop-blur-md text-foreground transition-colors shadow-2xs">
+      <div className="mx-auto flex max-w-[1650px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand & Program Title */}
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary font-bold text-primary-foreground shadow-xs text-sm font-sans tracking-tight">

@@ -296,16 +296,11 @@ export default function HomePage() {
         isSyncing={isSyncing}
       />
 
-      {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8 space-y-8">
-        {/* Page Header & Hero (Recipe 5.1) */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border/40">
+      {/* Main Container with generous horizontal space */}
+      <main className="mx-auto max-w-[1650px] px-4 pt-6 sm:px-6 lg:px-8 space-y-6">
+        {/* Page Header & Hero */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border/60">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-primary font-mono text-[10px] font-bold px-2 py-0.5 rounded-sm bg-primary/10 border border-primary/20 uppercase tracking-wider">
-                Active Cohort Term
-              </span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight font-sans">
               Course Hub & Master Schedule
             </h1>
@@ -314,30 +309,30 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Segmented Control Tabs (Recipe 5.3) */}
+          {/* Segmented Control Tabs */}
           <div className="flex items-center gap-2.5 self-start md:self-auto">
-            <div className="flex items-center bg-muted/40 p-0.5 rounded-md border border-border/50">
+            <div className="flex items-center bg-card p-1 rounded-md border border-border shadow-2xs">
               <button
                 onClick={() => setActiveTab("weekly")}
-                className={`px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === "weekly"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Layers className="w-3.5 h-3.5" />
+                <Layers className="w-4 h-4" />
                 <span>Weekly Hub</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("calendar")}
-                className={`px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === "calendar"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <CalendarIcon className="w-3.5 h-3.5" />
+                <CalendarIcon className="w-4 h-4" />
                 <span>Master Calendar</span>
               </button>
             </div>
