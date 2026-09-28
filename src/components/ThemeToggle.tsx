@@ -19,29 +19,54 @@ export function ThemeToggle() {
     }
   }, []);
 
-  const handleToggle = () => {
-    const next = AppStorage.toggleTheme();
-    setTheme(next);
+  const handleSetTheme = (newTheme: "light" | "dark") => {
+    AppStorage.setTheme(newTheme);
+    setTheme(newTheme);
   };
 
   if (!mounted) {
     return (
-      <div className="h-9 w-9 rounded-md bg-muted/40 border border-border" aria-hidden="true" />
+      <div className="h-9 w-36 rounded-md bg-card border border-border" aria-hidden="true" />
     );
   }
 
   return (
-    <button
-      onClick={handleToggle}
-      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-      className="h-9 w-9 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center"
+    <div
+      role="radiogroup"
+      aria-label="Theme switcher"
+      className="inline-flex items-center bg-card border border-border rounded-md p-1 shadow-2xs"
     >
-      {theme === "dark" ? (
-        <Sun className="w-3.5 h-3.5 text-primary transition-transform hover:rotate-45" />
-      ) : (
-        <Moon className="w-3.5 h-3.5 text-primary transition-transform hover:-rotate-12" />
-      )}
-    </button>
+      {/* Light Option */}
+      <button
+        type="button"
+        role="radio"
+        aria-checked={theme === "light"}
+        onClick={() => handleSetTheme("light")}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs sm:text-sm font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer ${
+          theme === "light"
+            ? "bg-primary text-primary-foreground shadow-xs"
+            : "text-muted-foreground hover:text-foreground bg-transparent font-medium"
+        }`}
+      >
+        <Sun className={`w-3.5 h-3.5 ${theme === "light" ? "text-primary-foreground" : "text-muted-foreground"}`} />
+        <span>Light</span>
+      </button>
+
+      {/* Dark Option */}
+      <button
+        type="button"
+        role="radio"
+        aria-checked={theme === "dark"}
+        onClick={() => handleSetTheme("dark")}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs sm:text-sm font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer ${
+          theme === "dark"
+            ? "bg-primary text-primary-foreground shadow-xs"
+            : "text-muted-foreground hover:text-foreground bg-transparent font-medium"
+        }`}
+      >
+        <Moon className={`w-3.5 h-3.5 ${theme === "dark" ? "text-primary-foreground" : "text-muted-foreground"}`} />
+        <span>Dark</span>
+      </button>
+    </div>
   );
 }
