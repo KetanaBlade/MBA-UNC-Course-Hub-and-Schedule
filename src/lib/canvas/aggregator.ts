@@ -141,7 +141,26 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const targetModule = modules.find((m) => extractWeekNumber(m.name) === weekNum);
     if (targetModule && targetModule.items) {
       targetModule.items.forEach((item) => {
-        if (item.type === "File" || item.type === "Page" || item.type === "ExternalUrl") {
+        const titleLower = item.title.toLowerCase();
+        const isSyncSession =
+          titleLower.includes("synchronous") ||
+          titleLower.includes("live session") ||
+          titleLower.includes("live class") ||
+          titleLower.includes("zoom meeting") ||
+          titleLower.includes("virtual class") ||
+          Boolean(item.external_url?.includes("zoom.us"));
+
+        if (isSyncSession) {
+          // Handled in liveSessions section
+          return;
+        }
+
+        if (
+          item.type === "File" ||
+          item.type === "Page" ||
+          item.type === "ExternalUrl" ||
+          item.type === "ExternalTool"
+        ) {
           const itemUrl = item.html_url || item.url || "";
           addedUrls.add(item.title.toLowerCase());
           const id = `mod-item-${item.id}`;
@@ -230,20 +249,70 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
       }
     });
 
-    // --- E. Live Zoom Sessions ---
+    // --- E. Live Synchronous & Zoom Sessions ---
     const liveSessions: NormalizedLiveSession[] = [];
+    const addedLiveKeys = new Set<string>();
+
+    // 1. From Course Modules (e.g. "Synchronous Session 1" in Week 1 module)
+    modules.forEach((mod) => {
+      const modWeek = extractWeekNumber(mod.name);
+      if (mod.items) {
+        mod.items.forEach((item) => {
+          const itemWeek = extractWeekNumber(item.title) || modWeek;
+          const titleLower = item.title.toLowerCase();
+          const isSyncSession =
+            titleLower.includes("synchronous") ||
+            titleLower.includes("live session") ||
+            titleLower.includes("live class") ||
+            titleLower.includes("zoom meeting") ||
+            titleLower.includes("virtual class") ||
+            Boolean(item.external_url?.includes("zoom.us"));
+
+          if (isSyncSession && (itemWeek === weekNum || modWeek === weekNum)) {
+            const zoomUrl =
+              item.external_url ||
+              (item.url?.includes("zoom.us") ? item.url : undefined) ||
+              (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
+
+            const sessionKey = `${course.id}-${item.title}`.toLowerCase();
+            if (!addedLiveKeys.has(sessionKey)) {
+              addedLiveKeys.add(sessionKey);
+              liveSessions.push({
+                id: `live-mod-${item.id}`,
+                title: item.title,
+                courseName: course.name,
+                courseCode: course.course_code,
+                startAt: new Date().toISOString(),
+                endAt: new Date().toISOString(),
+                zoomUrl,
+                canvasUrl:
+                  item.html_url ||
+                  item.url ||
+                  `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/courses/${course.id}/modules/items/${item.id}`,
+              });
+            }
+          }
+        });
+      }
+    });
+
+    // 2. From Announcements containing Zoom links
     weekAnnouncements.forEach((an) => {
       if (an.zoomUrl) {
-        liveSessions.push({
-          id: `live-${an.id}`,
-          title: `Week ${weekNum} Live Class`,
-          courseName: course.name,
-          courseCode: course.course_code,
-          startAt: an.postedAt,
-          endAt: an.postedAt,
-          zoomUrl: an.zoomUrl,
-          canvasUrl: an.canvasUrl,
-        });
+        const sessionKey = `${course.id}-${an.title}`.toLowerCase();
+        if (!addedLiveKeys.has(sessionKey)) {
+          addedLiveKeys.add(sessionKey);
+          liveSessions.push({
+            id: `live-${an.id}`,
+            title: an.title.includes("Live") ? an.title : `Week ${weekNum} Live Class`,
+            courseName: course.name,
+            courseCode: course.course_code,
+            startAt: an.postedAt,
+            endAt: an.postedAt,
+            zoomUrl: an.zoomUrl,
+            canvasUrl: an.canvasUrl,
+          });
+        }
       }
     });
 

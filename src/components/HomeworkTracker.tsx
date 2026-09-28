@@ -8,18 +8,21 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Video,
 } from "lucide-react";
-import { DeliverableStatus, NormalizedDeliverable } from "@/lib/canvas/types";
+import { DeliverableStatus, NormalizedDeliverable, NormalizedLiveSession } from "@/lib/canvas/types";
 import { getCourseColor, getCleanCourseName } from "@/lib/courseColors";
 
 interface HomeworkTrackerProps {
   deliverables: NormalizedDeliverable[];
+  liveSessions?: NormalizedLiveSession[];
   weekNumber: number;
   onToggleComplete: (id: string) => void;
 }
 
 export function HomeworkTracker({
   deliverables,
+  liveSessions = [],
   weekNumber,
   onToggleComplete,
 }: HomeworkTrackerProps) {
@@ -101,10 +104,12 @@ export function HomeworkTracker({
     return `Due: ${dateStr}`;
   };
 
-  if (deliverables.length === 0) {
+  const totalCount = deliverables.length + liveSessions.length;
+
+  if (totalCount === 0) {
     return (
       <div className="border border-border rounded-lg bg-card p-5 text-center text-xs sm:text-sm text-muted-foreground shadow-xs">
-        No homework deliverables assigned for Week {weekNumber}.
+        No assignments or live sessions scheduled for Week {weekNumber}.
       </div>
     );
   }
@@ -116,18 +121,77 @@ export function HomeworkTracker({
       {/* Clean Full-Width Header */}
       <div className="p-4 sm:p-5 border-b border-border bg-card">
         <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
-          Week {weekNumber} Homework{" "}
+          Week {weekNumber} Assignments and Live Sessions{" "}
           <span className="text-primary font-mono text-base font-bold">
-            ({deliverables.length})
+            ({totalCount})
           </span>
         </h2>
         <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
-          Graded assignments, case memos, and quizzes
+          Graded assignments, case memos, and synchronous Zoom sessions
         </p>
       </div>
 
-      {/* Scannable Deliverables List with Checkboxes */}
+      {/* Scannable Deliverables & Live Sessions List */}
       <div className="divide-y divide-border/60">
+        {/* Live Synchronous Sessions */}
+        {liveSessions.map((session) => {
+          const courseColor = getCourseColor(session.courseCode);
+          return (
+            <div
+              key={session.id}
+              className="p-4 flex items-start gap-3 transition-colors hover:bg-purple-500/10 bg-purple-500/5"
+            >
+              {/* Visual Indicator Icon */}
+              <div className="mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm bg-purple-500/20 text-purple-700 dark:text-purple-300">
+                <Video className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+
+              <div className="space-y-1.5 flex-1 min-w-0">
+                {/* Line 1: Live Status Badge + Schedule */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-purple-700 dark:text-purple-300">
+                    <Clock className="w-3.5 h-3.5 opacity-70" />
+                    LIVE ZOOM SESSION
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    • Week {weekNumber} Synchronous Class
+                  </span>
+                </div>
+
+                {/* Line 2: Title */}
+                <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug tracking-tight">
+                  {session.title}
+                </h3>
+
+                {/* Line 3: Course Tag (Below Title) */}
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span
+                    className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                  >
+                    {getCleanCourseName(session.courseCode, session.courseName)}
+                  </span>
+                  <span className="font-mono text-xs font-semibold text-purple-700 dark:text-purple-300">
+                    • Real-time Attendance Required
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="pt-0.5 shrink-0 self-center">
+                <a
+                  href={session.zoomUrl || session.canvasUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="h-7 px-2.5 rounded border border-purple-500/40 bg-purple-500/15 hover:bg-purple-500/25 text-purple-900 dark:text-purple-200 text-xs font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                  title="Join live Zoom session"
+                >
+                  <span>Join Zoom</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                </a>
+              </div>
+            </div>
+          );
+        })}
         {visibleDeliverables.map((deliv) => {
           const courseColor = getCourseColor(deliv.courseCode);
           const isFinished =

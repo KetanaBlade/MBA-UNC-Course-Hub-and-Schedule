@@ -64,6 +64,7 @@ export function WeeklyDashboard({
   const allAnnouncements = activeBundles.flatMap((b) => b.announcements);
   let allReadings = activeBundles.flatMap((b) => b.readings);
   let allDeliverables = activeBundles.flatMap((b) => b.deliverables);
+  const allLiveSessions = activeBundles.flatMap((b) => b.liveSessions);
 
   if (onlyPending) {
     allReadings = allReadings.filter((r) => !r.isCompleted);
@@ -366,6 +367,7 @@ export function WeeklyDashboard({
 
           <HomeworkTracker
             deliverables={allDeliverables}
+            liveSessions={allLiveSessions}
             weekNumber={selectedWeek}
             onToggleComplete={onToggleCompleteItem}
           />
