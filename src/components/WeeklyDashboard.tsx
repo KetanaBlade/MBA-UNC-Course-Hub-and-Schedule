@@ -85,7 +85,7 @@ export function WeeklyDashboard({
 
   return (
     <div className="space-y-5">
-      {/* Anchored Filter Toolbar Deck (DESIGN_SYSTEM.md Section 5 & 8) */}
+      {/* Anchored Filter Toolbar Deck */}
       <div className="inner-strip p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Segmented Course Controls */}
         <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
@@ -93,8 +93,8 @@ export function WeeklyDashboard({
             onClick={() => onSelectCourse(null)}
             className={`btn-tactile rounded-md px-3 py-1.5 text-xs font-bold transition ${
               selectedCourseId === null
-                ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
-                : "bg-white/80 dark:bg-card text-foreground/80 hover:bg-white dark:hover:bg-muted/40 border border-border/80"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "bg-card hover:bg-muted text-foreground border border-border"
             }`}
           >
             All MBA Courses
@@ -108,15 +108,15 @@ export function WeeklyDashboard({
                 onClick={() => onSelectCourse(course.id)}
                 className={`btn-tactile inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition ${
                   isSelected
-                    ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-2xs"
-                    : "bg-white/80 dark:bg-card text-foreground/80 hover:bg-white dark:hover:bg-muted/40 border border-border/80"
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "bg-card hover:bg-muted text-foreground border border-border"
                 }`}
               >
                 <span>{course.course_code || course.name}</span>
                 <span
                   className={`micro-tag ${
                     isSelected
-                      ? "bg-white/20 text-white dark:bg-[#13294B]/20 dark:text-[#13294B]"
+                      ? "bg-primary-foreground/20 text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -134,7 +134,7 @@ export function WeeklyDashboard({
             className={`btn-tactile inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold border transition ${
               onlyPending
                 ? "border-amber-400 bg-amber-500/10 text-amber-900 dark:text-amber-300"
-                : "border-border/80 bg-white/80 dark:bg-card text-muted-foreground hover:text-foreground"
+                : "border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
             <Filter className="h-3 w-3" />
@@ -143,7 +143,7 @@ export function WeeklyDashboard({
         </div>
       </div>
 
-      {/* Week Scrubber (Sticky Control Rail with Tier 5 tags) */}
+      {/* Week Scrubber (Sticky Control Rail) */}
       <div className="overflow-x-auto no-scrollbar pb-1">
         <div className="flex items-center gap-1.5 min-w-max">
           {weekNumbers.map((w) => {
@@ -154,8 +154,8 @@ export function WeeklyDashboard({
                 onClick={() => onSelectWeek(w)}
                 className={`btn-tactile group flex min-h-[44px] min-w-[62px] flex-col items-center justify-center rounded-md px-3 py-1.5 transition ${
                   isCurrentWeek
-                    ? "bg-[#13294B] dark:bg-[#4B9CD3] text-white dark:text-[#13294B] shadow-xs font-bold ring-2 ring-[#4B9CD3]/50"
-                    : "bg-card text-foreground/80 border border-border/80 hover:border-border hover:bg-white dark:hover:bg-muted/40"
+                    ? "bg-primary text-primary-foreground shadow-xs font-bold ring-2 ring-[#4B9CD3]/50"
+                    : "bg-card hover:bg-muted text-foreground border border-border hover:border-foreground/30"
                 }`}
               >
                 <span className="micro-tag text-[9px] opacity-75">
@@ -181,7 +181,7 @@ export function WeeklyDashboard({
           <span className="text-[10px] text-muted-foreground">submitted for W{selectedWeek}</span>
         </div>
 
-        <div className="p-2 sm:p-2.5 border-l border-border/60">
+        <div className="p-2 sm:p-2.5 border-l border-border">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-medium">Readings & Cases</span>
             <FileText className="h-3.5 w-3.5 text-[#4B9CD3]" />
@@ -192,7 +192,7 @@ export function WeeklyDashboard({
           <span className="text-[10px] text-muted-foreground">completed</span>
         </div>
 
-        <div className="p-2 sm:p-2.5 border-l border-border/60">
+        <div className="p-2 sm:p-2.5 border-l border-border">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-medium">Live Zoom</span>
             <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -203,7 +203,7 @@ export function WeeklyDashboard({
           <span className="text-[10px] text-muted-foreground">sessions this week</span>
         </div>
 
-        <div className="p-2 sm:p-2.5 border-l border-border/60">
+        <div className="p-2 sm:p-2.5 border-l border-border">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-medium">Week {selectedWeek} Pace</span>
             <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />

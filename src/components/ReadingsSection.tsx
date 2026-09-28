@@ -70,7 +70,7 @@ export function ReadingsSection({
         );
       default:
         return (
-          <span className="micro-tag bg-muted text-muted-foreground border border-border/80">
+          <span className="micro-tag bg-muted text-muted-foreground border border-border">
             READING
           </span>
         );
@@ -89,7 +89,7 @@ export function ReadingsSection({
   return (
     <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
       {/* Outer Card Header */}
-      <div className="border-b border-border/80 bg-muted/20 px-4 py-3 sm:px-5">
+      <div className="border-b border-border bg-muted/40 px-4 py-3 sm:px-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
@@ -114,13 +114,13 @@ export function ReadingsSection({
       </div>
 
       {/* De-Boxified List Rows */}
-      <div className="divide-y divide-border/60">
+      <div className="divide-y divide-border">
         {readings.map((reading) => {
           return (
             <div
               key={reading.id}
-              className={`flex items-start gap-3 p-3.5 sm:p-4 transition hover:bg-muted/10 ${
-                reading.isCompleted ? "opacity-60 bg-muted/5" : ""
+              className={`flex items-start gap-3 p-3.5 sm:p-4 transition hover:bg-muted/30 ${
+                reading.isCompleted ? "opacity-50" : ""
               }`}
             >
               {/* Tactile Checkbox */}
@@ -131,7 +131,7 @@ export function ReadingsSection({
                 className={`btn-tactile mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-[3px] border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] ${
                   reading.isCompleted
                     ? "border-[#059669] bg-[#059669] text-white"
-                    : "border-border bg-white dark:bg-card hover:border-foreground/40"
+                    : "border-border bg-card hover:border-foreground/50"
                 }`}
               >
                 {reading.isCompleted && <Check className="h-3.5 w-3.5 stroke-[3]" />}
@@ -162,7 +162,7 @@ export function ReadingsSection({
 
                 <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
                   {reading.folderPath && (
-                    <span className="font-mono text-[10px] text-muted-foreground/80">
+                    <span className="font-mono text-[10px] text-muted-foreground">
                       {reading.folderPath}
                     </span>
                   )}
@@ -182,7 +182,7 @@ export function ReadingsSection({
                     target="_blank"
                     rel="noreferrer"
                     download
-                    className="btn-tactile flex min-h-[34px] items-center justify-center rounded-md border border-border/80 bg-white/80 dark:bg-card px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs hover:bg-white transition"
+                    className="btn-tactile flex min-h-[34px] items-center justify-center rounded-md border border-border bg-muted/40 hover:bg-muted px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs transition"
                     title="Download file"
                   >
                     <Download className="h-3 w-3 sm:mr-1 text-muted-foreground" />
@@ -193,7 +193,7 @@ export function ReadingsSection({
                     href={reading.canvasUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn-tactile flex min-h-[34px] items-center justify-center rounded-md border border-border/80 bg-white/80 dark:bg-card px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs hover:bg-white transition"
+                    className="btn-tactile flex min-h-[34px] items-center justify-center rounded-md border border-border bg-muted/40 hover:bg-muted px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs transition"
                     title="View on Canvas"
                   >
                     <ExternalLink className="h-3 w-3 sm:mr-1 text-muted-foreground" />

@@ -49,7 +49,7 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
         );
       default:
         return (
-          <span className="micro-tag bg-muted text-muted-foreground border border-border/80">
+          <span className="micro-tag bg-muted text-muted-foreground border border-border">
             TO DO
           </span>
         );
@@ -99,7 +99,7 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
   return (
     <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
       {/* Outer Card Header */}
-      <div className="flex items-center justify-between border-b border-border/80 bg-muted/20 px-4 py-3 sm:px-5">
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
             <GraduationCap className="h-3.5 w-3.5" />
@@ -114,16 +114,16 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
       </div>
 
       {/* De-boxified List Rows */}
-      <div className="divide-y divide-border/60">
+      <div className="divide-y divide-border">
         {deliverables.map((deliv) => {
           return (
             <div
               key={deliv.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 transition hover:bg-muted/10"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 transition hover:bg-muted/30"
             >
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="micro-tag bg-[#13294B] text-white">
+                  <span className="micro-tag bg-primary text-primary-foreground font-mono">
                     {deliv.courseCode}
                   </span>
                   <h4 className="text-sm font-bold text-foreground leading-snug">
@@ -138,14 +138,14 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
                     {formatDueText(deliv)}
                   </span>
                   {deliv.pointsPossible > 0 && (
-                    <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/80">
+                    <span className="font-mono text-[11px] tabular-nums font-semibold text-foreground/90">
                       • {deliv.pointsPossible} PTS
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Action Button (Tier 4 Control) */}
+              {/* Action Button */}
               <div className="shrink-0 self-end sm:self-center">
                 <a
                   href={deliv.canvasUrl}
@@ -153,8 +153,8 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
                   rel="noreferrer"
                   className={`btn-tactile inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-bold shadow-2xs transition ${
                     deliv.status === "graded" || deliv.status === "submitted"
-                      ? "border border-border/80 bg-white/80 dark:bg-card text-foreground hover:bg-white"
-                      : "bg-[#13294B] text-white hover:bg-[#1a3866]"
+                      ? "border border-border bg-muted/40 hover:bg-muted text-foreground"
+                      : "bg-primary text-primary-foreground hover:opacity-90"
                   }`}
                 >
                   <span>
@@ -162,7 +162,7 @@ export function HomeworkTracker({ deliverables, weekNumber }: HomeworkTrackerPro
                       ? "View Submission"
                       : "Submit on Canvas"}
                   </span>
-                  <ExternalLink className="h-3 w-3 text-[#4B9CD3]" />
+                  <ExternalLink className="h-3 w-3 opacity-80" />
                 </a>
               </div>
             </div>

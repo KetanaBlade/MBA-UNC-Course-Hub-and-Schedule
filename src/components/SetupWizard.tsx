@@ -74,9 +74,9 @@ export function SetupWizard({
       role="dialog"
       aria-modal="true"
       aria-labelledby="wizard-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
     >
-      <div className="relative w-full max-w-lg rounded-lg bg-card p-6 sm:p-7 shadow-2xl border border-border">
+      <div className="relative w-full max-w-lg rounded-lg bg-card p-6 sm:p-7 shadow-2xl border border-border text-foreground">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -99,7 +99,7 @@ export function SetupWizard({
           </div>
         </div>
 
-        {/* Explainer Box (De-boxified inner-strip) */}
+        {/* Explainer Box */}
         <div className="mt-4 inner-strip p-3.5 text-xs text-muted-foreground space-y-1.5">
           <div className="flex items-center gap-1.5 font-bold text-foreground">
             <HelpCircle className="h-3.5 w-3.5 text-[#4B9CD3]" />
@@ -116,7 +116,7 @@ export function SetupWizard({
             <div className="flex items-center justify-between">
               <label
                 htmlFor="digitalcampus-token"
-                className="block text-xs font-bold uppercase tracking-wider text-foreground/80 font-sans"
+                className="block text-xs font-bold uppercase tracking-wider text-foreground font-sans"
               >
                 1. DigitalCampus Canvas Token
               </label>
@@ -139,7 +139,7 @@ export function SetupWizard({
                 value={digitalToken}
                 onChange={(e) => setDigitalToken(e.target.value)}
                 placeholder="1079~abcdef123456..."
-                className="w-full rounded-md border border-border bg-white dark:bg-card px-3 py-2 pr-9 text-xs font-mono text-foreground placeholder:text-muted-foreground/60 focus:border-[#4B9CD3] focus:outline-none focus:ring-1 focus:ring-[#4B9CD3]"
+                className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 pr-9 text-xs font-mono text-foreground placeholder:text-muted-foreground/50 focus:border-[#4B9CD3] focus:outline-none focus:ring-1 focus:ring-[#4B9CD3]"
               />
               <button
                 type="button"
@@ -157,7 +157,7 @@ export function SetupWizard({
             <div className="flex items-center justify-between">
               <label
                 htmlFor="kf-token"
-                className="block text-xs font-bold uppercase tracking-wider text-foreground/80 font-sans"
+                className="block text-xs font-bold uppercase tracking-wider text-foreground font-sans"
               >
                 2. Kenan-Flagler Canvas Token
               </label>
@@ -180,7 +180,7 @@ export function SetupWizard({
                 value={kfToken}
                 onChange={(e) => setKfToken(e.target.value)}
                 placeholder="1104~xyz789012345..."
-                className="w-full rounded-md border border-border bg-white dark:bg-card px-3 py-2 pr-9 text-xs font-mono text-foreground placeholder:text-muted-foreground/60 focus:border-[#4B9CD3] focus:outline-none focus:ring-1 focus:ring-[#4B9CD3]"
+                className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 pr-9 text-xs font-mono text-foreground placeholder:text-muted-foreground/50 focus:border-[#4B9CD3] focus:outline-none focus:ring-1 focus:ring-[#4B9CD3]"
               />
               <button
                 type="button"
@@ -233,13 +233,13 @@ export function SetupWizard({
             <button
               type="submit"
               disabled={isVerifying || (!digitalToken && !kfToken)}
-              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-[#13294B] px-5 py-2 text-xs font-bold text-white shadow-2xs transition hover:bg-[#1a3866] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9CD3] disabled:opacity-50 touch-target"
+              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground px-5 py-2 text-xs font-bold shadow-2xs transition hover:opacity-90 disabled:opacity-50 touch-target"
             >
               {isVerifying ? (
                 <>Verifying Accounts...</>
               ) : (
                 <>
-                  <Lock className="h-3.5 w-3.5 text-[#4B9CD3]" />
+                  <Lock className="h-3.5 w-3.5 opacity-80" />
                   Save & Connect
                 </>
               )}

@@ -78,7 +78,7 @@ export function MasterCalendarView({
   return (
     <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
       {/* Outer Card Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 bg-muted/20 px-4 py-3 sm:px-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border bg-muted/40 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
             <CalendarIcon className="h-3.5 w-3.5" />
@@ -93,13 +93,13 @@ export function MasterCalendarView({
           </div>
         </div>
 
-        {/* Anchored Filter Toolbar (Tier 4 Controls) */}
+        {/* Anchored Filter Toolbar */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-md border border-border/80 bg-white/80 dark:bg-card p-0.5 text-xs">
+          <div className="flex items-center rounded-md border border-border bg-muted/40 p-0.5 text-xs">
             <button
               onClick={() => setFilter("all")}
               className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
-                filter === "all" ? "bg-[#13294B] text-white" : "text-muted-foreground hover:text-foreground"
+                filter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               All
@@ -108,7 +108,7 @@ export function MasterCalendarView({
               onClick={() => setFilter("upcoming")}
               className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
                 filter === "upcoming"
-                  ? "bg-[#13294B] text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -118,7 +118,7 @@ export function MasterCalendarView({
               onClick={() => setFilter("deliverables")}
               className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
                 filter === "deliverables"
-                  ? "bg-[#13294B] text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -128,7 +128,7 @@ export function MasterCalendarView({
               onClick={() => setFilter("live")}
               className={`btn-tactile rounded-[4px] px-2.5 py-1 font-bold transition ${
                 filter === "live"
-                  ? "bg-[#13294B] text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -138,7 +138,7 @@ export function MasterCalendarView({
 
           <button
             onClick={onExportICS}
-            className="btn-tactile inline-flex items-center gap-1 rounded-md border border-border/80 bg-white/80 dark:bg-card px-2.5 py-1 text-xs font-bold text-foreground hover:bg-white shadow-2xs"
+            className="btn-tactile inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 hover:bg-muted px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs"
           >
             <Download className="h-3 w-3 text-[#4B9CD3]" />
             <span>.ICS</span>
@@ -147,7 +147,7 @@ export function MasterCalendarView({
       </div>
 
       {/* De-boxified Event Stream */}
-      <div className="divide-y divide-border/60">
+      <div className="divide-y divide-border">
         {filteredEvents.length === 0 ? (
           <div className="p-8 text-center text-xs text-muted-foreground">
             No events match the selected filter.
@@ -158,8 +158,8 @@ export function MasterCalendarView({
             return (
               <div
                 key={evt.id}
-                className={`flex items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 transition hover:bg-muted/10 ${
-                  isPast ? "opacity-60" : ""
+                className={`flex items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 transition hover:bg-muted/30 ${
+                  isPast ? "opacity-50" : ""
                 }`}
               >
                 <div className="flex items-start sm:items-center gap-3">
@@ -183,7 +183,7 @@ export function MasterCalendarView({
 
                   <div>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="micro-tag bg-[#13294B] text-white">
+                      <span className="micro-tag bg-primary text-primary-foreground font-mono">
                         {evt.courseCode}
                       </span>
                       <h4 className="text-xs sm:text-sm font-bold text-foreground leading-snug">
@@ -214,7 +214,7 @@ export function MasterCalendarView({
                     href={evt.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn-tactile inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/30 transition"
+                    className="btn-tactile inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition"
                   >
                     <span>{evt.type === "live" ? "Join Zoom" : "Open"}</span>
                     <ExternalLink className="h-3 w-3 text-muted-foreground/70" />

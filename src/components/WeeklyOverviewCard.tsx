@@ -34,7 +34,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
   return (
     <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
       {/* Outer Card Header */}
-      <div className="flex items-center justify-between border-b border-border/80 bg-muted/20 px-4 py-3 sm:px-5">
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#13294B] text-[#4B9CD3]">
             <Bell className="h-3.5 w-3.5" />
@@ -49,11 +49,11 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
       </div>
 
       {/* De-boxified List Rows */}
-      <div className="divide-y divide-border/60">
+      <div className="divide-y divide-border">
         {announcements.map((ann) => {
           const isExpanded = expandedId === ann.id;
           return (
-            <div key={ann.id} className="p-4 sm:p-5 transition hover:bg-muted/10">
+            <div key={ann.id} className="p-4 sm:p-5 transition hover:bg-muted/30">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-foreground leading-snug">
@@ -65,7 +65,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                       {ann.authorName}
                     </span>
                     <span>•</span>
-                    <span className="font-mono text-[11px]">
+                    <span className="font-mono text-[11px] tabular-nums">
                       {new Date(ann.postedAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -80,7 +80,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                       href={ann.zoomUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="btn-tactile inline-flex items-center gap-1.5 rounded-md bg-[#4B9CD3] px-3 py-1.5 text-xs font-bold text-[#13294B] shadow-2xs hover:bg-[#5aa8dd] transition"
+                      className="btn-tactile inline-flex items-center gap-1.5 rounded-md bg-[#4B9CD3] px-3 py-1.5 text-xs font-bold text-[#101010] shadow-2xs hover:bg-[#5aa8dd] transition"
                     >
                       <Video className="h-3.5 w-3.5" />
                       <span>Join Zoom</span>
@@ -111,9 +111,9 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                     transition={{ duration: 0.18, ease: [0.25, 1, 0.5, 1] }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 pt-3 border-t border-border/60">
+                    <div className="mt-3 pt-3 border-t border-border">
                       <div
-                        className="prose prose-sm max-w-none text-xs text-foreground/90 leading-relaxed [&_a]:text-[#4B9CD3] [&_a]:underline"
+                        className="prose prose-sm dark:prose-invert max-w-none text-xs text-foreground/90 leading-relaxed [&_a]:text-[#4B9CD3] [&_a]:underline"
                         dangerouslySetInnerHTML={{ __html: ann.message }}
                       />
                       <div className="mt-3 flex justify-end">
