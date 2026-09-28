@@ -17,6 +17,7 @@ import { WeeklyOverviewCard } from "./WeeklyOverviewCard";
 import { ReadingsSection } from "./ReadingsSection";
 import { HomeworkTracker } from "./HomeworkTracker";
 import { CourseFilesCard } from "./CourseFilesCard";
+import { TermMilestonesCard } from "./TermMilestonesCard";
 import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
 
 interface WeeklyDashboardProps {
@@ -87,17 +88,22 @@ export function WeeklyDashboard({
           allQuarterDeliverablesMap.set(deliv.id, deliv);
         }
       });
+      if (bundle.termDeliverables) {
+        bundle.termDeliverables.forEach((deliv) => {
+          if (!allQuarterDeliverablesMap.has(deliv.id)) {
+            allQuarterDeliverablesMap.set(deliv.id, deliv);
+          }
+        });
+      }
     });
   });
 
   // Term Projects & Major Milestones (e.g. Leadership Development Plan Due Nov 8)
   const termMilestones = Array.from(allQuarterDeliverablesMap.values()).filter((d) => {
-    // Exclude if already in this week's active deliverables list
-    const isInCurrentWeek = allDeliverables.some((cur) => cur.id === d.id);
-    if (isInCurrentWeek) return false;
-
-    // Check if due in future weeks or later in the term (> 7 days ahead)
-    if (d.dueInDays !== undefined && d.dueInDays <= 7) return false;
+    // If onlyPending is active, filter out completed/graded items
+    if (onlyPending && (d.isCompleted || d.status === "graded" || d.status === "submitted")) {
+      return false;
+    }
 
     // Milestone heuristics: keywords or high point value
     const titleLower = d.title.toLowerCase();
@@ -116,6 +122,13 @@ export function WeeklyDashboard({
     const isHighPoints = d.pointsPossible >= 30;
 
     return isMajorKeyword || isHighPoints;
+  });
+
+  // Sort chronologically by due date
+  termMilestones.sort((a, b) => {
+    if (!a.dueAt) return 1;
+    if (!b.dueAt) return -1;
+    return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
   });
 
   const totalDeliverablesCount = activeBundles.reduce(
@@ -137,216 +150,230 @@ export function WeeklyDashboard({
 
   return (
     <div className="space-y-6">
-      {/* 1. ANCHORED FILTER & CHIP CONTROL DECK (NO CHECKBOXES, HIDE CHIPS) */}
-      <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
-        {/* Active Course Chips */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
-              <span className="text-xs sm:text-sm font-bold text-foreground">
-                Active Courses ({activeCourses.length} Visible):
-              </span>
-            </div>
-            {hiddenCourses.length > 0 && (
-              <button
-                onClick={onSelectAllCourses}
-                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
-              >
-                Restore All ({courses.length})
-              </button>
-            )}
-          </div>
-
-          {/* Active Chips with subtle "Hide" (X) trigger */}
-          <div className="flex flex-wrap items-center gap-2">
-            {activeCourses.length === 0 ? (
-              <div className="text-xs text-muted-foreground py-1">
-                All courses are currently hidden.{" "}
-                <button
-                  onClick={onSelectAllCourses}
-                  className="text-primary font-bold hover:underline"
-                >
-                  Show all courses
-                </button>
-              </div>
-            ) : (
-              activeCourses.map((course) => {
-                const cleanCode = getCleanCourseCode(course.course_code, course.name);
-                const cleanName = getCleanCourseName(course.course_code, course.name);
-                const courseColor = getCourseColor(course.course_code || course.id);
-
-                return (
-                  <span
-                    key={course.id}
-                    className={`text-xs font-semibold pl-2.5 pr-1.5 py-1 rounded-md border inline-flex items-center gap-1.5 transition-all shadow-2xs ${courseColor.badge}`}
-                  >
-                    <span className="font-mono font-bold uppercase">{cleanCode}</span>
-                    <span className="opacity-40">•</span>
-                    <span className="font-medium truncate max-w-[160px] sm:max-w-[220px]">{cleanName}</span>
-                    <button
-                      type="button"
-                      onClick={() => onToggleCourse(course.id)}
-                      title={`Hide ${cleanCode} ${cleanName}`}
-                      aria-label={`Hide ${cleanCode} ${cleanName}`}
-                      className="hover:opacity-75 p-0.5 rounded cursor-pointer transition-opacity ml-0.5"
-                    >
-                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </button>
+      {/* 1. TOP EXECUTIVE ROW: Filters + KPIs (Left xl:col-span-8) & Dedicated Term Projects Card (Right xl:col-span-4) */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+        {/* Left Side: Filter Deck & KPI Metrics Deck */}
+        <div className="xl:col-span-8 space-y-6 flex flex-col justify-between">
+          {/* A. ANCHORED FILTER & CHIP CONTROL DECK (NO CHECKBOXES, HIDE CHIPS) */}
+          <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
+            {/* Active Course Chips */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-primary" />
+                  <span className="text-xs sm:text-sm font-bold text-foreground">
+                    Active Courses ({activeCourses.length} Visible):
                   </span>
-                );
-              })
-            )}
-          </div>
-
-          {/* Hidden Courses Collapsible Section */}
-          {hiddenCourses.length > 0 && (
-            <div className="pt-2 border-t border-border/40">
-              <button
-                type="button"
-                onClick={() => setShowHiddenSection(!showHiddenSection)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-              >
-                {showHiddenSection ? (
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
+                {hiddenCourses.length > 0 && (
+                  <button
+                    onClick={onSelectAllCourses}
+                    className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    Restore All ({courses.length})
+                  </button>
                 )}
-                <span>Hidden Courses ({hiddenCourses.length})</span>
-                <span className="text-[11px] opacity-70">— click to expand and restore</span>
-              </button>
+              </div>
 
-              {showHiddenSection && (
-                <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 pl-5">
-                  {hiddenCourses.map((course) => {
+              {/* Active Chips with subtle "Hide" (X) trigger */}
+              <div className="flex flex-wrap items-center gap-2">
+                {activeCourses.length === 0 ? (
+                  <div className="text-xs text-muted-foreground py-1">
+                    All courses are currently hidden.{" "}
+                    <button
+                      onClick={onSelectAllCourses}
+                      className="text-primary font-bold hover:underline"
+                    >
+                      Show all courses
+                    </button>
+                  </div>
+                ) : (
+                  activeCourses.map((course) => {
                     const cleanCode = getCleanCourseCode(course.course_code, course.name);
                     const cleanName = getCleanCourseName(course.course_code, course.name);
                     const courseColor = getCourseColor(course.course_code || course.id);
+
                     return (
-                      <button
+                      <span
                         key={course.id}
-                        type="button"
-                        onClick={() => onToggleCourse(course.id)}
-                        className={`inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-1 rounded-md text-xs border opacity-60 hover:opacity-100 transition-all cursor-pointer ${courseColor.badge}`}
-                        title={`Restore ${cleanCode} ${cleanName}`}
+                        className={`text-xs font-semibold pl-2.5 pr-1.5 py-1 rounded-md border inline-flex items-center gap-1.5 transition-all shadow-2xs ${courseColor.badge}`}
                       >
-                        <Plus className="w-3 h-3 stroke-[2.5]" />
                         <span className="font-mono font-bold uppercase">{cleanCode}</span>
                         <span className="opacity-40">•</span>
-                        <span className="font-medium truncate max-w-[140px]">{cleanName}</span>
-                      </button>
+                        <span className="font-medium truncate max-w-[160px] sm:max-w-[220px]">{cleanName}</span>
+                        <button
+                          type="button"
+                          onClick={() => onToggleCourse(course.id)}
+                          title={`Hide ${cleanCode} ${cleanName}`}
+                          aria-label={`Hide ${cleanCode} ${cleanName}`}
+                          className="hover:opacity-75 p-0.5 rounded cursor-pointer transition-opacity ml-0.5"
+                        >
+                          <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                        </button>
+                      </span>
                     );
-                  })}
+                  })
+                )}
+              </div>
+
+              {/* Hidden Courses Collapsible Section */}
+              {hiddenCourses.length > 0 && (
+                <div className="pt-2 border-t border-border/40">
                   <button
                     type="button"
-                    onClick={onSelectAllCourses}
-                    className="text-xs text-primary font-bold hover:underline ml-2 cursor-pointer"
+                    onClick={() => setShowHiddenSection(!showHiddenSection)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                   >
-                    Restore all
+                    {showHiddenSection ? (
+                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                    )}
+                    <span>Hidden Courses ({hiddenCourses.length})</span>
+                    <span className="text-[11px] opacity-70">— click to expand and restore</span>
                   </button>
+
+                  {showHiddenSection && (
+                    <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 pl-5">
+                      {hiddenCourses.map((course) => {
+                        const cleanCode = getCleanCourseCode(course.course_code, course.name);
+                        const cleanName = getCleanCourseName(course.course_code, course.name);
+                        const courseColor = getCourseColor(course.course_code || course.id);
+                        return (
+                          <button
+                            key={course.id}
+                            type="button"
+                            onClick={() => onToggleCourse(course.id)}
+                            className={`inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-1 rounded-md text-xs border opacity-60 hover:opacity-100 transition-all cursor-pointer ${courseColor.badge}`}
+                            title={`Restore ${cleanCode} ${cleanName}`}
+                          >
+                            <Plus className="w-3 h-3 stroke-[2.5]" />
+                            <span className="font-mono font-bold uppercase">{cleanCode}</span>
+                            <span className="opacity-40">•</span>
+                            <span className="font-medium truncate max-w-[140px]">{cleanName}</span>
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={onSelectAllCourses}
+                        className="text-xs text-primary font-bold hover:underline ml-2 cursor-pointer"
+                      >
+                        Restore all
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+
+            {/* Divider */}
+            <div className="border-t border-border/60 pt-3 flex flex-wrap items-center justify-between gap-3">
+              {/* Week Scrubber (Locked to 5 Weeks) */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mr-1 hidden sm:inline">
+                  Week:
+                </span>
+                {weekNumbers.map((w) => {
+                  const isCurrentWeek = w === selectedWeek;
+                  return (
+                    <button
+                      key={w}
+                      onClick={() => onSelectWeek(w)}
+                      aria-label={`Select Week ${w}`}
+                      className={`h-11 min-w-[76px] px-3 rounded-md text-sm font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center border ${
+                        isCurrentWeek
+                          ? "bg-primary text-primary-foreground border-primary shadow-xs ring-2 ring-primary/30"
+                          : "bg-card border-border hover:bg-muted/30 text-foreground"
+                      }`}
+                    >
+                      <span className="font-mono text-[9px] uppercase tracking-wider opacity-80">
+                        WEEK
+                      </span>
+                      <span className="text-base font-extrabold tabular-nums font-mono leading-none">
+                        {w}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Quick Filter: Show Incomplete Only */}
+              <button
+                onClick={() => setOnlyPending(!onlyPending)}
+                className={`h-9 px-3 rounded-md border text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 ${
+                  onlyPending
+                    ? "bg-primary/15 border-primary text-primary font-bold"
+                    : "bg-card border-border hover:bg-muted/30 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Filter className="w-3.5 h-3.5" />
+                <span>{onlyPending ? "Showing To-Do Only" : "Show All Tasks"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* B. SOLID WHITE KPI METRIC DECK (CLEAN, NO ICONS, ZERO WRAPPING) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {/* Deliverables Metric */}
+            <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
+              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+                Deliverables
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+                {submittedDeliverablesCount} / {totalDeliverablesCount}
+              </div>
+              <p className="text-xs text-muted-foreground">Submitted for Week {selectedWeek}</p>
+            </div>
+
+            {/* Readings Metric */}
+            <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
+              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+                Coursework & Lectures
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+                {completedReadingsCount} / {totalReadingsCount}
+              </div>
+              <p className="text-xs text-muted-foreground">Completed for Week {selectedWeek}</p>
+            </div>
+
+            {/* Live Zoom Metric */}
+            <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
+              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+                Live Zoom
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+                {activeBundles.flatMap((b) => b.liveSessions).length}
+              </div>
+              <p className="text-xs text-muted-foreground">Sessions scheduled</p>
+            </div>
+
+            {/* Completion Rate Metric */}
+            <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
+              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+                Overall Pace
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+                {totalDeliverablesCount + totalReadingsCount > 0
+                  ? Math.round(
+                      ((submittedDeliverablesCount + completedReadingsCount) /
+                        (totalDeliverablesCount + totalReadingsCount)) *
+                        100
+                    )
+                  : 100}
+                %
+              </div>
+              <p className="text-xs text-muted-foreground">Term progress</p>
+            </div>
+          </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-border/60 pt-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Week Scrubber (Locked to 5 Weeks) */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mr-1 hidden sm:inline">
-              Week:
-            </span>
-            {weekNumbers.map((w) => {
-              const isCurrentWeek = w === selectedWeek;
-              return (
-                <button
-                  key={w}
-                  onClick={() => onSelectWeek(w)}
-                  aria-label={`Select Week ${w}`}
-                  className={`h-11 min-w-[76px] px-3 rounded-md text-sm font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center border ${
-                    isCurrentWeek
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs ring-2 ring-primary/30"
-                      : "bg-card border-border hover:bg-muted/30 text-foreground"
-                  }`}
-                >
-                  <span className="font-mono text-[9px] uppercase tracking-wider opacity-80">
-                    WEEK
-                  </span>
-                  <span className="text-base font-extrabold tabular-nums font-mono leading-none">
-                    {w}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Quick Filter: Show Incomplete Only */}
-          <button
-            onClick={() => setOnlyPending(!onlyPending)}
-            className={`h-9 px-3 rounded-md border text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 ${
-              onlyPending
-                ? "bg-primary/15 border-primary text-primary font-bold"
-                : "bg-card border-border hover:bg-muted/30 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Filter className="w-3.5 h-3.5" />
-            <span>{onlyPending ? "Showing To-Do Only" : "Show All Tasks"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. SOLID WHITE KPI METRIC DECK (CLEAN, NO ICONS, ZERO WRAPPING) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        {/* Deliverables Metric */}
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
-            Deliverables
-          </div>
-          <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
-            {submittedDeliverablesCount} / {totalDeliverablesCount}
-          </div>
-          <p className="text-xs text-muted-foreground">Submitted for Week {selectedWeek}</p>
-        </div>
-
-        {/* Readings Metric */}
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
-            Coursework & Lectures
-          </div>
-          <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
-            {completedReadingsCount} / {totalReadingsCount}
-          </div>
-          <p className="text-xs text-muted-foreground">Completed for Week {selectedWeek}</p>
-        </div>
-
-        {/* Live Zoom Metric */}
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
-            Live Zoom
-          </div>
-          <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
-            {activeBundles.flatMap((b) => b.liveSessions).length}
-          </div>
-          <p className="text-xs text-muted-foreground">Sessions scheduled</p>
-        </div>
-
-        {/* Completion Rate Metric */}
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-          <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
-            Overall Pace
-          </div>
-          <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
-            {totalDeliverablesCount + totalReadingsCount > 0
-              ? Math.round(
-                  ((submittedDeliverablesCount + completedReadingsCount) /
-                    (totalDeliverablesCount + totalReadingsCount)) *
-                    100
-                )
-              : 100}
-            %
-          </div>
-          <p className="text-xs text-muted-foreground">Term progress</p>
+        {/* Right Side: Dedicated Term Projects & Major Milestones Card */}
+        <div className="xl:col-span-4 flex flex-col">
+          <TermMilestonesCard
+            deliverables={termMilestones}
+            onToggleComplete={onToggleCompleteItem}
+          />
         </div>
       </div>
 
@@ -408,7 +435,6 @@ export function WeeklyDashboard({
 
           <HomeworkTracker
             deliverables={allDeliverables}
-            termMilestones={termMilestones}
             liveSessions={allLiveSessions}
             weekNumber={selectedWeek}
             onToggleComplete={onToggleCompleteItem}

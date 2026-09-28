@@ -276,6 +276,12 @@ export function ReadingsSection({
                         <div className="flex flex-wrap items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">
                           {getCategoryBadge(reading.category)}
 
+                          {reading.pointsPossible !== undefined && reading.pointsPossible > 0 && (
+                            <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
+                              {reading.pointsPossible} PTS
+                            </span>
+                          )}
+
                           {reading.folderPath && (
                             <span className="font-mono text-xs text-muted-foreground/80">
                               • {reading.folderPath}
@@ -284,18 +290,31 @@ export function ReadingsSection({
                         </div>
                       </div>
 
-                      {/* Action Trigger - View on Canvas */}
-                      <div className="flex items-center gap-1.5 shrink-0 self-center">
+                      {/* Action Trigger - View on Canvas & Direct Download for Files */}
+                      <div className="flex flex-col gap-1 shrink-0 self-center">
                         <a
                           href={reading.canvasUrl || reading.fileUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1 shadow-2xs"
+                          className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
                           title="Open and view on Canvas"
                         >
                           <span>View</span>
                           <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                         </a>
+                        {reading.source === "files_tab" && reading.fileUrl && (
+                          <a
+                            href={reading.fileUrl}
+                            download
+                            target="_blank"
+                            rel="noreferrer"
+                            className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-muted-foreground hover:text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
+                            title="Download file directly"
+                          >
+                            <span>Download</span>
+                            <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   );

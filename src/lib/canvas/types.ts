@@ -144,6 +144,8 @@ export interface NormalizedReading {
   isCompleted: boolean;
   courseCode?: string;
   courseName?: string;
+  pointsPossible?: number;
+  type?: string;
 }
 
 export type DeliverableStatus =
@@ -208,6 +210,7 @@ export interface WeeklyBundle {
   announcements: NormalizedAnnouncement[];
   readings: NormalizedReading[];
   deliverables: NormalizedDeliverable[];
+  termDeliverables?: NormalizedDeliverable[];
   liveSessions: NormalizedLiveSession[];
   stats: {
     totalDeliverables: number;

@@ -117,6 +117,75 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     }
   });
 
+  // Known reference assignments with weeks to infer weeks for assignments without week in title
+  const knownWeekAssignments: { week: number; time: number }[] = [];
+  assignments.forEach((a) => {
+    const w = assignmentModuleWeekMap.get(a.id) || extractWeekNumber(a.name);
+    if (w && a.due_at) {
+      const t = new Date(a.due_at).getTime();
+      if (!isNaN(t)) {
+        knownWeekAssignments.push({ week: w, time: t });
+      }
+    }
+  });
+
+  // Calculate Course-Wide Term Projects & Major Deliverables
+  const courseTermDeliverables: NormalizedDeliverable[] = [];
+  assignments.forEach((assignment) => {
+    if (/\battendance\b/i.test(assignment.name)) return;
+
+    const titleLower = assignment.name.toLowerCase();
+    const isMajorKeyword =
+      titleLower.includes("plan") ||
+      titleLower.includes("project") ||
+      titleLower.includes("paper") ||
+      titleLower.includes("capstone") ||
+      titleLower.includes("final") ||
+      titleLower.includes("midterm") ||
+      titleLower.includes("report") ||
+      titleLower.includes("memo") ||
+      titleLower.includes("leadership development") ||
+      titleLower.includes("term");
+
+    const isHighPoints = (assignment.points_possible || 0) >= 30;
+
+    if (isMajorKeyword || isHighPoints) {
+      const { dueInDays, dueInHours, status } = calculateDueUrgency(
+        assignment.due_at,
+        assignment.submission?.workflow_state,
+        assignment.submission?.score
+      );
+
+      const isCompleted =
+        status === "graded" ||
+        status === "submitted" ||
+        completedItemIds.has(`term-assign-${assignment.id}`) ||
+        completedItemIds.has(`assign-${assignment.id}`);
+
+      courseTermDeliverables.push({
+        id: `term-assign-${assignment.id}`,
+        assignmentId: assignment.id,
+        title: assignment.name,
+        courseId: course.id,
+        courseName: course.name,
+        courseCode: course.course_code,
+        instance: course.instance,
+        dueAt: assignment.due_at || null,
+        pointsPossible: assignment.points_possible || 0,
+        status,
+        score: assignment.submission?.score,
+        grade: assignment.submission?.grade,
+        canvasUrl:
+          assignment.html_url ||
+          `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/courses/${course.id}/assignments/${assignment.id}`,
+        submissionTypes: assignment.submission_types || [],
+        dueInDays,
+        dueInHours,
+        isCompleted,
+      });
+    }
+  });
+
   // 3. Assemble each WeeklyBundle
   const bundles: WeeklyBundle[] = sortedWeeks.map((weekNum) => {
     // --- A. Announcements for this week ---
@@ -150,29 +219,51 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     weekModules.forEach((targetModule) => {
       if (targetModule && targetModule.items) {
         targetModule.items.forEach((item) => {
-          if (
-            item.type === "File" ||
-            item.type === "Page" ||
-            item.type === "ExternalUrl" ||
-            item.type === "ExternalTool"
-          ) {
-            const itemUrl = item.html_url || item.url || "";
-            addedUrls.add(item.title.toLowerCase());
-            const id = `mod-item-${item.id}`;
+          // Include all actionable module items (Pages, Files, ExternalUrls, ExternalTools, Quizzes, Assignments, Discussions)
+          // Skip plain section divider subheaders
+          if (item.type === "SubHeader") return;
 
-            const isCanvasCompleted = Boolean(item.completion_requirement?.completed);
-            readings.push({
-              id,
-              title: item.title,
-              source: "module_item",
-              category: categorizeResource(item.title, undefined, "module_item"),
-              canvasUrl: itemUrl,
-              fileUrl: item.external_url || item.url,
-              isCompleted: isCanvasCompleted || completedItemIds.has(id),
-              courseCode: course.course_code,
-              courseName: course.name,
-            });
+          const itemUrl = item.html_url || item.url || "";
+          addedUrls.add(item.title.toLowerCase());
+          const id = `mod-item-${item.id}`;
+
+          // Correlate with assignments to extract points if this is an assignment, quiz, or question
+          let matchedAssignment: CanvasAssignment | undefined;
+          if (item.content_id) {
+            matchedAssignment = assignments.find((a) => a.id === item.content_id);
           }
+          if (!matchedAssignment && item.title) {
+            matchedAssignment = assignments.find(
+              (a) => a.name.toLowerCase().trim() === item.title.toLowerCase().trim()
+            );
+          }
+
+          let pointsPossible: number | undefined = matchedAssignment?.points_possible;
+          if (pointsPossible === undefined && item.title) {
+            const ptMatch = item.title.match(/(?:^|\(|\[|\b)(\d+)\s*(?:pts|points)(?:\)|\]|\b)/i);
+            if (ptMatch && ptMatch[1]) {
+              pointsPossible = parseInt(ptMatch[1], 10);
+            }
+          }
+
+          const isCanvasCompleted =
+            Boolean(item.completion_requirement?.completed) ||
+            matchedAssignment?.submission?.workflow_state === "graded" ||
+            matchedAssignment?.submission?.workflow_state === "submitted";
+
+          readings.push({
+            id,
+            title: item.title,
+            source: "module_item",
+            category: categorizeResource(item.title, undefined, "module_item"),
+            canvasUrl: itemUrl || (matchedAssignment?.html_url || ""),
+            fileUrl: item.external_url || item.url,
+            isCompleted: isCanvasCompleted || completedItemIds.has(id),
+            courseCode: course.course_code,
+            courseName: course.name,
+            pointsPossible,
+            type: item.type,
+          });
         });
       }
     });
@@ -231,9 +322,23 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
         return;
       }
 
-      const assignWeek =
+      let assignWeek =
         assignmentModuleWeekMap.get(assignment.id) ||
         extractWeekNumber(assignment.name);
+
+      // Infer week from due date if not in title or module
+      if (!assignWeek && assignment.due_at && knownWeekAssignments.length > 0) {
+        const dueTime = new Date(assignment.due_at).getTime();
+        if (!isNaN(dueTime)) {
+          const ref = knownWeekAssignments[0];
+          const weekDiff = Math.round((dueTime - ref.time) / (7 * 86400000));
+          const inferred = ref.week + weekDiff;
+          if (inferred > 0 && inferred <= 12) {
+            assignWeek = inferred;
+          }
+        }
+      }
+
       const isWeekMatch = assignWeek === weekNum;
 
       if (isWeekMatch) {
@@ -421,6 +526,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
       announcements: weekAnnouncements,
       readings,
       deliverables: weekDeliverables,
+      termDeliverables: courseTermDeliverables,
       liveSessions,
       stats: {
         totalDeliverables: weekDeliverables.length,
@@ -519,6 +625,18 @@ export function getMockMBACoursesData(): {
             courseName: course.name,
           },
           {
+            id: `mock-read-701-${weekNum}-q1`,
+            title: `Check Your Understanding: Balance Sheet & Revenue Recognition`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/701/quizzes/1`,
+            isCompleted: isPast,
+            courseCode: course.course_code,
+            courseName: course.name,
+            pointsPossible: 5,
+            type: "Quiz",
+          },
+          {
             id: `mock-read-701-${weekNum}-3`,
             title: `Financial Statement Modeling Template`,
             source: "files_tab",
@@ -580,6 +698,18 @@ export function getMockMBACoursesData(): {
             courseCode: course.course_code,
             courseName: course.name,
           },
+          {
+            id: `mock-read-703-${weekNum}-q1`,
+            title: `Concept Check: Bottleneck Capacity Calculation`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://kenan-flagler.instructure.com/courses/703/quizzes/2`,
+            isCompleted: isPast,
+            courseCode: course.course_code,
+            courseName: course.name,
+            pointsPossible: 10,
+            type: "Quiz",
+          },
         ];
 
         deliverables = [
@@ -615,6 +745,18 @@ export function getMockMBACoursesData(): {
             courseCode: course.course_code,
             courseName: course.name,
           },
+          {
+            id: `mock-read-710-${weekNum}-q1`,
+            title: `Self-Assessment Question: Diagnosing Organizational Conflict`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://kenan-flagler.instructure.com/courses/710/quizzes/3`,
+            isCompleted: isPast,
+            courseCode: course.course_code,
+            courseName: course.name,
+            pointsPossible: 5,
+            type: "Quiz",
+          },
         ];
         deliverables = [
           {
@@ -636,6 +778,64 @@ export function getMockMBACoursesData(): {
         ];
       }
 
+      // Course-Wide Major Term Projects & Capstone Deliverables
+      const courseTermDeliverables: NormalizedDeliverable[] = [];
+      if (course.course_code === "MBA 710") {
+        courseTermDeliverables.push({
+          id: "mock-term-710-ldp",
+          assignmentId: 7199,
+          title: "Leadership Development Plan",
+          courseId: 710,
+          courseName: course.name,
+          courseCode: course.course_code,
+          instance: "kenan-flagler",
+          dueAt: "2026-11-08T23:59:00.000Z",
+          pointsPossible: 100,
+          status: "upcoming",
+          canvasUrl: "https://kenan-flagler.instructure.com/courses/710/assignments/7199",
+          submissionTypes: ["online_upload"],
+          dueInDays: 41,
+          dueInHours: 41 * 24,
+          isCompleted: false,
+        });
+      } else if (course.course_code === "MBA 703") {
+        courseTermDeliverables.push({
+          id: "mock-term-703-capstone",
+          assignmentId: 7099,
+          title: "Final Global Supply Chain Simulation & Memo",
+          courseId: 703,
+          courseName: course.name,
+          courseCode: course.course_code,
+          instance: "kenan-flagler",
+          dueAt: "2026-11-12T23:59:00.000Z",
+          pointsPossible: 150,
+          status: "upcoming",
+          canvasUrl: "https://kenan-flagler.instructure.com/courses/703/assignments/7099",
+          submissionTypes: ["online_upload"],
+          dueInDays: 45,
+          dueInHours: 45 * 24,
+          isCompleted: false,
+        });
+      } else if (course.course_code === "MBA 701") {
+        courseTermDeliverables.push({
+          id: "mock-term-701-valuation",
+          assignmentId: 7088,
+          title: "Comprehensive Corporate Valuation & DCF Model",
+          courseId: 701,
+          courseName: course.name,
+          courseCode: course.course_code,
+          instance: "digitalcampus",
+          dueAt: "2026-11-15T23:59:00.000Z",
+          pointsPossible: 100,
+          status: "upcoming",
+          canvasUrl: "https://digitalcampus.instructure.com/courses/701/assignments/7088",
+          submissionTypes: ["online_upload"],
+          dueInDays: 48,
+          dueInHours: 48 * 24,
+          isCompleted: false,
+        });
+      }
+
       return {
         weekNumber: weekNum,
         weekLabel: `Week ${weekNum}: Core Concepts & Applications`,
@@ -646,6 +846,7 @@ export function getMockMBACoursesData(): {
         announcements,
         readings,
         deliverables,
+        termDeliverables: courseTermDeliverables,
         liveSessions: [
           {
             id: `mock-live-${course.id}-${weekNum}`,
