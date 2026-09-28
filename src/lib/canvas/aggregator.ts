@@ -124,7 +124,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             id,
             title: item.title,
             source: "module_item",
-            category: categorizeResource(item.title),
+            category: categorizeResource(item.title, undefined, "module_item"),
             canvasUrl: itemUrl,
             fileUrl: item.external_url || item.url,
             isCompleted: completedItemIds.has(id),

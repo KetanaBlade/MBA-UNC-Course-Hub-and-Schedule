@@ -17,7 +17,7 @@ import { WeeklyOverviewCard } from "./WeeklyOverviewCard";
 import { ReadingsSection } from "./ReadingsSection";
 import { HomeworkTracker } from "./HomeworkTracker";
 import { CourseFilesCard } from "./CourseFilesCard";
-import { getCourseColor } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseCode } from "@/lib/courseColors";
 
 interface WeeklyDashboardProps {
   courses: CanvasCourse[];
@@ -130,31 +130,25 @@ export function WeeklyDashboard({
               </div>
             ) : (
               activeCourses.map((course) => {
+                const cleanCode = getCleanCourseCode(course.course_code, course.name);
                 const courseColor = getCourseColor(course.course_code || course.id);
 
                 return (
-                  <div
+                  <span
                     key={course.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm bg-card border border-border shadow-2xs hover:border-primary/40 transition-all"
+                    className={`font-mono text-xs font-bold uppercase pl-2.5 pr-1.5 py-1 rounded-md border inline-flex items-center gap-1.5 transition-all shadow-2xs ${courseColor.badge}`}
                   >
-                    <span
-                      className={`font-mono text-[11px] font-bold uppercase px-1.5 py-0.2 rounded-sm border ${courseColor.badge}`}
-                    >
-                      {course.course_code || course.name}
-                    </span>
-                    <span className="text-xs font-medium text-foreground truncate max-w-[160px] sm:max-w-[220px]">
-                      {course.name}
-                    </span>
+                    <span>{cleanCode}</span>
                     <button
                       type="button"
                       onClick={() => onToggleCourse(course.id)}
-                      title={`Hide ${course.course_code || course.name}`}
-                      aria-label={`Hide ${course.course_code || course.name}`}
-                      className="ml-1 text-muted-foreground/60 hover:text-foreground hover:bg-muted/40 rounded p-0.5 transition-colors cursor-pointer"
+                      title={`Hide ${cleanCode}`}
+                      aria-label={`Hide ${cleanCode}`}
+                      className="hover:opacity-75 p-0.5 rounded cursor-pointer transition-opacity"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
                     </button>
-                  </div>
+                  </span>
                 );
               })
             )}
@@ -179,18 +173,22 @@ export function WeeklyDashboard({
 
               {showHiddenSection && (
                 <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 pl-5">
-                  {hiddenCourses.map((course) => (
-                    <button
-                      key={course.id}
-                      type="button"
-                      onClick={() => onToggleCourse(course.id)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-muted/40 border border-border/70 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all cursor-pointer group"
-                      title={`Restore ${course.course_code || course.name}`}
-                    >
-                      <Plus className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />
-                      <span className="font-mono font-bold">{course.course_code || course.name}</span>
-                    </button>
-                  ))}
+                  {hiddenCourses.map((course) => {
+                    const cleanCode = getCleanCourseCode(course.course_code, course.name);
+                    const courseColor = getCourseColor(course.course_code || course.id);
+                    return (
+                      <button
+                        key={course.id}
+                        type="button"
+                        onClick={() => onToggleCourse(course.id)}
+                        className={`inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1 rounded-md text-xs font-mono font-bold uppercase border opacity-60 hover:opacity-100 transition-all cursor-pointer ${courseColor.badge}`}
+                        title={`Restore ${cleanCode}`}
+                      >
+                        <Plus className="w-3 h-3 stroke-[2.5]" />
+                        <span>{cleanCode}</span>
+                      </button>
+                    );
+                  })}
                   <button
                     type="button"
                     onClick={onSelectAllCourses}

@@ -295,7 +295,7 @@ export function MasterCalendarView({
                                   type="button"
                                   onClick={() => onToggleCompleteItem(deliv.id)}
                                   aria-label={`Mark ${deliv.title} as ${isFinished ? "incomplete" : "complete"}`}
-                                  className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                                  className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
                                     isFinished
                                       ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
                                       : "border-border bg-card hover:border-primary"
@@ -345,10 +345,11 @@ export function MasterCalendarView({
                                   href={deliv.canvasUrl}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold flex items-center gap-1 shadow-2xs"
+                                  className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                                  title="View on Canvas"
                                 >
-                                  <span>Canvas</span>
-                                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                                  <span>View</span>
+                                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                                 </a>
                               </div>
                             </div>
@@ -391,6 +392,22 @@ export function MasterCalendarView({
                       evt.isCompleted ? "opacity-70 bg-muted/5" : ""
                     }`}
                   >
+                    {/* Checkbox for deliverables */}
+                    {onToggleCompleteItem && evt.type !== "live" && (
+                      <button
+                        type="button"
+                        onClick={() => onToggleCompleteItem(evt.id)}
+                        aria-label={`Mark ${evt.title} as ${evt.isCompleted ? "incomplete" : "complete"}`}
+                        className={`mt-0.5 sm:mt-0 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                          evt.isCompleted
+                            ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
+                            : "border-border bg-card hover:border-primary"
+                        }`}
+                      >
+                        {evt.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </button>
+                    )}
+
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
@@ -426,9 +443,10 @@ export function MasterCalendarView({
                         href={evt.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="h-8 px-3 rounded border border-border bg-card hover:bg-muted/40 text-foreground text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-2xs"
+                        className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                        title={evt.type === "live" ? "Join Zoom session" : "View on Canvas"}
                       >
-                        <span>{evt.type === "live" ? "Join Zoom" : "Open in Canvas"}</span>
+                        <span>{evt.type === "live" ? "Join Zoom" : "View"}</span>
                         <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                       </a>
                     </div>

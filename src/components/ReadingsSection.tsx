@@ -70,7 +70,7 @@ export function ReadingsSection({
       case "video":
         return (
           <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/30">
-            VIDEO
+            VIDEO LECTURE
           </span>
         );
       default:
@@ -120,7 +120,7 @@ export function ReadingsSection({
       <div className="sticky top-0 z-20 bg-card border-b border-border p-4 sm:p-5 space-y-3">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
-            Week {weekNumber} Readings & Cases{" "}
+            Week {weekNumber} Coursework & Lectures{" "}
             <span className="text-primary font-mono text-base font-bold">
               ({readings.length})
             </span>
@@ -146,12 +146,12 @@ export function ReadingsSection({
         {/* Search + Category Filter Chips */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+            <Search className="w-4 h-4 absolute left-3 top-2 text-muted-foreground" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search readings or cases..."
+              placeholder="Search lectures, videos, or cases..."
               className="w-full h-8 pl-9 pr-3 text-xs sm:text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -166,6 +166,16 @@ export function ReadingsSection({
               }`}
             >
               All ({readings.length})
+            </button>
+            <button
+              onClick={() => setCategoryFilter("video")}
+              className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
+                categoryFilter === "video"
+                  ? "bg-primary text-primary-foreground font-bold"
+                  : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
+              }`}
+            >
+              Videos ({readings.filter((r) => r.category === "video").length})
             </button>
             <button
               onClick={() => setCategoryFilter("case")}
@@ -185,7 +195,7 @@ export function ReadingsSection({
                   : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
               }`}
             >
-              To Read ({readings.length - completedCount})
+              To Do ({readings.length - completedCount})
             </button>
           </div>
         </div>
@@ -241,10 +251,10 @@ export function ReadingsSection({
                         aria-label={`Mark ${reading.title} as ${
                           reading.isCompleted ? "incomplete" : "complete"
                         }`}
-                        className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                        className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                           reading.isCompleted
                             ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
-                            : "border-border bg-card hover:border-primary"
+                            : "border-border bg-card hover:border-primary shadow-2xs"
                         }`}
                       >
                         {reading.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}

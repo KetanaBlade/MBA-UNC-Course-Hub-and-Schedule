@@ -64,3 +64,31 @@ export function getCourseColor(courseIdOrCode: number | string): CourseColorStyl
   const index = Math.abs(hash) % PALETTE.length;
   return PALETTE[index];
 }
+
+/**
+ * Extracts a clean, concise course tag from messy Canvas course titles.
+ * Examples:
+ *   "973D MBA 714 BUSINESS STATISTICS AND ANALYTICS 2026-0926" -> "MBA 714"
+ *   "973D MBA 744 CUSTOMER VALUE STRATEGIES 2026-0926" -> "MBA 744"
+ *   "MBA707-973B: ORIENTATION" -> "Orientation"
+ *   "Digital Campus Technology Tutorial" -> "Tech Tutorial"
+ */
+export function getCleanCourseCode(rawCode?: string | null, rawName?: string | null): string {
+  const text = (rawCode || rawName || "").trim();
+
+  // Match MBA + number (e.g., MBA 714, MBA 801, MBA 773)
+  const mbaMatch = text.match(/MBA\s*(\d{3}[A-Z]?)/i);
+  if (mbaMatch && mbaMatch[1]) {
+    return `MBA ${mbaMatch[1].toUpperCase()}`;
+  }
+
+  // Common UNC MBA program modules
+  if (/orientation/i.test(text)) return "Orientation";
+  if (/technology|tutorial/i.test(text)) return "Tech Tutorial";
+  if (/foundations/i.test(text)) return "Foundations";
+  if (/microeconomics/i.test(text)) return "Microeconomics";
+  if (/statistics/i.test(text)) return "Statistics";
+
+  // Fallback: take first 14 chars
+  return text.split(/[-–:]/)[0].trim().slice(0, 14);
+}

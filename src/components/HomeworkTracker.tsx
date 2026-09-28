@@ -145,7 +145,7 @@ export function HomeworkTracker({
                 type="button"
                 onClick={() => onToggleComplete(deliv.id)}
                 aria-label={`Mark ${deliv.title} as ${isFinished ? "incomplete" : "complete"}`}
-                className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
                   isFinished
                     ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
                     : "border-border bg-card hover:border-primary"
@@ -187,20 +187,17 @@ export function HomeworkTracker({
                   )}
                 </div>
 
-                {/* Submit Action Button */}
+                {/* View Action Button */}
                 <div className="pt-0.5">
                   <a
                     href={deliv.canvasUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className={`h-7 px-2.5 rounded text-xs font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 ${
-                      isFinished
-                        ? "border border-border bg-card hover:bg-muted/30 text-foreground"
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                    }`}
+                    className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                    title="View on Canvas"
                   >
-                    <span>{isFinished ? "View Submission" : "Submit on Canvas"}</span>
-                    <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                    <span>View</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                   </a>
                 </div>
               </div>

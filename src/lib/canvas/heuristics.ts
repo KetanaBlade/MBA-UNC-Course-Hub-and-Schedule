@@ -66,10 +66,12 @@ export function extractWeekNumber(text?: string | null): number | null {
  */
 export function categorizeResource(
   name: string,
-  contentType?: string
+  contentType?: string,
+  source?: "module_item" | "files_tab" | "announcement"
 ): ReadingCategory {
   const lower = name.toLowerCase();
 
+  // 1. Cases
   if (
     lower.includes("case") ||
     lower.includes("hbr") ||
@@ -79,6 +81,7 @@ export function categorizeResource(
     return "case";
   }
 
+  // 2. Slide Decks
   if (
     lower.endsWith(".pptx") ||
     lower.endsWith(".ppt") ||
@@ -89,6 +92,7 @@ export function categorizeResource(
     return "slides";
   }
 
+  // 3. Spreadsheets & Models
   if (
     lower.endsWith(".xlsx") ||
     lower.endsWith(".xls") ||
@@ -100,21 +104,55 @@ export function categorizeResource(
     return "spreadsheet";
   }
 
+  // 4. Syllabus
   if (lower.includes("syllabus") || lower.includes("course outline")) {
     return "syllabus";
   }
 
+  // 5. 2U / DigitalCampus asynchronous module items are almost ALWAYS video lectures!
+  // In UNC 2U modules, asynchronous coursework items include "1.1 Introduction...", "1.2 Video...", "Lecture...", "Discussion...", etc.
+  if (source === "module_item") {
+    // Only classify as reading if explicitly a document file format (.pdf, .doc) or explicitly "pre-reading"
+    if (
+      lower.endsWith(".pdf") ||
+      lower.endsWith(".docx") ||
+      lower.endsWith(".doc") ||
+      lower.includes("pre-reading")
+    ) {
+      return "reading";
+    }
+    // Everything else in a 2U module item is an asynchronous video lecture
+    return "video";
+  }
+
+  // 6. Explicit Readings / Books / Articles / PDFs
+  if (
+    lower.includes("reading") ||
+    lower.includes("article") ||
+    lower.includes("chapter") ||
+    lower.includes("textbook") ||
+    lower.includes("book") ||
+    lower.includes("paper") ||
+    lower.endsWith(".pdf") ||
+    lower.endsWith(".docx") ||
+    lower.endsWith(".doc")
+  ) {
+    return "reading";
+  }
+
+  // 7. Video fallback
   if (
     lower.endsWith(".mp4") ||
     lower.endsWith(".mov") ||
     contentType?.startsWith("video/") ||
     lower.includes("recording") ||
-    lower.includes("video")
+    lower.includes("video") ||
+    lower.includes("lecture")
   ) {
     return "video";
   }
 
-  return "reading";
+  return "video";
 }
 
 /**

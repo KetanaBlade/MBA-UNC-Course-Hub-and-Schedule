@@ -76,7 +76,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                   type="button"
                   onClick={() => onToggleComplete(file.id)}
                   aria-label={`Mark ${file.title} as ${file.isCompleted ? "incomplete" : "complete"}`}
-                  className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                  className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
                     file.isCompleted
                       ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
                       : "border-border bg-card hover:border-primary"
