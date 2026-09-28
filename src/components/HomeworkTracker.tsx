@@ -155,12 +155,11 @@ export function HomeworkTracker({
               </button>
 
               <div className="space-y-1.5 flex-1 min-w-0">
-                {/* Line 1: Course code + Status badge */}
+                {/* Line 1: Due date + Status badge (Above Title) */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
-                  >
-                    {getCleanCourseName(deliv.courseCode, deliv.courseName)}
+                  <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground font-semibold">
+                    <Calendar className="w-3.5 h-3.5 opacity-70" />
+                    {formatDueText(deliv)}
                   </span>
                   {getStatusBadge(deliv.status, deliv.score, deliv.grade, deliv.isCompleted)}
                 </div>
@@ -174,11 +173,12 @@ export function HomeworkTracker({
                   {deliv.title}
                 </h3>
 
-                {/* Line 3: Due date + Points metadata */}
-                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 font-mono text-xs">
-                    <Calendar className="w-3.5 h-3.5 opacity-70" />
-                    {formatDueText(deliv)}
+                {/* Line 3: Course tag + Points metadata (Below Title) */}
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span
+                    className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                  >
+                    {getCleanCourseName(deliv.courseCode, deliv.courseName)}
                   </span>
                   {deliv.pointsPossible > 0 && (
                     <span className="font-mono text-xs tabular-nums font-semibold text-foreground/80">

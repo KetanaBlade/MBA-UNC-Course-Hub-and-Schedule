@@ -121,11 +121,6 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                         • {file.folderPath}
                       </span>
                     )}
-                    {file.fileSizeFormatted && (
-                      <span className="font-mono text-xs text-muted-foreground/80">
-                        • {file.fileSizeFormatted}
-                      </span>
-                    )}
                   </div>
                 </div>
 

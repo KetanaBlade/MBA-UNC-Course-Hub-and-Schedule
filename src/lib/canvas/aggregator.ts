@@ -46,6 +46,12 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
   modules.forEach((mod) => {
     const w = extractWeekNumber(mod.name);
     if (w) detectedWeeks.add(w);
+    if (mod.items) {
+      mod.items.forEach((item) => {
+        const itemW = extractWeekNumber(item.title);
+        if (itemW) detectedWeeks.add(itemW);
+      });
+    }
   });
 
   folders.forEach((f) => {
@@ -81,6 +87,26 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
   folders.forEach((f) => {
     const w = extractWeekNumber(f.name) || extractWeekNumber(f.full_name);
     if (w) folderWeekMap.set(f.id, w);
+  });
+
+  // Build map of assignment IDs to week numbers from modules
+  const assignmentModuleWeekMap = new Map<number, number>();
+  modules.forEach((mod) => {
+    const modWeek = extractWeekNumber(mod.name);
+    if (mod.items) {
+      mod.items.forEach((item) => {
+        if ((item.type === "Assignment" || item.type === "Quiz") && item.content_id) {
+          if (modWeek) {
+            assignmentModuleWeekMap.set(item.content_id, modWeek);
+          } else {
+            const itemWeek = extractWeekNumber(item.title);
+            if (itemWeek) {
+              assignmentModuleWeekMap.set(item.content_id, itemWeek);
+            }
+          }
+        }
+      });
+    }
   });
 
   // 3. Assemble each WeeklyBundle
@@ -169,7 +195,9 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const weekDeliverables: NormalizedDeliverable[] = [];
 
     assignments.forEach((assignment) => {
-      const assignWeek = extractWeekNumber(assignment.name);
+      const assignWeek =
+        assignmentModuleWeekMap.get(assignment.id) ||
+        extractWeekNumber(assignment.name);
       const isWeekMatch = assignWeek === weekNum;
 
       if (isWeekMatch) {

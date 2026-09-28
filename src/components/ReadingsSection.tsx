@@ -67,18 +67,9 @@ export function ReadingsSection({
             MODEL
           </span>
         );
-      case "video":
-        return (
-          <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/30">
-            VIDEO LECTURE
-          </span>
-        );
       default:
-        return (
-          <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-muted/70 text-foreground border border-border">
-            READING
-          </span>
-        );
+        // Do not render generic reading or video tags
+        return null;
     }
   };
 
@@ -288,12 +279,6 @@ export function ReadingsSection({
                           {reading.folderPath && (
                             <span className="font-mono text-xs text-muted-foreground/80">
                               • {reading.folderPath}
-                            </span>
-                          )}
-
-                          {reading.fileSizeFormatted && (
-                            <span className="font-mono text-xs tabular-nums text-muted-foreground/80">
-                              • {reading.fileSizeFormatted}
                             </span>
                           )}
                         </div>

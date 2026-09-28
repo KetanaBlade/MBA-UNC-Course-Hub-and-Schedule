@@ -37,6 +37,40 @@ export function extractWeekNumber(text?: string | null): number | null {
     if (num > 0 && num <= 20) return num;
   }
 
+  // 5. Homework & Assignments: "Homework 1", "Homework Assignment 1", "HW 1", "HW-1", "Assignment 1"
+  const hwMatch = clean.match(
+    /(?:^|\b|_)(?:homework\s*(?:assignment)?|assignment|hw)[\s_#-]*0*(\d{1,2})\b/i
+  );
+  if (hwMatch && hwMatch[1]) {
+    const num = parseInt(hwMatch[1], 10);
+    if (num > 0 && num <= 20) return num;
+  }
+
+  // 6. Problem Sets: "Problem Set 1", "PSet 1", "PS 1", "PS1"
+  const psMatch = clean.match(
+    /(?:^|\b|_)(?:problem[\s_-]*set|pset|ps)[\s_#-]*0*(\d{1,2})\b/i
+  );
+  if (psMatch && psMatch[1]) {
+    const num = parseInt(psMatch[1], 10);
+    if (num > 0 && num <= 20) return num;
+  }
+
+  // 7. Quizzes: "Quiz 1", "Quiz #1"
+  const quizMatch = clean.match(/(?:^|\b|_)quiz[\s_#-]*0*(\d{1,2})\b/i);
+  if (quizMatch && quizMatch[1]) {
+    const num = parseInt(quizMatch[1], 10);
+    if (num > 0 && num <= 20) return num;
+  }
+
+  // 8. Cases & Memos: "Case 1", "Case Memo 1", "Memo 1"
+  const caseMatch = clean.match(
+    /(?:^|\b|_)(?:case[\s_-]*(?:memo|study|analysis)?|memo)[\s_#-]*0*(\d{1,2})\b/i
+  );
+  if (caseMatch && caseMatch[1]) {
+    const num = parseInt(caseMatch[1], 10);
+    if (num > 0 && num <= 20) return num;
+  }
+
   // Roman numerals: "Week I", "Week II", "Week III", "Week IV", "Week V", "Week VI"
   const romanMatch = clean.match(
     /(?:^|\b|_)week[\s_-]*(i{1,3}|iv|v|vi{0,3}|ix|x)\b/i
