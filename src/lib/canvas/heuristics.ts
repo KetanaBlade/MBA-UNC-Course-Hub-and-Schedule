@@ -263,3 +263,69 @@ export function calculateDueUrgency(
     status: "upcoming",
   };
 }
+
+/**
+ * Anchor date for Fall 2026 Term: Monday, September 28, 2026 (00:00:00 local time).
+ */
+export const FALL_2026_TERM_START = new Date(2026, 8, 28, 0, 0, 0, 0);
+
+/**
+ * Returns exact start (Monday 00:00:00) and end (Sunday 23:59:59.999) dates for a course week.
+ */
+export function getWeekDateBounds(
+  weekNum: number,
+  anchorMonday: Date = FALL_2026_TERM_START
+): { start: Date; end: Date } {
+  const start = new Date(anchorMonday.getTime() + (weekNum - 1) * 7 * 86400000);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start.getTime() + 7 * 86400000 - 1); // Sunday 23:59:59.999
+  return { start, end };
+}
+
+/**
+ * Returns the week number (1-12) for a given date, strictly configured by Monday-Sunday boundaries.
+ */
+export function getWeekFromDate(
+  dateInput?: string | Date | null,
+  anchorMonday: Date = FALL_2026_TERM_START
+): number | null {
+  if (!dateInput) return null;
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
+
+  const anchorStart = new Date(
+    anchorMonday.getFullYear(),
+    anchorMonday.getMonth(),
+    anchorMonday.getDate(),
+    0,
+    0,
+    0,
+    0
+  ).getTime();
+
+  const diffMs = d.getTime() - anchorStart;
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffDays < 0) {
+    if (diffDays >= -7) return 1; // Prior week / orientation belongs to Week 1 prep
+    return null;
+  }
+
+  const week = Math.floor(diffDays / 7) + 1;
+  return week >= 1 && week <= 12 ? week : null;
+}
+
+/**
+ * Checks whether a given date falls within the Monday-Sunday boundary of a specific week.
+ */
+export function isDateInWeek(
+  dateInput?: string | Date | null,
+  weekNum: number = 1,
+  anchorMonday: Date = FALL_2026_TERM_START
+): boolean {
+  if (!dateInput) return false;
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return false;
+  const { start, end } = getWeekDateBounds(weekNum, anchorMonday);
+  return d.getTime() >= start.getTime() && d.getTime() <= end.getTime();
+}

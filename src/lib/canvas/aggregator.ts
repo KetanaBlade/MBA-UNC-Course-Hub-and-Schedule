@@ -18,6 +18,9 @@ import {
   extractWeekNumber,
   extractZoomLinks,
   formatFileSize,
+  getWeekFromDate,
+  getWeekDateBounds,
+  isDateInWeek,
 } from "./heuristics";
 
 export interface AggregatorInput {
@@ -334,16 +337,8 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
         extractWeekNumber(assignment.name);
 
       // Infer week from due date if not in title or module
-      if (!assignWeek && assignment.due_at && knownWeekAssignments.length > 0) {
-        const dueTime = new Date(assignment.due_at).getTime();
-        if (!isNaN(dueTime)) {
-          const ref = knownWeekAssignments[0];
-          const weekDiff = Math.round((dueTime - ref.time) / (7 * 86400000));
-          const inferred = ref.week + weekDiff;
-          if (inferred > 0 && inferred <= 12) {
-            assignWeek = inferred;
-          }
-        }
+      if (!assignWeek && assignment.due_at) {
+        assignWeek = getWeekFromDate(assignment.due_at);
       }
 
       const isWeekMatch = assignWeek === weekNum;
@@ -389,41 +384,16 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
         if (/\battendance\b/i.test(ev.title || "")) return;
         if (/\battendance\b/i.test(ev.description || "")) return;
 
-        // Priority 1: Match week number from title or description
-        let evWeek = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
-
-        // Priority 2: Match by date if within week due date span
-        if (!evWeek && ev.start_at) {
-          const evDate = new Date(ev.start_at);
-          if (!isNaN(evDate.getTime())) {
-            const weekDueDates = weekDeliverables
-              .filter((d) => d.dueAt)
-              .map((d) => new Date(d.dueAt!).getTime());
-            if (weekDueDates.length > 0) {
-              const minDue = Math.min(...weekDueDates);
-              const maxDue = Math.max(...weekDueDates);
-              const weekStart = minDue - 7 * 86400000;
-              const weekEnd = maxDue + 86400000;
-              if (evDate.getTime() >= weekStart && evDate.getTime() <= weekEnd) {
-                evWeek = weekNum;
-              }
-            }
-          }
+        // Priority 1: DATE IS AUTHORITATIVE for scheduled calendar events.
+        // A live class session takes place on a real calendar date (Monday 00:00:00 to Sunday 23:59:59).
+        let evWeek: number | null = null;
+        if (ev.start_at) {
+          evWeek = getWeekFromDate(ev.start_at);
         }
 
-        // Priority 3: Fallback by calendar date offset from term start (Sep 28, 2026)
-        if (!evWeek && ev.start_at) {
-          const evDate = new Date(ev.start_at);
-          if (!isNaN(evDate.getTime())) {
-            const termStartMonday = new Date(2026, 8, 28).getTime(); // Monday Sep 28, 2026
-            const diffDays = Math.floor((evDate.getTime() - termStartMonday) / 86400000);
-            if (diffDays >= 0) {
-              const calcWeek = Math.floor(diffDays / 7) + 1;
-              if (calcWeek >= 1 && calcWeek <= 10) {
-                evWeek = calcWeek;
-              }
-            }
-          }
+        // Priority 2: Fall back to week number from title or description ONLY if start_at is missing/invalid
+        if (!evWeek) {
+          evWeek = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
         }
 
         if (evWeek === weekNum) {

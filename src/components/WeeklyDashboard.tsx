@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { CanvasCourse, NormalizedDeliverable, WeeklyBundle } from "@/lib/canvas/types";
+import { getWeekDateBounds } from "@/lib/canvas/heuristics";
 import { WeeklyOverviewCard } from "./WeeklyOverviewCard";
 import { ReadingsSection } from "./ReadingsSection";
 import { HomeworkTracker } from "./HomeworkTracker";
@@ -147,6 +148,12 @@ export function WeeklyDashboard({
     return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
   });
 
+  // Date bounds for selected week (Monday 00:00:00 to Sunday 23:59:59)
+  const { start: weekStartDate, end: weekEndDate } = getWeekDateBounds(selectedWeek);
+  const weekStartStr = weekStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const weekEndStr = weekEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const weekDateRangeLabel = `${weekStartStr} – ${weekEndStr}`;
+
   const totalDeliverablesCount = activeBundles.reduce(
     (sum, b) => sum + b.stats.totalDeliverables,
     0
@@ -155,14 +162,23 @@ export function WeeklyDashboard({
     (sum, b) => sum + b.stats.submittedCount,
     0
   );
-  const totalReadingsCount = activeBundles.reduce(
-    (sum, b) => sum + b.stats.totalReadings,
-    0
-  );
-  const completedReadingsCount = activeBundles.reduce(
-    (sum, b) => sum + b.stats.completedReadingsCount,
-    0
-  );
+
+  // Separate coursework vs files counts for transparent weekly tracking
+  const rawReadings = activeBundles.flatMap((b) => b.readings);
+  const totalCourseworkCount = rawReadings.filter((r) => r.source !== "files_tab").length;
+  const completedCourseworkCount = rawReadings.filter(
+    (r) => r.source !== "files_tab" && r.isCompleted
+  ).length;
+
+  const totalFilesCount = rawReadings.filter((r) => r.source === "files_tab").length;
+  const completedFilesCount = rawReadings.filter(
+    (r) => r.source === "files_tab" && r.isCompleted
+  ).length;
+
+  // Overall progress strictly scoped to this selected week
+  const totalWeekTasks = totalDeliverablesCount + totalCourseworkCount + totalFilesCount;
+  const completedWeekTasks = submittedDeliverablesCount + completedCourseworkCount + completedFilesCount;
+  const weekProgressPercent = totalWeekTasks > 0 ? Math.round((completedWeekTasks / totalWeekTasks) * 100) : 100;
 
   return (
     <div className="space-y-6">
@@ -283,7 +299,7 @@ export function WeeklyDashboard({
 
             {/* Week Selector Scrubber & Global Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
-              <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                 <span className="text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground mr-1">
                   Week:
                 </span>
@@ -307,6 +323,9 @@ export function WeeklyDashboard({
                     </button>
                   );
                 })}
+                <span className="text-xs font-mono font-medium text-muted-foreground ml-1.5 hidden md:inline">
+                  ({weekDateRangeLabel})
+                </span>
               </div>
 
               {/* Status Filter Toggle */}
@@ -326,7 +345,7 @@ export function WeeklyDashboard({
             </div>
           </div>
 
-          {/* B. KPI METRIC CARDS DECK (4 SOLID METRICS - Directly below Filter Deck, NO gap!) */}
+          {/* B. KPI METRIC CARDS DECK (4 SOLID METRICS - All Scoped to Selected Week) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {/* Deliverables Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
@@ -342,41 +361,34 @@ export function WeeklyDashboard({
             {/* Coursework & Lectures Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
               <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
-                Coursework & Lectures
+                Coursework
               </div>
               <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
-                {completedReadingsCount} / {totalReadingsCount}
+                {completedCourseworkCount} / {totalCourseworkCount}
               </div>
               <p className="text-xs text-muted-foreground">Completed for Week {selectedWeek}</p>
             </div>
 
-            {/* Live Zoom Class Count */}
+            {/* Course Files Metric (replaces Live Zoom) */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
               <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
-                Live Zoom
+                Course Files
               </div>
               <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
-                {allLiveSessions.length}
+                {completedFilesCount} / {totalFilesCount}
               </div>
-              <p className="text-xs text-muted-foreground">Sessions scheduled</p>
+              <p className="text-xs text-muted-foreground">Reviewed for Week {selectedWeek}</p>
             </div>
 
-            {/* Completion Rate Metric */}
+            {/* Overall Progress Metric (Scoped to Selected Week) */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
               <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
-                Overall Pace
+                Overall Progress
               </div>
               <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
-                {totalDeliverablesCount + totalReadingsCount > 0
-                  ? Math.round(
-                      ((submittedDeliverablesCount + completedReadingsCount) /
-                        (totalDeliverablesCount + totalReadingsCount)) *
-                        100
-                    )
-                  : 100}
-                %
+                {weekProgressPercent}%
               </div>
-              <p className="text-xs text-muted-foreground">Term progress</p>
+              <p className="text-xs text-muted-foreground">Week {selectedWeek} completion</p>
             </div>
           </div>
 
