@@ -127,6 +127,21 @@ export function HomeworkTracker({
 
   const totalCount = deliverables.length + liveSessions.length;
 
+  // Defensive chronological sort: earliest first
+  const sortedLiveSessions = [...liveSessions].sort((a, b) => {
+    if (!a.startAt && !b.startAt) return 0;
+    if (!a.startAt) return 1;
+    if (!b.startAt) return -1;
+    return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+  });
+
+  const sortedDeliverables = [...deliverables].sort((a, b) => {
+    if (!a.dueAt && !b.dueAt) return 0;
+    if (!a.dueAt) return 1;
+    if (!b.dueAt) return -1;
+    return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
+  });
+
   if (totalCount === 0) {
     return (
       <div className="border border-border rounded-lg bg-card p-5 text-center text-xs sm:text-sm text-muted-foreground shadow-xs">
@@ -150,7 +165,7 @@ export function HomeworkTracker({
       {/* Scannable Deliverables & Live Sessions List */}
       <div className="overflow-y-auto max-h-[760px] divide-y divide-border/60 flex-1 min-h-0">
         {/* Live Synchronous Sessions from Canvas Calendar */}
-        {liveSessions.map((session) => {
+        {sortedLiveSessions.map((session) => {
           const courseColor = getCourseColor(session.courseCode);
           const cleanCode = getCleanCourseCode(session.courseCode, session.courseName);
 
@@ -214,7 +229,7 @@ export function HomeworkTracker({
         })}
 
         {/* Deliverables */}
-        {deliverables.map((deliv) => {
+        {sortedDeliverables.map((deliv) => {
           const courseColor = getCourseColor(deliv.courseCode);
           const cleanCode = getCleanCourseCode(deliv.courseCode, deliv.courseName);
           const isFinished =
@@ -276,7 +291,7 @@ export function HomeworkTracker({
               </div>
 
               {/* View Action Button */}
-              <div className="shrink-0 self-center">
+              <div className="shrink-0 self-start mt-0.5">
                 <a
                   href={deliv.canvasUrl}
                   target="_blank"

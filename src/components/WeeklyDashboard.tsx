@@ -116,8 +116,22 @@ export function WeeklyDashboard({
 
   const allAnnouncements = activeBundles.flatMap((b) => b.announcements);
   const allReadings = activeBundles.flatMap((b) => b.readings);
-  const allDeliverables = activeBundles.flatMap((b) => b.deliverables);
-  const allLiveSessions = activeBundles.flatMap((b) => b.liveSessions);
+  const allDeliverables = activeBundles
+    .flatMap((b) => b.deliverables)
+    .sort((a, b) => {
+      if (!a.dueAt && !b.dueAt) return 0;
+      if (!a.dueAt) return 1;
+      if (!b.dueAt) return -1;
+      return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
+    });
+  const allLiveSessions = activeBundles
+    .flatMap((b) => b.liveSessions)
+    .sort((a, b) => {
+      if (!a.startAt && !b.startAt) return 0;
+      if (!a.startAt) return 1;
+      if (!b.startAt) return -1;
+      return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+    });
 
   // Separate readings into: Left Pane (Course Readings & Cases) and Right Pane (Rescued Files Tab items)
   const leftPaneReadings = allReadings.filter((r) => r.source !== "files_tab");

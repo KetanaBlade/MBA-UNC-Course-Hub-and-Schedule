@@ -521,17 +521,27 @@ export default function HomePage() {
 
   const allDeliverables = useMemo(
     () =>
-      Object.values(bundlesByCourse).flatMap((bundles) =>
-        bundles.flatMap((b) => b.deliverables)
-      ),
+      Object.values(bundlesByCourse)
+        .flatMap((bundles) => bundles.flatMap((b) => b.deliverables))
+        .sort((a, b) => {
+          if (!a.dueAt && !b.dueAt) return 0;
+          if (!a.dueAt) return 1;
+          if (!b.dueAt) return -1;
+          return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
+        }),
     [bundlesByCourse]
   );
 
   const allLiveSessions = useMemo(
     () =>
-      Object.values(bundlesByCourse).flatMap((bundles) =>
-        bundles.flatMap((b) => b.liveSessions)
-      ),
+      Object.values(bundlesByCourse)
+        .flatMap((bundles) => bundles.flatMap((b) => b.liveSessions))
+        .sort((a, b) => {
+          if (!a.startAt && !b.startAt) return 0;
+          if (!a.startAt) return 1;
+          if (!b.startAt) return -1;
+          return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+        }),
     [bundlesByCourse]
   );
 
