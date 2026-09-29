@@ -142,18 +142,28 @@ export class AppStorage {
 
   static getTheme(): "light" | "dark" {
     if (typeof window === "undefined") return "light";
-    const stored = localStorage.getItem(STORAGE_KEYS.THEME);
-    if (stored === "dark" || stored === "light") return stored;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.THEME);
+      if (stored === "dark" || stored === "light") return stored;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    } catch {
+      return "light";
+    }
   }
 
   static setTheme(theme: "light" | "dark"): void {
     if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    try {
+      localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    } catch (e) {
+      console.warn("Failed to save theme in localStorage:", e);
+    }
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
     } else {
       document.documentElement.classList.remove("dark");
+      document.documentElement.style.colorScheme = "light";
     }
   }
 

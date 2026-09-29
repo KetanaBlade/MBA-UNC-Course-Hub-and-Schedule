@@ -49,8 +49,11 @@ export function WeeklyDashboard({
   const [mobileTab, setMobileTab] = useState<"actions" | "readings" | "files" | "milestones">("actions");
   const [showHiddenSection, setShowHiddenSection] = useState(false);
 
-  // Fixed standard 5-week Kenan-Flagler quarter term
-  const weekNumbers = [1, 2, 3, 4, 5];
+  // UNC Kenan-Flagler quarter term: Block 1 (Weeks 1-5) and Block 2 (Weeks 6-10)
+  const block1Weeks = [1, 2, 3, 4, 5];
+  const block2Weeks = [6, 7, 8, 9, 10];
+  const currentBlock = selectedWeek <= 5 ? 1 : 2;
+  const blockWeekNum = selectedWeek <= 5 ? selectedWeek : selectedWeek - 5;
 
   // Active vs Hidden courses
   const activeCourses = courses.filter((c) => selectedCourseIds.includes(c.id));
@@ -297,34 +300,66 @@ export function WeeklyDashboard({
               )}
             </div>
 
-            {/* Week Selector Scrubber & Global Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
-              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-1">
-                  Week:
-                </span>
-                {weekNumbers.map((w) => {
-                  const isCurrent = w === selectedWeek;
-                  return (
-                    <button
-                      key={w}
-                      onClick={() => onSelectWeek(w)}
-                      className={`h-9 min-w-[56px] px-2.5 rounded-md border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                        isCurrent
-                          ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs scale-102"
-                          : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
-                      }`}
-                      aria-label={`Select Week ${w}`}
-                    >
-                      <span className="text-[8px] uppercase tracking-wider opacity-80 font-medium">
-                        Week
-                      </span>
-                      <span className="text-sm font-semibold leading-none tabular-nums">{w}</span>
-                    </button>
-                  );
-                })}
-                <span className="text-xs font-medium text-muted-foreground ml-1.5 hidden md:inline tabular-nums">
-                  ({weekDateRangeLabel})
+            {/* Week Selector Scrubber & Global Actions (Block 1 & Block 2 Divisions) */}
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pt-3 border-t border-border">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                {/* Block 1 Group */}
+                <div className="flex items-center gap-1 bg-muted/20 p-1 rounded-md border border-border/70">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 text-primary">
+                    Block 1
+                  </span>
+                  {block1Weeks.map((w) => {
+                    const isCurrent = w === selectedWeek;
+                    return (
+                      <button
+                        key={w}
+                        onClick={() => onSelectWeek(w)}
+                        className={`h-8 min-w-[38px] px-1.5 rounded-sm border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                          isCurrent
+                            ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs"
+                            : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
+                        }`}
+                        aria-label={`Select Block 1 Week ${w}`}
+                      >
+                        <span className="text-[7px] uppercase tracking-wider opacity-80 font-medium">
+                          W{w}
+                        </span>
+                        <span className="text-xs font-semibold leading-none tabular-nums">{w}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Block 2 Group */}
+                <div className="flex items-center gap-1 bg-muted/20 p-1 rounded-md border border-border/70">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 text-muted-foreground">
+                    Block 2
+                  </span>
+                  {block2Weeks.map((w) => {
+                    const isCurrent = w === selectedWeek;
+                    const b2Week = w - 5;
+                    return (
+                      <button
+                        key={w}
+                        onClick={() => onSelectWeek(w)}
+                        className={`h-8 min-w-[38px] px-1.5 rounded-sm border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                          isCurrent
+                            ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs"
+                            : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
+                        }`}
+                        aria-label={`Select Block 2 Week ${b2Week}`}
+                      >
+                        <span className="text-[7px] uppercase tracking-wider opacity-80 font-medium">
+                          W{b2Week}
+                        </span>
+                        <span className="text-xs font-semibold leading-none tabular-nums">{b2Week}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <span className="text-xs font-medium text-muted-foreground hidden sm:inline tabular-nums">
+                  Block {currentBlock} • Week {blockWeekNum} ({weekDateRangeLabel})
                 </span>
               </div>
 
@@ -355,7 +390,7 @@ export function WeeklyDashboard({
               <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {submittedDeliverablesCount} / {totalDeliverablesCount}
               </div>
-              <p className="text-xs text-muted-foreground">Submitted for Week {selectedWeek}</p>
+              <p className="text-xs text-muted-foreground">Submitted for Block {currentBlock} W{blockWeekNum}</p>
             </div>
 
             {/* Coursework & Lectures Metric */}
@@ -366,7 +401,7 @@ export function WeeklyDashboard({
               <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {completedCourseworkCount} / {totalCourseworkCount}
               </div>
-              <p className="text-xs text-muted-foreground">Completed for Week {selectedWeek}</p>
+              <p className="text-xs text-muted-foreground">Completed for Block {currentBlock} W{blockWeekNum}</p>
             </div>
 
             {/* Course Files Metric */}
@@ -377,7 +412,7 @@ export function WeeklyDashboard({
               <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {completedFilesCount} / {totalFilesCount}
               </div>
-              <p className="text-xs text-muted-foreground">Reviewed for Week {selectedWeek}</p>
+              <p className="text-xs text-muted-foreground">Reviewed for Block {currentBlock} W{blockWeekNum}</p>
             </div>
 
             {/* Overall Progress Metric */}
@@ -388,7 +423,7 @@ export function WeeklyDashboard({
               <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {weekProgressPercent}%
               </div>
-              <p className="text-xs text-muted-foreground">Week {selectedWeek} completion</p>
+              <p className="text-xs text-muted-foreground">Block {currentBlock} W{blockWeekNum} completion</p>
             </div>
           </div>
 
