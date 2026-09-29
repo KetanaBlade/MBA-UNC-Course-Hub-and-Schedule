@@ -26,6 +26,55 @@ import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { MasterCalendarView } from "@/components/MasterCalendarView";
 import { CohortShareModal } from "@/components/CohortShareModal";
 
+function reconcileBundlesCompletion(
+  bundlesByCourse: Record<number, WeeklyBundle[]>,
+  completedIds: Set<string>
+): Record<number, WeeklyBundle[]> {
+  const result: Record<number, WeeklyBundle[]> = {};
+  Object.entries(bundlesByCourse).forEach(([courseIdStr, bundles]) => {
+    const courseId = Number(courseIdStr);
+    result[courseId] = bundles.map((bundle) => {
+      const updatedReadings = bundle.readings.map((r) => ({
+        ...r,
+        isCompleted: completedIds.has(r.id),
+      }));
+      const updatedDeliverables = bundle.deliverables.map((d) => {
+        const isDone = completedIds.has(d.id) || d.status === "graded";
+        return {
+          ...d,
+          isCompleted: isDone,
+          status: isDone && d.status !== "graded" ? "submitted" : d.status,
+        };
+      });
+      const updatedTermDeliverables = (bundle.termDeliverables || []).map((d) => {
+        const isDone = completedIds.has(d.id) || d.status === "graded";
+        return {
+          ...d,
+          isCompleted: isDone,
+          status: isDone && d.status !== "graded" ? "submitted" : d.status,
+        };
+      });
+      const completedReadingsCount = updatedReadings.filter((r) => r.isCompleted).length;
+      const submittedCount = updatedDeliverables.filter(
+        (d) => d.status === "submitted" || d.status === "graded" || d.isCompleted
+      ).length;
+
+      return {
+        ...bundle,
+        readings: updatedReadings,
+        deliverables: updatedDeliverables,
+        termDeliverables: updatedTermDeliverables,
+        stats: {
+          ...bundle.stats,
+          completedReadingsCount,
+          submittedCount,
+        },
+      };
+    });
+  });
+  return result;
+}
+
 export default function HomePage() {
   const [tokens, setTokens] = useState<StudentAuthTokens>({
     digitalCampusToken: "",
@@ -70,8 +119,10 @@ export default function HomePage() {
 
     if (hasAnyToken) {
       if (cachedCourses && cachedBundles) {
+        const completedIds = AppStorage.getCompletedItems();
+        const reconciledBundles = reconcileBundlesCompletion(cachedBundles, completedIds);
         setCourses(cachedCourses);
-        setBundlesByCourse(cachedBundles);
+        setBundlesByCourse(reconciledBundles);
         if (savedCourseIds && Array.isArray(savedCourseIds) && savedCourseIds.length > 0) {
           const validIds = savedCourseIds.filter((id) => cachedCourses.some((c) => c.id === id));
           setSelectedCourseIds(validIds.length > 0 ? validIds : cachedCourses.map((c) => c.id));
@@ -129,7 +180,18 @@ export default function HomePage() {
   }, []);
 
   const loadMockData = () => {
-    const { courses: mockCourses, weeklyBundles: mockBundles } = getMockMBACoursesData();
+    const hasCustomProgress = AppStorage.hasStoredCompletedItems();
+    const completedItems = AppStorage.getCompletedItems();
+    const { courses: mockCourses, weeklyBundles: mockBundles, initialCompletedIds } = getMockMBACoursesData(
+      completedItems,
+      hasCustomProgress
+    );
+
+    // If first visit, seed default completed items into storage
+    if (!hasCustomProgress && initialCompletedIds.length > 0) {
+      AppStorage.saveCompletedItems(initialCompletedIds);
+    }
+
     setCourses(mockCourses);
     setBundlesByCourse(mockBundles);
     const savedCourseIds = AppStorage.getSelectedCourseIds();
@@ -479,6 +541,23 @@ export default function HomePage() {
             return d;
           });
 
+          // Check termDeliverables
+          let updatedTermDeliverables = bundle.termDeliverables;
+          if (bundle.termDeliverables) {
+            updatedTermDeliverables = bundle.termDeliverables.map((d) => {
+              if (d.id === itemId) {
+                hasChange = true;
+                const nextCompleted = !d.isCompleted;
+                return {
+                  ...d,
+                  isCompleted: nextCompleted,
+                  status: (nextCompleted ? "submitted" : "unsubmitted") as DeliverableStatus,
+                };
+              }
+              return d;
+            });
+          }
+
           if (!hasChange) return bundle;
 
           const completedReadingsCount = updatedReadings.filter((r) => r.isCompleted).length;
@@ -490,6 +569,7 @@ export default function HomePage() {
             ...bundle,
             readings: updatedReadings,
             deliverables: updatedDeliverables,
+            termDeliverables: updatedTermDeliverables,
             stats: {
               ...bundle.stats,
               completedReadingsCount,
@@ -498,8 +578,22 @@ export default function HomePage() {
           };
         });
       });
+      AppStorage.saveCachedBundles(next);
       return next;
     });
+  };
+
+  const handleRestoreBackup = () => {
+    const completedIds = AppStorage.getCompletedItems();
+    setBundlesByCourse((prev) => {
+      const reconciled = reconcileBundlesCompletion(prev, completedIds);
+      AppStorage.saveCachedBundles(reconciled);
+      return reconciled;
+    });
+    const savedCourseIds = AppStorage.getSelectedCourseIds();
+    if (savedCourseIds && savedCourseIds.length > 0) {
+      setSelectedCourseIds(savedCourseIds);
+    }
   };
 
   const handleExportCalendar = () => {
@@ -673,6 +767,7 @@ export default function HomePage() {
         onSaveTokens={handleSaveTokens}
         onEnableDemoMode={handleEnableDemoMode}
         initialTokens={tokens}
+        onRestoreBackup={handleRestoreBackup}
       />
 
       {/* Cohort Share Modal */}

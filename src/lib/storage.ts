@@ -132,6 +132,17 @@ export class AppStorage {
     }
   }
 
+  static hasStoredCompletedItems(): boolean {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(STORAGE_KEYS.COMPLETED_ITEMS) !== null;
+  }
+
+  static saveCompletedItems(items: Set<string> | string[]): void {
+    if (typeof window === "undefined") return;
+    const array = items instanceof Set ? Array.from(items) : items;
+    localStorage.setItem(STORAGE_KEYS.COMPLETED_ITEMS, JSON.stringify(array));
+  }
+
   static toggleCompletedItem(itemId: string): boolean {
     if (typeof window === "undefined") return false;
     const current = this.getCompletedItems();
@@ -148,6 +159,62 @@ export class AppStorage {
       JSON.stringify(Array.from(current))
     );
     return isNowCompleted;
+  }
+
+  static exportBackupData(): string {
+    if (typeof window === "undefined") return "";
+    const backup = {
+      app: "UNC_MBA_Hub",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      completedItems: Array.from(this.getCompletedItems()),
+      selectedCourseIds: this.getSelectedCourseIds(),
+      filters: {
+        taskStatus: this.getTaskStatusFilter(),
+        activeReadingTab: this.getReadingsCourseTab(),
+        activeFilesTab: this.getFilesCourseTab(),
+        fileStatus: this.getFileStatusFilter(),
+        calendarFilter: this.getCalendarFilter(),
+      },
+    };
+    return JSON.stringify(backup, null, 2);
+  }
+
+  static importBackupData(jsonString: string): { success: boolean; count: number; error?: string } {
+    if (typeof window === "undefined") return { success: false, count: 0, error: "SSR" };
+    try {
+      const data = JSON.parse(jsonString);
+      if (!data || typeof data !== "object") {
+        return { success: false, count: 0, error: "Invalid backup format: expected JSON object" };
+      }
+
+      let restoredCount = 0;
+      if (Array.isArray(data.completedItems)) {
+        const validIds = data.completedItems.filter((id: unknown) => typeof id === "string" && id.trim().length > 0);
+        this.saveCompletedItems(validIds);
+        restoredCount = validIds.length;
+      }
+
+      if (Array.isArray(data.selectedCourseIds)) {
+        const validCourseIds = data.selectedCourseIds.filter((id: unknown) => typeof id === "number");
+        if (validCourseIds.length > 0) {
+          this.setSelectedCourseIds(validCourseIds);
+        }
+      }
+
+      if (data.filters && typeof data.filters === "object") {
+        if (data.filters.taskStatus) this.setTaskStatusFilter(data.filters.taskStatus);
+        if (data.filters.activeReadingTab) this.setReadingsCourseTab(data.filters.activeReadingTab);
+        if (data.filters.activeFilesTab) this.setFilesCourseTab(data.filters.activeFilesTab);
+        if (data.filters.fileStatus) this.setFileStatusFilter(data.filters.fileStatus);
+        if (data.filters.calendarFilter) this.setCalendarFilter(data.filters.calendarFilter);
+      }
+
+      return { success: true, count: restoredCount };
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to parse backup file";
+      return { success: false, count: 0, error: msg };
+    }
   }
 
   static isDemoMode(): boolean {

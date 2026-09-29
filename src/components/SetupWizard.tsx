@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import {
   CheckCircle2,
   ChevronRight,
+  Database,
+  Download,
   ExternalLink,
   Eye,
   EyeOff,
@@ -12,9 +14,11 @@ import {
   Lock,
   ShieldCheck,
   Sparkles,
+  Upload,
   X,
 } from "lucide-react";
 import { StudentAuthTokens } from "@/lib/canvas/types";
+import { AppStorage } from "@/lib/storage";
 
 interface SetupWizardProps {
   isOpen: boolean;
@@ -22,6 +26,7 @@ interface SetupWizardProps {
   onSaveTokens: (tokens: StudentAuthTokens) => Promise<boolean>;
   onEnableDemoMode: () => void;
   initialTokens: StudentAuthTokens;
+  onRestoreBackup?: () => void;
 }
 
 export function SetupWizard({
@@ -30,6 +35,7 @@ export function SetupWizard({
   onSaveTokens,
   onEnableDemoMode,
   initialTokens,
+  onRestoreBackup,
 }: SetupWizardProps) {
   const [digitalToken, setDigitalToken] = useState(initialTokens.digitalCampusToken);
   const [kfToken, setKfToken] = useState(initialTokens.kenanFlaglerToken);
@@ -38,17 +44,63 @@ export function SetupWizard({
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
+  const [completedCount, setCompletedCount] = useState<number>(0);
+  const [backupMessage, setBackupMessage] = useState<{ text: string; isError: boolean } | null>(null);
 
-  // Close dialog on Escape key
+  // Close dialog on Escape key and load completed count
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     if (isOpen) {
       window.addEventListener("keydown", handleKeyDown);
+      setCompletedCount(AppStorage.getCompletedItems().size);
+      setBackupMessage(null);
     }
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
+
+  const handleExportBackup = () => {
+    const json = AppStorage.exportBackupData();
+    if (!json) return;
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = new Date().toISOString().split("T")[0];
+    a.href = url;
+    a.download = `UNC_MBA_Hub_Backup_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setBackupMessage({ text: "Backup file downloaded successfully!", isError: false });
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result;
+      if (typeof content !== "string") return;
+      const result = AppStorage.importBackupData(content);
+      if (result.success) {
+        setCompletedCount(AppStorage.getCompletedItems().size);
+        setBackupMessage({
+          text: `Restored ${result.count} completed items & preferences!`,
+          isError: false,
+        });
+        if (onRestoreBackup) onRestoreBackup();
+      } else {
+        setBackupMessage({
+          text: result.error || "Failed to restore backup",
+          isError: true,
+        });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   if (!isOpen) return null;
 
@@ -300,6 +352,47 @@ export function SetupWizard({
                 <strong className="font-semibold text-foreground">FERPA & Zero-Server Privacy: </strong>
                 Your tokens are stored strictly inside your browser's private <code className="font-mono text-[11px]">localStorage</code>. They are never sent to a third-party server, database, or analytics platform.
               </p>
+            </div>
+
+            {/* Progress Backup & Portability Section */}
+            <div className="rounded-md border border-border bg-card p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                  <Database className="w-3.5 h-3.5 text-primary" />
+                  <span>Progress & Checkmarks Backup</span>
+                </div>
+                <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
+                  {completedCount} items marked done
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-normal">
+                Because data stays strictly private in your browser, checkmarks do not automatically transfer between different devices or browsers. You can export a backup file and restore it on any device.
+              </p>
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleExportBackup}
+                  className="h-7 px-2.5 rounded border border-border bg-muted/30 hover:bg-muted/60 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                >
+                  <Download className="w-3 h-3 text-muted-foreground" />
+                  <span>Export Backup (.json)</span>
+                </button>
+                <label className="h-7 px-2.5 rounded border border-border bg-muted/30 hover:bg-muted/60 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 shadow-2xs">
+                  <Upload className="w-3 h-3 text-muted-foreground" />
+                  <span>Restore from File</span>
+                  <input
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={handleImportBackup}
+                    className="sr-only"
+                  />
+                </label>
+              </div>
+              {backupMessage && (
+                <p className={`text-[11px] font-semibold ${backupMessage.isError ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"}`}>
+                  {backupMessage.text}
+                </p>
+              )}
             </div>
 
             {/* Error & Success Messages */}

@@ -615,9 +615,13 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
  * - Block 2 (Weeks 6-10): Customer Value Strategies (MBA 744), Microeconomics (MBA 773)
  * - Foundations & Summits (Weeks 1-2): Kenan-Flagler Canvas Orientation & Math Foundations
  */
-export function getMockMBACoursesData(): {
+export function getMockMBACoursesData(
+  completedItemIds?: Set<string>,
+  isCustomized = false
+): {
   courses: CanvasCourse[];
   weeklyBundles: Record<number, WeeklyBundle[]>;
+  initialCompletedIds: string[];
 } {
   const courses: CanvasCourse[] = [
     {
@@ -1102,7 +1106,7 @@ export function getMockMBACoursesData(): {
       }
 
       // Course-Wide Major Term Projects & Capstone Deliverables
-      const courseTermDeliverables: NormalizedDeliverable[] = [];
+      let courseTermDeliverables: NormalizedDeliverable[] = [];
       if (course.course_code === "MBA 710") {
         courseTermDeliverables.push({
           id: `${prefix}-term-assign-ldp`,
@@ -1141,6 +1145,35 @@ export function getMockMBACoursesData(): {
         });
       }
 
+      if (isCustomized && completedItemIds) {
+        readings = readings.map((r) => ({
+          ...r,
+          isCompleted: completedItemIds.has(r.id),
+        }));
+
+        deliverables = deliverables.map((d) => {
+          const isDone = completedItemIds.has(d.id);
+          return {
+            ...d,
+            isCompleted: isDone,
+            status: isDone
+              ? (d.status === "graded" ? "graded" : "submitted")
+              : (d.status === "graded" || d.status === "submitted" ? "upcoming" : d.status),
+          };
+        });
+
+        courseTermDeliverables = courseTermDeliverables.map((d) => {
+          const isDone = completedItemIds.has(d.id);
+          return {
+            ...d,
+            isCompleted: isDone,
+            status: isDone
+              ? (d.status === "graded" ? "graded" : "submitted")
+              : (d.status === "graded" || d.status === "submitted" ? "upcoming" : d.status),
+          };
+        });
+      }
+
       const { start: mockStart, end: mockEnd } = getWeekDateBounds(weekNum);
 
       return {
@@ -1175,5 +1208,23 @@ export function getMockMBACoursesData(): {
     600: createMockWeeksForCourse(courses[4]),
   };
 
-  return { courses, weeklyBundles };
+  // Collect default completed IDs for initial persistence
+  const initialCompletedIds: string[] = [];
+  Object.values(weeklyBundles).forEach((bundles) => {
+    bundles.forEach((b) => {
+      b.readings.forEach((r) => {
+        if (r.isCompleted) initialCompletedIds.push(r.id);
+      });
+      b.deliverables.forEach((d) => {
+        if (d.isCompleted) initialCompletedIds.push(d.id);
+      });
+      if (b.termDeliverables) {
+        b.termDeliverables.forEach((d) => {
+          if (d.isCompleted) initialCompletedIds.push(d.id);
+        });
+      }
+    });
+  });
+
+  return { courses, weeklyBundles, initialCompletedIds };
 }
