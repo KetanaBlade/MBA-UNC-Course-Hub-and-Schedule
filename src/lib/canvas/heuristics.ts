@@ -332,16 +332,54 @@ export function isMajorTermMilestone(
 export const FALL_2026_TERM_START = new Date(2026, 8, 28, 0, 0, 0, 0);
 
 /**
+ * Helper to compute the Monday (00:00:00 local time) for a given date's week.
+ */
+export function getMondayOfDate(d: Date): Date {
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  const day = date.getDay(); // 0 is Sunday, 1 is Monday...
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(date.setDate(diff));
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+/**
  * Dynamically computes the term anchor Monday from the earliest assignment or calendar event dates.
+ * Automatically adapts when moving to future quarters (e.g. Winter, Spring, Summer) or handling break weeks.
  * Falls back to FALL_2026_TERM_START if no valid dates are provided.
  */
 export function findTermAnchorMonday(
   dates: (string | Date | null | undefined)[],
   fallback: Date = FALL_2026_TERM_START
 ): Date {
-  // For the active Fall 2026 quarter, Monday September 28, 2026 is the authoritative term start.
-  // Pre-term tech tutorials and orientation quizzes must never shift the academic calendar backwards.
-  return FALL_2026_TERM_START;
+  const validDates = dates
+    .map((d) => (d ? new Date(d) : null))
+    .filter((d): d is Date => Boolean(d && !isNaN(d.getTime())))
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  if (validDates.length === 0) {
+    return fallback;
+  }
+
+  const earliest = validDates[0];
+
+  // If dates are within the Fall 2026 window (late Sept - Dec 2026), anchor to Fall 2026
+  if (earliest.getFullYear() === 2026 && earliest.getMonth() >= 8 && earliest.getMonth() <= 11) {
+    return FALL_2026_TERM_START;
+  }
+
+  // If there are multiple dates, check if the earliest date is an isolated outlier
+  // (e.g. an orientation module 3+ weeks before classes start)
+  if (validDates.length >= 3) {
+    const diffDays = (validDates[1].getTime() - validDates[0].getTime()) / (1000 * 60 * 60 * 24);
+    if (diffDays > 14) {
+      // Outlier detected; use the start of the clustered academic coursework
+      return getMondayOfDate(validDates[1]);
+    }
+  }
+
+  // For any future quarter (e.g. Winter 2027 in Jan, Spring 2027 in March/April, etc.):
+  return getMondayOfDate(earliest);
 }
 
 export type CourseBlockType = "block_1" | "block_2" | "full_term" | "foundations_summit";

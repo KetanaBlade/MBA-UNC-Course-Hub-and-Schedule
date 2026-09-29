@@ -53,6 +53,8 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
 
   // 0. Dynamically calculate the term anchor Monday from task dates & classify course block
   const allTaskDates = [
+    ...(course.start_at ? [course.start_at] : []),
+    ...(course.term?.start_at ? [course.term.start_at] : []),
     ...assignments.map((a) => a.due_at),
     ...calendarEvents.map((ev) => ev.start_at),
   ].filter(Boolean);
@@ -190,6 +192,8 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
           canvasUrl: an.html_url || `https://${course.instance === "digitalcampus" ? "digitalcampus" : "kenan-flagler"}.instructure.com/courses/${course.id}/announcements/${an.id}`,
           zoomUrl: zoomLinks[0],
           weekNumber: weekNum,
+          courseCode: course.course_code,
+          courseName: course.name,
         };
       });
 
@@ -576,6 +580,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const completedReadingsCount = readings.filter((r) => r.isCompleted).length;
 
     const moduleLabel = weekModules.length > 0 ? weekModules[0].name : `Week ${relativeWeekNum}`;
+    const { start: bundleStart, end: bundleEnd } = getWeekDateBounds(weekNum, termAnchor);
 
     return {
       weekNumber: weekNum,
@@ -584,6 +589,8 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
       courseName: course.name,
       courseCode: course.course_code,
       instance: course.instance,
+      startDate: bundleStart.toISOString(),
+      endDate: bundleEnd.toISOString(),
       announcements: weekAnnouncements,
       readings,
       deliverables: weekDeliverables,
@@ -697,6 +704,8 @@ export function getMockMBACoursesData(): {
             canvasUrl: `https://digitalcampus.instructure.com/courses/714/announcements`,
             zoomUrl: "https://unc.zoom.us/j/98421038291",
             weekNumber: weekNum,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
         ];
 
@@ -829,6 +838,8 @@ export function getMockMBACoursesData(): {
             canvasUrl: `https://digitalcampus.instructure.com/courses/710/announcements`,
             zoomUrl: "https://unc.zoom.us/j/98421038292",
             weekNumber: weekNum,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
         ];
 
@@ -940,6 +951,8 @@ export function getMockMBACoursesData(): {
             canvasUrl: `https://digitalcampus.instructure.com/courses/744/announcements`,
             zoomUrl: "https://unc.zoom.us/j/98421038293",
             weekNumber: weekNum,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
         ];
 
@@ -1013,6 +1026,8 @@ export function getMockMBACoursesData(): {
             canvasUrl: `https://digitalcampus.instructure.com/courses/773/announcements`,
             zoomUrl: "https://unc.zoom.us/j/98421038294",
             weekNumber: weekNum,
+            courseCode: course.course_code,
+            courseName: course.name,
           },
         ];
 
@@ -1126,6 +1141,8 @@ export function getMockMBACoursesData(): {
         });
       }
 
+      const { start: mockStart, end: mockEnd } = getWeekDateBounds(weekNum);
+
       return {
         weekNumber: weekNum,
         weekLabel: `Week ${syllabusWeek}: Core Applications`,
@@ -1133,6 +1150,8 @@ export function getMockMBACoursesData(): {
         courseName: course.name,
         courseCode: course.course_code,
         instance: course.instance,
+        startDate: mockStart.toISOString(),
+        endDate: mockEnd.toISOString(),
         announcements,
         readings,
         deliverables,

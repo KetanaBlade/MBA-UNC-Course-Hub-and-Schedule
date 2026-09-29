@@ -7,8 +7,12 @@ export interface CanvasCourse {
   enrollment_term_id?: number;
   instance: CanvasInstance;
   workflow_state: string;
+  start_at?: string;
+  end_at?: string;
   term?: {
     name: string;
+    start_at?: string;
+    end_at?: string;
   };
   syllabus_body?: string;
   block?: "block_1" | "block_2" | "full_term" | "foundations_summit";
@@ -202,6 +206,8 @@ export interface NormalizedAnnouncement {
   canvasUrl: string;
   zoomUrl?: string;
   weekNumber?: number | null;
+  courseCode?: string;
+  courseName?: string;
 }
 
 export interface WeeklyBundle {

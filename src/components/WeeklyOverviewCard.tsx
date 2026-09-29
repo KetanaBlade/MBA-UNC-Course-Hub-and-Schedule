@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { NormalizedAnnouncement } from "@/lib/canvas/types";
+import { getCourseColor, getCleanCourseCode } from "@/lib/courseColors";
 
 interface WeeklyOverviewCardProps {
   announcements: NormalizedAnnouncement[];
@@ -76,7 +77,19 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                   <h3 className="text-sm sm:text-base font-semibold text-foreground leading-snug tracking-tight">
                     {ann.title}
                   </h3>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {ann.courseCode && (
+                      <>
+                        <span
+                          className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${
+                            getCourseColor(ann.courseCode).badge
+                          }`}
+                        >
+                          {getCleanCourseCode(ann.courseCode, ann.courseName)}
+                        </span>
+                        <span>•</span>
+                      </>
+                    )}
                     <span className="inline-flex items-center gap-1 font-medium">
                       <User className="w-3 h-3 text-muted-foreground/70" />
                       {ann.authorName}

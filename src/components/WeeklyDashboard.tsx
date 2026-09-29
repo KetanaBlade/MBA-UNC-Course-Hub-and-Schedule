@@ -161,8 +161,14 @@ export function WeeklyDashboard({
     return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
   });
 
-  // Date bounds for selected week (Monday 00:00:00 to Sunday 23:59:59)
-  const { start: weekStartDate, end: weekEndDate } = getWeekDateBounds(selectedWeek);
+  // Date bounds for selected week, dynamically derived from active course bundles
+  const activeWeekBundle = activeBundles.find((b) => b.startDate && b.endDate);
+  const weekStartDate = activeWeekBundle?.startDate
+    ? new Date(activeWeekBundle.startDate)
+    : getWeekDateBounds(selectedWeek).start;
+  const weekEndDate = activeWeekBundle?.endDate
+    ? new Date(activeWeekBundle.endDate)
+    : getWeekDateBounds(selectedWeek).end;
   const weekStartStr = weekStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const weekEndStr = weekEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const weekDateRangeLabel = `${weekStartStr} – ${weekEndStr}`;
