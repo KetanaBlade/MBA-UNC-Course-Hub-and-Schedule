@@ -379,19 +379,43 @@ export function classifyCourseBlock(
 ): CourseBlockType {
   const nameLower = (course.name || "").toLowerCase();
   const codeLower = (course.course_code || "").toLowerCase();
+  const combined = `${nameLower} ${codeLower}`;
 
   // 1. Kenan-Flagler instance or explicit foundational / orientation / summit courses
   if (
     course.instance === "kenan-flagler" ||
-    nameLower.includes("orientation") ||
-    nameLower.includes("foundations") ||
-    nameLower.includes("business math") ||
-    nameLower.includes("community") ||
-    nameLower.includes("hub") ||
-    nameLower.includes("summit") ||
-    codeLower.includes("summit")
+    combined.includes("orientation") ||
+    combined.includes("foundations") ||
+    combined.includes("business math") ||
+    combined.includes("community") ||
+    combined.includes("hub") ||
+    combined.includes("summit")
   ) {
     return "foundations_summit";
+  }
+
+  // Explicit Block 2 courses (e.g. MBA 744 Customer Value Strategies, MBA 773 Microeconomics)
+  if (
+    combined.includes("744") ||
+    combined.includes("customer value") ||
+    combined.includes("773") ||
+    combined.includes("microeconomics") ||
+    combined.includes("block 2") ||
+    combined.includes("block ii")
+  ) {
+    return "block_2";
+  }
+
+  // Explicit Block 1 courses (e.g. MBA 714 Business Statistics & Analytics, MBA 710 Leading & Managing)
+  if (
+    combined.includes("714") ||
+    combined.includes("statistics") ||
+    combined.includes("710") ||
+    combined.includes("leading") ||
+    combined.includes("block 1") ||
+    combined.includes("block i")
+  ) {
+    return "block_1";
   }
 
   // 2. Evaluate week distribution of tasks
@@ -406,13 +430,24 @@ export function classifyCourseBlock(
   const minWeek = Math.min(...weeks);
   const maxWeek = Math.max(...weeks);
 
-  // If tasks end by Week 5, it is strictly Block 1
-  if (maxWeek <= 5) return "block_1";
+  // In UNC Online MBA, academic courses are strictly 5 weeks long (Block 1 = Weeks 1-5; Block 2 = Weeks 6-10).
+  // There are no 10-week courses.
+  // Block 1 courses start in Weeks 1-3 and conclude with finals in Week 5 (or finals window early in Week 6).
+  if (minWeek <= 3 && maxWeek <= 6) {
+    return "block_1";
+  }
 
-  // If tasks only start in Week 6 or later, it is strictly Block 2
-  if (minWeek >= 6) return "block_2";
+  // Block 2 courses start in Week 6 (or late Week 5 onboarding) and conclude by Week 10/11.
+  if (minWeek >= 5) {
+    return "block_2";
+  }
 
-  return "full_term";
+  // Fallback based on earliest task week
+  if (minWeek <= 3) {
+    return "block_1";
+  }
+
+  return "block_2";
 }
 
 /**

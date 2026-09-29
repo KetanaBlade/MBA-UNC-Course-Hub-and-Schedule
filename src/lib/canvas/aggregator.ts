@@ -60,89 +60,62 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
   const termAnchor = findTermAnchorMonday(allTaskDates);
   course.block = classifyCourseBlock(course, allTaskDates, termAnchor);
 
-  // 1. Identify all detected week numbers
-  const detectedWeeks = new Set<number>();
-
-  modules.forEach((mod) => {
-    const w = extractWeekNumber(mod.name);
-    if (w) detectedWeeks.add(w);
-    if (mod.items) {
-      mod.items.forEach((item) => {
-        const itemW = extractWeekNumber(item.title);
-        if (itemW) detectedWeeks.add(itemW);
-      });
-    }
-  });
-
-  folders.forEach((f) => {
-    const w = extractWeekNumber(f.name) || extractWeekNumber(f.full_name);
-    if (w) detectedWeeks.add(w);
-  });
-
-  assignments.forEach((a) => {
-    const w = extractWeekNumber(a.name);
-    if (w) detectedWeeks.add(w);
-  });
-
-  announcements.forEach((an) => {
-    const w = extractWeekNumber(an.title);
-    if (w) detectedWeeks.add(w);
-  });
-
-  calendarEvents.forEach((ev) => {
-    const w = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
-    if (w) detectedWeeks.add(w);
-  });
-
-  // Default to standard 10-week Kenan-Flagler quarter if nothing detected
-  if (detectedWeeks.size === 0) {
-    for (let i = 1; i <= 10; i++) detectedWeeks.add(i);
+  // 1. Determine week sequence strictly bounded by the course's academic block
+  // In UNC Online MBA, courses are strictly 5 weeks long:
+  // - Block 1: Weeks 1 to 5
+  // - Block 2: Weeks 6 to 10
+  // - Foundations & Summits: Weeks 1 to 2
+  let sortedWeeks: number[] = [];
+  if (course.block === "block_1") {
+    sortedWeeks = [1, 2, 3, 4, 5];
+  } else if (course.block === "block_2") {
+    sortedWeeks = [6, 7, 8, 9, 10];
+  } else if (course.block === "foundations_summit") {
+    sortedWeeks = [1, 2];
   } else {
-    // Ensure contiguous range from min to max (or at least 1..max)
-    const maxWeek = Math.max(...Array.from(detectedWeeks));
-    for (let i = 1; i <= Math.max(maxWeek, 8); i++) {
-      detectedWeeks.add(i);
-    }
+    sortedWeeks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   }
-
-  const sortedWeeks = Array.from(detectedWeeks).sort((a, b) => a - b);
 
   // 2. Build map of folder IDs to week numbers
   const folderWeekMap = new Map<number, number>();
   folders.forEach((f) => {
-    const w = extractWeekNumber(f.name) || extractWeekNumber(f.full_name);
+    let w = extractWeekNumber(f.name) || extractWeekNumber(f.full_name);
+    if (course.block === "block_2" && w && w >= 1 && w <= 5) {
+      w += 5;
+    }
     if (w) folderWeekMap.set(f.id, w);
   });
 
   // Build map of assignment IDs to week numbers from modules
   const assignmentModuleWeekMap = new Map<number, number>();
   modules.forEach((mod) => {
-    const modWeek = extractWeekNumber(mod.name);
+    let modWeek = extractWeekNumber(mod.name);
+    if (!modWeek && /\b(?:final|exam|wrap\s*up|conclusion)\b/i.test(mod.name)) {
+      modWeek = course.block === "block_2" ? 10 : 5;
+    }
+    if (course.block === "block_2" && modWeek && modWeek >= 1 && modWeek <= 5) {
+      modWeek += 5;
+    }
+
     if (mod.items) {
       mod.items.forEach((item) => {
         if ((item.type === "Assignment" || item.type === "Quiz") && item.content_id) {
           if (modWeek) {
             assignmentModuleWeekMap.set(item.content_id, modWeek);
           } else {
-            const itemWeek = extractWeekNumber(item.title);
+            let itemWeek = extractWeekNumber(item.title);
+            if (!itemWeek && /\b(?:final|exam|wrap\s*up)\b/i.test(item.title)) {
+              itemWeek = course.block === "block_2" ? 10 : 5;
+            }
+            if (course.block === "block_2" && itemWeek && itemWeek >= 1 && itemWeek <= 5) {
+              itemWeek += 5;
+            }
             if (itemWeek) {
               assignmentModuleWeekMap.set(item.content_id, itemWeek);
             }
           }
         }
       });
-    }
-  });
-
-  // Known reference assignments with weeks to infer weeks for assignments without week in title
-  const knownWeekAssignments: { week: number; time: number }[] = [];
-  assignments.forEach((a) => {
-    const w = assignmentModuleWeekMap.get(a.id) || extractWeekNumber(a.name);
-    if (w && a.due_at) {
-      const t = new Date(a.due_at).getTime();
-      if (!isNaN(t)) {
-        knownWeekAssignments.push({ week: w, time: t });
-      }
     }
   });
 
@@ -188,15 +161,22 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     }
   });
 
-  // 3. Assemble each WeeklyBundle
+  // 3. Assemble each WeeklyBundle strictly according to course block boundaries
   const bundles: WeeklyBundle[] = sortedWeeks.map((weekNum) => {
+    // Relative week in syllabus (1-5) vs absolute quarter week (1-10)
+    const relativeWeekNum = course.block === "block_2" ? weekNum - 5 : weekNum;
+
     // --- A. Announcements for this week ---
     const weekAnnouncements: NormalizedAnnouncement[] = announcements
       .filter((an) => {
-        const w = extractWeekNumber(an.title);
+        let w = extractWeekNumber(an.title);
+        if (course.block === "block_2" && w && w >= 1 && w <= 5) {
+          w += 5;
+        }
         if (w === weekNum) return true;
-        // Check if message content strongly refers to this week
-        const contentMatch = an.message.toLowerCase().includes(`week ${weekNum}`);
+        const contentMatch =
+          an.message.toLowerCase().includes(`week ${relativeWeekNum}`) ||
+          an.message.toLowerCase().includes(`week ${weekNum}`);
         return contentMatch && !w;
       })
       .map((an) => {
@@ -217,12 +197,20 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const readings: NormalizedReading[] = [];
     const addedUrls = new Set<string>();
 
-    const weekModules = modules.filter((m) => extractWeekNumber(m.name) === weekNum);
+    const weekModules = modules.filter((m) => {
+      let w = extractWeekNumber(m.name);
+      if (!w && /\b(?:final|exam|wrap\s*up|conclusion)\b/i.test(m.name)) {
+        w = course.block === "block_2" ? 10 : 5;
+      }
+      if (course.block === "block_2" && w && w >= 1 && w <= 5) {
+        w += 5;
+      }
+      return w === weekNum;
+    });
+
     weekModules.forEach((targetModule) => {
       if (targetModule && targetModule.items) {
         targetModule.items.forEach((item) => {
-          // Include all actionable module items (Pages, Files, ExternalUrls, ExternalTools, Quizzes, Assignments, Discussions)
-          // Skip plain section divider subheaders
           if (item.type === "SubHeader") return;
 
           const itemUrl = item.html_url || item.url || "";
@@ -230,7 +218,6 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
           const collisionProofId = `${idPrefix}-mod-${item.id}`;
           const legacyId = `mod-item-${item.id}`;
 
-          // Correlate with assignments to extract points if this is an assignment, quiz, or question
           let matchedAssignment: CanvasAssignment | undefined;
           if (item.content_id) {
             matchedAssignment = assignments.find((a) => a.id === item.content_id);
@@ -285,7 +272,6 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
       if (fWeek === weekNum) {
         const files = folderFilesMap[f.id] || [];
         files.forEach((file) => {
-          // Avoid duplicate if already linked in module
           if (!addedUrls.has(file.display_name.toLowerCase())) {
             const collisionProofId = `${idPrefix}-file-${file.id}`;
             const legacyId = `file-${file.id}`;
@@ -315,7 +301,6 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const weekDeliverables: NormalizedDeliverable[] = [];
 
     assignments.forEach((assignment) => {
-      // Ensure attendance assignment is accessible in readings sequentially
       const isAttendance = /\battendance\b/i.test(assignment.name);
       if (isAttendance && !addedUrls.has(assignment.name.toLowerCase())) {
         const collisionProofId = `${idPrefix}-assign-att-${assignment.id}`;
@@ -343,9 +328,31 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
         assignmentModuleWeekMap.get(assignment.id) ||
         extractWeekNumber(assignment.name);
 
-      // Infer week from due date if not in title or module
-      if (!assignWeek && assignment.due_at) {
+      const isFinalAssessment =
+        /\b(?:final\s*(?:exam|examination|quiz|assessment|paper|project|memo)|exam\s*2|comprehensive\s*exam)\b/i.test(
+          assignment.name
+        );
+
+      if (isFinalAssessment) {
+        // Final Exam strictly belongs to the concluding week of that course
+        assignWeek = course.block === "block_2" ? 10 : 5;
+      } else if (!assignWeek && assignment.due_at) {
         assignWeek = getWeekFromDate(assignment.due_at, termAnchor);
+      }
+
+      // Course block boundary enforcement:
+      // Block 1 courses run strictly for Weeks 1 to 5. Never let tasks leak into Week 6!
+      if (course.block === "block_1" && assignWeek && assignWeek > 5) {
+        assignWeek = 5;
+      }
+
+      // Block 2 courses run strictly for Weeks 6 to 10.
+      if (course.block === "block_2" && assignWeek) {
+        if (assignWeek >= 1 && assignWeek <= 5) {
+          assignWeek += 5;
+        } else if (assignWeek > 10) {
+          assignWeek = 10;
+        }
       }
 
       const isWeekMatch = assignWeek === weekNum;
@@ -392,27 +399,48 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     const liveSessions: NormalizedLiveSession[] = [];
     const addedLiveKeys = new Set<string>();
 
-    // 1. Primary Source: Canvas Calendar Events
     if (calendarEvents && calendarEvents.length > 0) {
       calendarEvents.forEach((ev) => {
-        // Exclude attendance items from Live Zoom Sessions - they are deliverables/coursework!
         if (/\battendance\b/i.test(ev.title || "")) return;
         if (/\battendance\b/i.test(ev.description || "")) return;
 
-        // Priority 1: DATE IS AUTHORITATIVE for scheduled calendar events.
-        // A live class session takes place on a real calendar date (Monday 00:00:00 to Sunday 23:59:59).
+        // Check title and description first for explicit session or week number
+        // e.g. "Session 5", "Live Class 5", "Week 5 Live Session", "Synchronous Session 5"
+        const titleWeek =
+          extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
+
+        const isFinalOrReview =
+          /\b(?:final|exam\s*review|wrap\s*up|conclusion|session\s*5|class\s*5)\b/i.test(
+            `${ev.title || ""} ${ev.description || ""}`
+          );
+
         let evWeek: number | null = null;
-        if (ev.start_at) {
+
+        if (titleWeek) {
+          evWeek = titleWeek;
+        } else if (isFinalOrReview) {
+          evWeek = course.block === "block_2" ? 10 : 5;
+        } else if (ev.start_at) {
           evWeek = getWeekFromDate(ev.start_at, termAnchor);
         }
 
-        // Priority 2: Fall back to week number from title or description ONLY if start_at is missing/invalid
-        if (!evWeek) {
-          evWeek = extractWeekNumber(ev.title) || extractWeekNumber(ev.description);
+        // Course block boundary enforcement:
+        // A Block 1 course CANNOT have a live session in Week 6!
+        // If Session 5 or final review occurred on Monday/Tuesday after Week 5, it is part of Week 5!
+        if (course.block === "block_1" && evWeek && evWeek > 5) {
+          evWeek = 5;
+        }
+
+        // Block 2 courses run strictly for Weeks 6 to 10.
+        if (course.block === "block_2" && evWeek) {
+          if (evWeek >= 1 && evWeek <= 5) {
+            evWeek += 5;
+          } else if (evWeek > 10) {
+            evWeek = 10;
+          }
         }
 
         if (evWeek === weekNum) {
-          // Extract Zoom links from location, description, or url
           const allText = `${ev.location_name || ""} ${ev.location_address || ""} ${ev.description || ""} ${ev.url || ""} ${ev.html_url || ""}`;
           const zoomUrls = extractZoomLinks(allText);
           const directZoom = [ev.location_name, ev.location_address, ev.url].find(
@@ -420,7 +448,6 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
           );
           let zoomUrl: string | undefined = directZoom || zoomUrls[0];
 
-          // Fallback Zoom link from course module items or announcements if not directly in calendar event
           if (!zoomUrl) {
             modules.forEach((mod) => {
               mod.items?.forEach((item) => {
@@ -434,18 +461,14 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             });
           }
 
-          // Check meeting duration: live class sessions run for 1-2 hours.
-          // Canvas assignment entries have start_at === end_at (e.g. 6:36 PM - 6:36 PM)
           const startTime = ev.start_at ? new Date(ev.start_at).getTime() : 0;
           const endTime = ev.end_at ? new Date(ev.end_at).getTime() : 0;
           const durationMinutes = (endTime - startTime) / (1000 * 60);
 
-          // If start == end (0 min duration) and no Zoom link, it is an assignment due-date marker, NOT a live session!
           if (durationMinutes <= 5 && !zoomUrl) {
             return;
           }
 
-          // If this event matches a course assignment title and has no zoom link and 0 duration, skip it
           const isAssignmentMatch = assignments.some(
             (a) => a.name.toLowerCase().trim() === ev.title?.toLowerCase().trim()
           );
@@ -474,27 +497,36 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
       });
     }
 
-    // 2. Secondary Fallback: If no calendar events found for this week, check Module sync items
+    // 2. Secondary Fallback: Module Sync items
     if (liveSessions.length === 0) {
       modules.forEach((mod) => {
-        const modWeek = extractWeekNumber(mod.name);
+        let modWeek = extractWeekNumber(mod.name);
+        if (course.block === "block_2" && modWeek && modWeek >= 1 && modWeek <= 5) {
+          modWeek += 5;
+        }
+
         if (mod.items) {
           mod.items.forEach((item) => {
-            // NEVER treat attendance as a live zoom session
             if (/\battendance\b/i.test(item.title)) return;
 
-            const itemWeek = extractWeekNumber(item.title) || modWeek;
+            let itemWeek = extractWeekNumber(item.title) || modWeek;
+            if (course.block === "block_2" && itemWeek && itemWeek >= 1 && itemWeek <= 5) {
+              itemWeek += 5;
+            }
+            if (course.block === "block_1" && itemWeek && itemWeek > 5) {
+              itemWeek = 5;
+            }
+
             const titleLower = item.title.toLowerCase();
             const isSyncSession =
               /\b(?:sync|synchronous|live\s*session|live\s*class|zoom|virtual\s*class)\b/i.test(titleLower);
 
-            // Consider it a live session if it has an actual zoom link or is an explicit synchronous session item!
             const zoomUrl =
               (item.external_url?.includes("zoom.us") ? item.external_url : undefined) ||
               (item.url?.includes("zoom.us") ? item.url : undefined) ||
               (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
 
-            if ((zoomUrl || isSyncSession) && (itemWeek === weekNum || modWeek === weekNum)) {
+            if ((zoomUrl || isSyncSession) && itemWeek === weekNum) {
               const sessionKey = `${course.id}-${item.title}`.toLowerCase();
               if (!addedLiveKeys.has(sessionKey)) {
                 addedLiveKeys.add(sessionKey);
@@ -527,7 +559,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             addedLiveKeys.add(sessionKey);
             liveSessions.push({
               id: `${idPrefix}-live-ann-${an.id}`,
-              title: an.title.includes("Live") ? an.title : `Week ${weekNum} Live Class`,
+              title: an.title.includes("Live") ? an.title : `Week ${relativeWeekNum} Live Class`,
               courseName: course.name,
               courseCode: course.course_code,
               startAt: an.postedAt,
@@ -546,8 +578,7 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
     ).length;
     const completedReadingsCount = readings.filter((r) => r.isCompleted).length;
 
-    // Module name fallback for week label
-    const moduleLabel = weekModules.length > 0 ? weekModules[0].name : `Week ${weekNum}`;
+    const moduleLabel = weekModules.length > 0 ? weekModules[0].name : `Week ${relativeWeekNum}`;
 
     return {
       weekNumber: weekNum,
@@ -576,8 +607,9 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
 /**
  * High-fidelity Mock UNC MBA Demo Data
  * Refined to reflect authentic UNC Kenan-Flagler Online MBA architecture:
- * - 5-week block courses (Block 1: MBA 701, MBA 702; Block 2: MBA 703, MBA 710)
- * - Kenan-Flagler foundations / summits (MBA 600)
+ * - Block 1 (Weeks 1-5): Business Statistics & Analytics (MBA 714), Leading & Managing (MBA 710)
+ * - Block 2 (Weeks 6-10): Customer Value Strategies (MBA 744), Microeconomics (MBA 773)
+ * - Foundations & Summits (Weeks 1-2): Kenan-Flagler Canvas Orientation & Math Foundations
  */
 export function getMockMBACoursesData(): {
   courses: CanvasCourse[];
@@ -585,36 +617,36 @@ export function getMockMBACoursesData(): {
 } {
   const courses: CanvasCourse[] = [
     {
-      id: 701,
-      name: "Financial Accounting & Reporting",
-      course_code: "MBA 701",
+      id: 714,
+      name: "973D MBA 714 BUSINESS STATISTICS AND ANALYTICS 2026-0926",
+      course_code: "MBA 714",
       instance: "digitalcampus",
       workflow_state: "available",
       term: { name: "Fall 2026 Quarter 1" },
       block: "block_1",
     },
     {
-      id: 702,
-      name: "Business Statistics & Analytics",
-      course_code: "MBA 702",
+      id: 710,
+      name: "973D MBA 710 LEADING AND MANAGING 2026-0926",
+      course_code: "MBA 710",
       instance: "digitalcampus",
       workflow_state: "available",
       term: { name: "Fall 2026 Quarter 1" },
       block: "block_1",
     },
     {
-      id: 703,
-      name: "Operations & Supply Chain Management",
-      course_code: "MBA 703",
+      id: 744,
+      name: "973D MBA 744 Customer Value Strategies 2026-0926",
+      course_code: "MBA 744",
       instance: "digitalcampus",
       workflow_state: "available",
       term: { name: "Fall 2026 Quarter 1" },
       block: "block_2",
     },
     {
-      id: 710,
-      name: "Leading & Managing in Organizations",
-      course_code: "MBA 710",
+      id: 773,
+      name: "973F MBA 773 Microeconomics 2026-0926",
+      course_code: "MBA 773",
       instance: "digitalcampus",
       workflow_state: "available",
       term: { name: "Fall 2026 Quarter 1" },
@@ -632,25 +664,14 @@ export function getMockMBACoursesData(): {
   ];
 
   const createMockWeeksForCourse = (course: CanvasCourse): WeeklyBundle[] => {
-    // Block 1 courses run for weeks 1-5; Block 2 courses run for weeks 6-10; Foundations run for weeks 1-2
-    const weekCount = course.block === "foundations_summit" ? 2 : 10;
+    const isBlock1 = course.block === "block_1";
+    const isBlock2 = course.block === "block_2";
+    const isFoundations = course.block === "foundations_summit";
 
-    return Array.from({ length: weekCount }, (_, idx) => {
-      const weekNum = idx + 1;
-      const isBlock1Course = course.block === "block_1";
-      const isBlock2Course = course.block === "block_2";
-      const isFoundations = course.block === "foundations_summit";
+    const weeks = isBlock1 ? [1, 2, 3, 4, 5] : isBlock2 ? [6, 7, 8, 9, 10] : [1, 2];
 
-      // If this course is not active in this week (e.g. Block 1 course during weeks 6-10 or Block 2 during weeks 1-5)
-      const isCourseActiveThisWeek =
-        isFoundations
-          ? weekNum <= 2
-          : isBlock1Course
-          ? weekNum <= 5
-          : isBlock2Course
-          ? weekNum >= 6 && weekNum <= 10
-          : true;
-
+    return weeks.map((weekNum) => {
+      const syllabusWeek = isBlock2 ? weekNum - 5 : weekNum;
       const isPast = weekNum < 3;
       const isCurrent = weekNum === 3;
       const prefix = `${course.instance}-${course.id}`;
@@ -660,90 +681,120 @@ export function getMockMBACoursesData(): {
       let announcements: NormalizedAnnouncement[] = [];
       let liveSessions: NormalizedLiveSession[] = [];
 
-      if (isCourseActiveThisWeek) {
-        // Week number relative to the course's own 5-week block syllabus
-        const syllabusWeek = isBlock2Course ? weekNum - 5 : weekNum;
+      if (course.course_code === "MBA 714") {
+        announcements = [
+          {
+            id: `${prefix}-ann-${weekNum}`,
+            title: `Week ${syllabusWeek} Briefing: ${
+              syllabusWeek === 5
+                ? "Final Exam Review & Comprehensive Regression Wrap-Up"
+                : "Statistical Inference & Hypothesis Testing"
+            }`,
+            message: `<p>Welcome to Week ${syllabusWeek}! ${
+              syllabusWeek === 5
+                ? "Please review the formula sheet and join our final live review session."
+                : "Make sure to download the weekly data set from Files before class."
+            }</p>`,
+            postedAt: new Date(Date.now() - (3 - weekNum) * 7 * 86400000).toISOString(),
+            authorName: "Prof. Vinayak Deshpande",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/714/announcements`,
+            zoomUrl: "https://unc.zoom.us/j/98421038291",
+            weekNumber: weekNum,
+          },
+        ];
 
-        if (course.course_code === "MBA 701") {
-          announcements = [
+        readings = [
+          {
+            id: `${prefix}-mod-${weekNum}-1`,
+            title: `Chapter ${syllabusWeek}: Applied Statistical Modeling & OLS`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/714/modules`,
+            isCompleted: isPast || isCurrent,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+          {
+            id: `${prefix}-file-${weekNum}-2`,
+            title: `Dataset: Housing & Real Estate Regressions W${syllabusWeek}`,
+            source: "files_tab",
+            category: "spreadsheet",
+            fileName: `Housing_Model_W${syllabusWeek}.csv`,
+            fileSizeFormatted: "1.2 MB",
+            folderPath: `Files / Week ${syllabusWeek}`,
+            canvasUrl: `https://digitalcampus.instructure.com/courses/714/files`,
+            isCompleted: isPast,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+        ];
+
+        if (syllabusWeek === 5) {
+          // Final Exam strictly in Week 5 (Concluding week of Block 1)
+          deliverables = [
             {
-              id: `${prefix}-ann-${weekNum}`,
-              title: `Week ${syllabusWeek} Briefing: Balance Sheets & Revenue Recognition`,
-              message: `<p>Welcome to Week ${syllabusWeek}! Please make sure to download the <strong>Midwest Electric Case</strong> from the Files folder before Tuesday's live session.</p><p>Live Zoom session link: <a href="https://unc.zoom.us/j/98421038291">https://unc.zoom.us/j/98421038291</a></p>`,
-              postedAt: new Date(Date.now() - (3 - weekNum) * 7 * 86400000).toISOString(),
-              authorName: "Prof. Courtney Edwards",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/701/announcements`,
+              id: `${prefix}-assign-hw-5`,
+              assignmentId: 7145,
+              title: "Problem Set 5: Logistic Regression & Multiple Testing",
+              courseId: 714,
+              courseName: course.name,
+              courseCode: course.course_code,
+              instance: "digitalcampus",
+              dueAt: new Date(Date.now() + 14 * 86400000).toISOString(),
+              pointsPossible: 50,
+              status: "upcoming",
+              canvasUrl: `https://digitalcampus.instructure.com/courses/714/assignments`,
+              submissionTypes: ["online_upload"],
+              dueInDays: 14,
+              dueInHours: 14 * 24,
+            },
+            {
+              id: `${prefix}-assign-final-exam`,
+              assignmentId: 7149,
+              title: "Final Exam: Business Statistics & Analytics Comprehensive",
+              courseId: 714,
+              courseName: course.name,
+              courseCode: course.course_code,
+              instance: "digitalcampus",
+              dueAt: new Date(Date.now() + 16 * 86400000).toISOString(),
+              pointsPossible: 100,
+              status: "upcoming",
+              canvasUrl: `https://digitalcampus.instructure.com/courses/714/assignments`,
+              submissionTypes: ["online_quiz"],
+              dueInDays: 16,
+              dueInHours: 16 * 24,
+            },
+          ];
+
+          liveSessions = [
+            {
+              id: `${prefix}-live-5`,
+              title: "MBA 714 Synchronous Session 5: Final Review & Exam Prep",
+              courseName: course.name,
+              courseCode: course.course_code,
+              startAt: new Date(Date.now() + 14 * 86400000 + 86400000).toISOString(),
+              endAt: new Date(Date.now() + 14 * 86400000 + 86400000 + 5400000).toISOString(),
               zoomUrl: "https://unc.zoom.us/j/98421038291",
-              weekNumber: weekNum,
+              location: "Zoom Online Classroom",
+              canvasUrl: `https://digitalcampus.instructure.com/calendar`,
             },
           ];
-
-          readings = [
-            {
-              id: `${prefix}-file-${weekNum}-1`,
-              title: `Midwest Electric Company (HBR Case 9-195-123)`,
-              source: "files_tab",
-              category: "case",
-              fileName: `Midwest_Electric_Week_${syllabusWeek}.pdf`,
-              fileSizeFormatted: "3.2 MB",
-              folderPath: `Files / Week ${syllabusWeek} / Pre-readings`,
-              canvasUrl: `https://digitalcampus.instructure.com/courses/701/files`,
-              isCompleted: isPast,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-            {
-              id: `${prefix}-mod-${weekNum}-2`,
-              title: `Chapter ${syllabusWeek * 2 - 1}: Revenue Recognition Principles`,
-              source: "module_item",
-              category: "reading",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/701/modules`,
-              isCompleted: isPast || isCurrent,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-            {
-              id: `${prefix}-mod-${weekNum}-q1`,
-              title: `Check Your Understanding: Balance Sheet & Revenue Recognition`,
-              source: "module_item",
-              category: "reading",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/701/quizzes/1`,
-              isCompleted: isPast,
-              courseCode: course.course_code,
-              courseName: course.name,
-              pointsPossible: 5,
-              type: "Quiz",
-            },
-            {
-              id: `${prefix}-file-${weekNum}-3`,
-              title: `Financial Statement Modeling Template`,
-              source: "files_tab",
-              category: "spreadsheet",
-              fileName: `Model_W${syllabusWeek}_Template.xlsx`,
-              fileSizeFormatted: "840 KB",
-              folderPath: `Files / Week ${syllabusWeek}`,
-              canvasUrl: `https://digitalcampus.instructure.com/courses/701/files`,
-              isCompleted: false,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-          ];
-
+        } else {
           deliverables = [
             {
               id: `${prefix}-assign-${weekNum}`,
-              assignmentId: 7010 + weekNum,
-              title: `Homework ${syllabusWeek}: Statement of Cash Flows Analysis`,
-              courseId: 701,
+              assignmentId: 7140 + weekNum,
+              title: `Problem Set ${syllabusWeek}: Hypothesis Testing & Statistical Inference`,
+              courseId: 714,
               courseName: course.name,
               courseCode: course.course_code,
               instance: "digitalcampus",
               dueAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 4 * 86400000).toISOString(),
               pointsPossible: 50,
               status: isPast ? "graded" : isCurrent ? "upcoming" : "unsubmitted",
-              score: isPast ? 48 : null,
-              grade: isPast ? "96%" : null,
-              canvasUrl: `https://digitalcampus.instructure.com/courses/701/assignments`,
+              score: isPast ? 49 : null,
+              grade: isPast ? "98%" : null,
+              canvasUrl: `https://digitalcampus.instructure.com/courses/714/assignments`,
               submissionTypes: ["online_upload"],
               dueInDays: (weekNum - 3) * 7 + 4,
               dueInHours: ((weekNum - 3) * 7 + 4) * 24,
@@ -753,7 +804,7 @@ export function getMockMBACoursesData(): {
           liveSessions = [
             {
               id: `${prefix}-live-${weekNum}`,
-              title: `MBA 701 Synchronous Session ${syllabusWeek}`,
+              title: `MBA 714 Synchronous Session ${syllabusWeek}`,
               courseName: course.name,
               courseCode: course.course_code,
               startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 86400000).toISOString(),
@@ -763,167 +814,90 @@ export function getMockMBACoursesData(): {
               canvasUrl: `https://digitalcampus.instructure.com/calendar`,
             },
           ];
-        } else if (course.course_code === "MBA 702") {
-          announcements = [
-            {
-              id: `${prefix}-ann-${weekNum}`,
-              title: `Week ${syllabusWeek} Overview: Hypothesis Testing & Regression Modeling`,
-              message: `<p>Welcome to Week ${syllabusWeek}! Bring your completed regression workbook to live class on Thursday.</p>`,
-              postedAt: new Date(Date.now() - (3 - weekNum) * 7 * 86400000).toISOString(),
-              authorName: "Prof. Vinayak Deshpande",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/702/announcements`,
-              zoomUrl: "https://unc.zoom.us/j/98421038292",
-              weekNumber: weekNum,
-            },
-          ];
+        }
+      } else if (course.course_code === "MBA 710") {
+        announcements = [
+          {
+            id: `${prefix}-ann-${weekNum}`,
+            title: `Week ${syllabusWeek} Leadership Overview: ${
+              syllabusWeek === 5 ? "Course Synthesis & Final Exam Submission" : "High-Performance Teams"
+            }`,
+            message: `<p>Welcome to Week ${syllabusWeek}! ${
+              syllabusWeek === 5
+                ? "Final Exam case analysis is due at the end of the week."
+                : "Complete your reflection journal before Thursday."
+            }</p>`,
+            postedAt: new Date(Date.now() - (3 - weekNum) * 7 * 86400000).toISOString(),
+            authorName: "Prof. Courtney Edwards",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/710/announcements`,
+            zoomUrl: "https://unc.zoom.us/j/98421038292",
+            weekNumber: weekNum,
+          },
+        ];
 
-          readings = [
-            {
-              id: `${prefix}-mod-${weekNum}-1`,
-              title: `Applied Regression Analysis: Chapters 3 & 4`,
-              source: "module_item",
-              category: "reading",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/702/modules`,
-              isCompleted: isPast,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-            {
-              id: `${prefix}-file-${weekNum}-2`,
-              title: `Dataset: Multivariable Real Estate Pricing (R & Excel)`,
-              source: "files_tab",
-              category: "spreadsheet",
-              fileName: `Housing_Prices_W${syllabusWeek}.csv`,
-              fileSizeFormatted: "1.4 MB",
-              folderPath: `Files / Week ${syllabusWeek} Data`,
-              canvasUrl: `https://digitalcampus.instructure.com/courses/702/files`,
-              isCompleted: false,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-          ];
+        readings = [
+          {
+            id: `${prefix}-mod-${weekNum}-1`,
+            title: `Leading Organizational Transformation (HBR Case)`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/710/modules`,
+            isCompleted: isPast || isCurrent,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+        ];
 
+        if (syllabusWeek === 5) {
           deliverables = [
             {
-              id: `${prefix}-assign-${weekNum}`,
-              assignmentId: 7020 + weekNum,
-              title: `Problem Set ${syllabusWeek}: Hypothesis Testing and OLS Regression`,
-              courseId: 702,
+              id: `${prefix}-assign-hw-5`,
+              assignmentId: 7105,
+              title: "Leadership Reflection Journal 5: Executive Capstone",
+              courseId: 710,
               courseName: course.name,
               courseCode: course.course_code,
               instance: "digitalcampus",
-              dueAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 3 * 86400000).toISOString(),
-              pointsPossible: 50,
-              status: isPast ? "graded" : "upcoming",
-              score: isPast ? 49 : null,
-              grade: isPast ? "98%" : null,
-              canvasUrl: `https://digitalcampus.instructure.com/courses/702/assignments`,
-              submissionTypes: ["online_upload"],
-              dueInDays: (weekNum - 3) * 7 + 3,
-              dueInHours: ((weekNum - 3) * 7 + 3) * 24,
-            },
-          ];
-
-          liveSessions = [
-            {
-              id: `${prefix}-live-${weekNum}`,
-              title: `MBA 702 Live Analytics Lab ${syllabusWeek}`,
-              courseName: course.name,
-              courseCode: course.course_code,
-              startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 3 * 86400000).toISOString(),
-              endAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 3 * 86400000 + 5400000).toISOString(),
-              zoomUrl: "https://unc.zoom.us/j/98421038292",
-              location: "Zoom Online Classroom",
-              canvasUrl: `https://digitalcampus.instructure.com/calendar`,
-            },
-          ];
-        } else if (course.course_code === "MBA 703") {
-          readings = [
-            {
-              id: `${prefix}-file-${weekNum}-1`,
-              title: `Process Analysis at Barilla SpA (HBR Case 9-694-046)`,
-              source: "files_tab",
-              category: "case",
-              fileName: `Barilla_SpA_Case_W${syllabusWeek}.pdf`,
-              fileSizeFormatted: "2.8 MB",
-              folderPath: `Files / Case Studies / Week ${syllabusWeek}`,
-              canvasUrl: `https://digitalcampus.instructure.com/courses/703/files`,
-              isCompleted: false,
-              courseCode: course.course_code,
-              courseName: course.name,
+              dueAt: new Date(Date.now() + 15 * 86400000).toISOString(),
+              pointsPossible: 25,
+              status: "upcoming",
+              canvasUrl: `https://digitalcampus.instructure.com/courses/710/assignments`,
+              submissionTypes: ["online_text_entry"],
+              dueInDays: 15,
+              dueInHours: 15 * 24,
             },
             {
-              id: `${prefix}-mod-${weekNum}-2`,
-              title: `Operations Strategy Lecture Slides Deck`,
-              source: "module_item",
-              category: "slides",
-              fileName: `Ops_Session_${syllabusWeek}_Slides.pptx`,
-              fileSizeFormatted: "14.5 MB",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/703/modules`,
-              isCompleted: false,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-          ];
-
-          deliverables = [
-            {
-              id: `${prefix}-assign-${weekNum}`,
-              assignmentId: 7030 + weekNum,
-              title: `Case Memo ${syllabusWeek}: Bottleneck Identification & Little's Law`,
-              courseId: 703,
+              id: `${prefix}-assign-final-exam`,
+              assignmentId: 7199,
+              title: "Final Exam: Organizational Leadership & Strategy Case",
+              courseId: 710,
               courseName: course.name,
               courseCode: course.course_code,
               instance: "digitalcampus",
-              dueAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 2 * 86400000).toISOString(),
+              dueAt: new Date(Date.now() + 17 * 86400000).toISOString(),
               pointsPossible: 100,
               status: "upcoming",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/703/assignments`,
+              canvasUrl: `https://digitalcampus.instructure.com/courses/710/assignments`,
               submissionTypes: ["online_upload"],
-              dueInDays: (weekNum - 3) * 7 + 2,
-              dueInHours: ((weekNum - 3) * 7 + 2) * 24,
+              dueInDays: 17,
+              dueInHours: 17 * 24,
             },
           ];
 
           liveSessions = [
             {
-              id: `${prefix}-live-${weekNum}`,
-              title: `MBA 703 Synchronous Session ${syllabusWeek}`,
+              id: `${prefix}-live-5`,
+              title: "MBA 710 Synchronous Session 5: Executive Wrap-Up",
               courseName: course.name,
               courseCode: course.course_code,
-              startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 2 * 86400000).toISOString(),
-              endAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 2 * 86400000 + 5400000).toISOString(),
-              zoomUrl: "https://unc.zoom.us/j/98421038293",
+              startAt: new Date(Date.now() + 15 * 86400000 + 86400000).toISOString(),
+              endAt: new Date(Date.now() + 15 * 86400000 + 86400000 + 5400000).toISOString(),
+              zoomUrl: "https://unc.zoom.us/j/98421038292",
               location: "Zoom Online Classroom",
               canvasUrl: `https://digitalcampus.instructure.com/calendar`,
             },
           ];
-        } else if (course.course_code === "MBA 710") {
-          readings = [
-            {
-              id: `${prefix}-mod-${weekNum}-1`,
-              title: `Leading High-Performing Remote Teams`,
-              source: "module_item",
-              category: "reading",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/710/modules`,
-              isCompleted: false,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-            {
-              id: `${prefix}-mod-${weekNum}-q1`,
-              title: `Self-Assessment Question: Diagnosing Organizational Conflict`,
-              source: "module_item",
-              category: "reading",
-              canvasUrl: `https://digitalcampus.instructure.com/courses/710/quizzes/3`,
-              isCompleted: false,
-              courseCode: course.course_code,
-              courseName: course.name,
-              pointsPossible: 5,
-              type: "Quiz",
-            },
-          ];
-
+        } else {
           deliverables = [
             {
               id: `${prefix}-assign-${weekNum}`,
@@ -935,7 +909,7 @@ export function getMockMBACoursesData(): {
               instance: "digitalcampus",
               dueAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 6 * 86400000).toISOString(),
               pointsPossible: 25,
-              status: "upcoming",
+              status: isPast ? "submitted" : "upcoming",
               canvasUrl: `https://digitalcampus.instructure.com/courses/710/assignments`,
               submissionTypes: ["online_text_entry"],
               dueInDays: (weekNum - 3) * 7 + 6,
@@ -946,40 +920,173 @@ export function getMockMBACoursesData(): {
           liveSessions = [
             {
               id: `${prefix}-live-${weekNum}`,
-              title: `MBA 710 Leadership Cohort Seminar ${syllabusWeek}`,
+              title: `MBA 710 Synchronous Session ${syllabusWeek}`,
               courseName: course.name,
               courseCode: course.course_code,
-              startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 4 * 86400000).toISOString(),
-              endAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 4 * 86400000 + 5400000).toISOString(),
-              zoomUrl: "https://unc.zoom.us/j/98421038294",
+              startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 3 * 86400000).toISOString(),
+              endAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 3 * 86400000 + 5400000).toISOString(),
+              zoomUrl: "https://unc.zoom.us/j/98421038292",
               location: "Zoom Online Classroom",
               canvasUrl: `https://digitalcampus.instructure.com/calendar`,
             },
           ];
-        } else if (course.course_code === "MBA 600") {
-          readings = [
-            {
-              id: `${prefix}-mod-${weekNum}-1`,
-              title: `Kenan-Flagler Honor Code & Academic Policies`,
-              source: "module_item",
-              category: "reading",
-              canvasUrl: `https://kenan-flagler.instructure.com/courses/600/modules`,
-              isCompleted: true,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-            {
-              id: `${prefix}-mod-${weekNum}-2`,
-              title: `Excel Financial Functions & Calculus Refresher`,
-              source: "module_item",
-              category: "reading",
-              canvasUrl: `https://kenan-flagler.instructure.com/courses/600/modules`,
-              isCompleted: true,
-              courseCode: course.course_code,
-              courseName: course.name,
-            },
-          ];
         }
+      } else if (course.course_code === "MBA 744") {
+        // Customer Value Strategies (Block 2 - Weeks 6 to 10)
+        announcements = [
+          {
+            id: `${prefix}-ann-${weekNum}`,
+            title: `Block 2 Week ${syllabusWeek}: Customer Value Discovery & Segmentation`,
+            message: `<p>Welcome to MBA 744! Please prepare the HBR Case Study for our live session.</p>`,
+            postedAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000).toISOString(),
+            authorName: "Prof. Valarie Zeithaml",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/744/announcements`,
+            zoomUrl: "https://unc.zoom.us/j/98421038293",
+            weekNumber: weekNum,
+          },
+        ];
+
+        readings = [
+          {
+            id: `${prefix}-file-${weekNum}-1`,
+            title: `Customer Lifetime Value Strategy (HBR Case)`,
+            source: "files_tab",
+            category: "case",
+            fileName: `Customer_Value_Case_W${syllabusWeek}.pdf`,
+            fileSizeFormatted: "2.4 MB",
+            folderPath: `Files / Week ${syllabusWeek}`,
+            canvasUrl: `https://digitalcampus.instructure.com/courses/744/files`,
+            isCompleted: false,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+          {
+            id: `${prefix}-mod-${weekNum}-2`,
+            title: `Customer Journey Mapping & Persona Design Deck`,
+            source: "module_item",
+            category: "slides",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/744/modules`,
+            isCompleted: false,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+        ];
+
+        deliverables = [
+          {
+            id: `${prefix}-assign-${weekNum}`,
+            assignmentId: 7440 + syllabusWeek,
+            title: `Case Analysis ${syllabusWeek}: Value Proposition & CLV Modeling`,
+            courseId: 744,
+            courseName: course.name,
+            courseCode: course.course_code,
+            instance: "digitalcampus",
+            dueAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 4 * 86400000).toISOString(),
+            pointsPossible: 50,
+            status: "upcoming",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/744/assignments`,
+            submissionTypes: ["online_upload"],
+            dueInDays: (weekNum - 3) * 7 + 4,
+            dueInHours: ((weekNum - 3) * 7 + 4) * 24,
+          },
+        ];
+
+        liveSessions = [
+          {
+            id: `${prefix}-live-${weekNum}`,
+            title: `MBA 744 Synchronous Session ${syllabusWeek}`,
+            courseName: course.name,
+            courseCode: course.course_code,
+            startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 86400000).toISOString(),
+            endAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 86400000 + 5400000).toISOString(),
+            zoomUrl: "https://unc.zoom.us/j/98421038293",
+            location: "Zoom Online Classroom",
+            canvasUrl: `https://digitalcampus.instructure.com/calendar`,
+          },
+        ];
+      } else if (course.course_code === "MBA 773") {
+        // Microeconomics (Block 2 - Weeks 6 to 10)
+        announcements = [
+          {
+            id: `${prefix}-ann-${weekNum}`,
+            title: `Block 2 Week ${syllabusWeek}: Market Equilibrium & Pricing Power`,
+            message: `<p>Welcome to Microeconomics! Check the problem set before Tuesday's class.</p>`,
+            postedAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000).toISOString(),
+            authorName: "Prof. Christian Lundblad",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/773/announcements`,
+            zoomUrl: "https://unc.zoom.us/j/98421038294",
+            weekNumber: weekNum,
+          },
+        ];
+
+        readings = [
+          {
+            id: `${prefix}-mod-${weekNum}-1`,
+            title: `Managerial Economics: Demand Elasticity & Monopoly Pricing`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/773/modules`,
+            isCompleted: false,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+        ];
+
+        deliverables = [
+          {
+            id: `${prefix}-assign-${weekNum}`,
+            assignmentId: 7730 + syllabusWeek,
+            title: `Problem Set ${syllabusWeek}: Elasticity & Competitive Equilibrium`,
+            courseId: 773,
+            courseName: course.name,
+            courseCode: course.course_code,
+            instance: "digitalcampus",
+            dueAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 5 * 86400000).toISOString(),
+            pointsPossible: 50,
+            status: "upcoming",
+            canvasUrl: `https://digitalcampus.instructure.com/courses/773/assignments`,
+            submissionTypes: ["online_upload"],
+            dueInDays: (weekNum - 3) * 7 + 5,
+            dueInHours: ((weekNum - 3) * 7 + 5) * 24,
+          },
+        ];
+
+        liveSessions = [
+          {
+            id: `${prefix}-live-${weekNum}`,
+            title: `MBA 773 Live Lecture ${syllabusWeek}`,
+            courseName: course.name,
+            courseCode: course.course_code,
+            startAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 2 * 86400000).toISOString(),
+            endAt: new Date(Date.now() + (weekNum - 3) * 7 * 86400000 + 2 * 86400000 + 5400000).toISOString(),
+            zoomUrl: "https://unc.zoom.us/j/98421038294",
+            location: "Zoom Online Classroom",
+            canvasUrl: `https://digitalcampus.instructure.com/calendar`,
+          },
+        ];
+      } else if (course.course_code === "MBA 600") {
+        readings = [
+          {
+            id: `${prefix}-mod-${weekNum}-1`,
+            title: `Kenan-Flagler Honor Code & Academic Policies`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://kenan-flagler.instructure.com/courses/600/modules`,
+            isCompleted: true,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+          {
+            id: `${prefix}-mod-${weekNum}-2`,
+            title: `Excel Financial Functions & Calculus Refresher`,
+            source: "module_item",
+            category: "reading",
+            canvasUrl: `https://kenan-flagler.instructure.com/courses/600/modules`,
+            isCompleted: true,
+            courseCode: course.course_code,
+            courseName: course.name,
+          },
+        ];
       }
 
       // Course-Wide Major Term Projects & Capstone Deliverables
@@ -988,61 +1095,43 @@ export function getMockMBACoursesData(): {
         courseTermDeliverables.push({
           id: `${prefix}-term-assign-ldp`,
           assignmentId: 7199,
-          title: "Leadership Development Plan",
+          title: "Leadership Development Plan (LDP Capstone)",
           courseId: 710,
           courseName: course.name,
           courseCode: course.course_code,
           instance: "digitalcampus",
-          dueAt: "2026-11-08T23:59:00.000Z",
+          dueAt: "2026-11-01T23:59:00.000Z",
           pointsPossible: 100,
           status: "upcoming",
           canvasUrl: "https://digitalcampus.instructure.com/courses/710/assignments/7199",
           submissionTypes: ["online_upload"],
-          dueInDays: 41,
-          dueInHours: 41 * 24,
+          dueInDays: 34,
+          dueInHours: 34 * 24,
           isCompleted: false,
         });
-      } else if (course.course_code === "MBA 703") {
+      } else if (course.course_code === "MBA 744") {
         courseTermDeliverables.push({
-          id: `${prefix}-term-assign-capstone`,
-          assignmentId: 7099,
-          title: "Final Global Supply Chain Simulation & Memo",
-          courseId: 703,
+          id: `${prefix}-term-assign-marketing-plan`,
+          assignmentId: 7449,
+          title: "Comprehensive Strategic Customer Value Plan",
+          courseId: 744,
           courseName: course.name,
           courseCode: course.course_code,
           instance: "digitalcampus",
-          dueAt: "2026-11-12T23:59:00.000Z",
+          dueAt: "2026-12-06T23:59:00.000Z",
           pointsPossible: 150,
           status: "upcoming",
-          canvasUrl: "https://digitalcampus.instructure.com/courses/703/assignments/7099",
+          canvasUrl: "https://digitalcampus.instructure.com/courses/744/assignments/7449",
           submissionTypes: ["online_upload"],
-          dueInDays: 45,
-          dueInHours: 45 * 24,
-          isCompleted: false,
-        });
-      } else if (course.course_code === "MBA 701") {
-        courseTermDeliverables.push({
-          id: `${prefix}-term-assign-valuation`,
-          assignmentId: 7088,
-          title: "Comprehensive Corporate Valuation & DCF Model",
-          courseId: 701,
-          courseName: course.name,
-          courseCode: course.course_code,
-          instance: "digitalcampus",
-          dueAt: "2026-11-15T23:59:00.000Z",
-          pointsPossible: 100,
-          status: "upcoming",
-          canvasUrl: "https://digitalcampus.instructure.com/courses/701/assignments/7088",
-          submissionTypes: ["online_upload"],
-          dueInDays: 48,
-          dueInHours: 48 * 24,
+          dueInDays: 69,
+          dueInHours: 69 * 24,
           isCompleted: false,
         });
       }
 
       return {
         weekNumber: weekNum,
-        weekLabel: `Week ${weekNum}: Core Concepts & Applications`,
+        weekLabel: `Week ${syllabusWeek}: Core Applications`,
         courseId: course.id,
         courseName: course.name,
         courseCode: course.course_code,
@@ -1063,10 +1152,10 @@ export function getMockMBACoursesData(): {
   };
 
   const weeklyBundles: Record<number, WeeklyBundle[]> = {
-    701: createMockWeeksForCourse(courses[0]),
-    702: createMockWeeksForCourse(courses[1]),
-    703: createMockWeeksForCourse(courses[2]),
-    710: createMockWeeksForCourse(courses[3]),
+    714: createMockWeeksForCourse(courses[0]),
+    710: createMockWeeksForCourse(courses[1]),
+    744: createMockWeeksForCourse(courses[2]),
+    773: createMockWeeksForCourse(courses[3]),
     600: createMockWeeksForCourse(courses[4]),
   };
 

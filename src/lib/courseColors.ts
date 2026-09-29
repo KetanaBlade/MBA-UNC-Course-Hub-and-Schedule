@@ -116,9 +116,10 @@ export function getCleanCourseName(rawCode?: string | null, rawName?: string | n
   // Common UNC MBA courses
   if (/business statistics/i.test(text) || /mba\s*714/i.test(text)) return "Business Statistics & Analytics";
   if (/customer value/i.test(text) || /mba\s*744/i.test(text)) return "Customer Value Strategies";
+  if (/microeconomics/i.test(text) || /mba\s*773/i.test(text)) return "Microeconomics";
   if (/financial accounting/i.test(text) || /mba\s*701/i.test(text)) return "Financial Accounting";
   if (/operations/i.test(text) || /mba\s*703/i.test(text)) return "Operations Management";
-  if (/leading/i.test(text) || /mba\s*710/i.test(text)) return "Leading Organizations";
+  if (/leading/i.test(text) || /mba\s*710/i.test(text)) return "Leading & Managing";
   if (/orientation/i.test(text)) return "Orientation";
   if (/technology|tutorial/i.test(text)) return "Technology Tutorial";
 
