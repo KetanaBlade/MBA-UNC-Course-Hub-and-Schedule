@@ -147,7 +147,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
             )}
             {getFileIcon(file.title, file.category)}
             <h4
-              className={`text-xs sm:text-sm font-semibold truncate ${
+              className={`text-xs sm:text-sm font-semibold leading-snug break-words ${
                 file.isCompleted ? "text-muted-foreground line-through" : "text-foreground"
               }`}
               title={file.title}
@@ -162,13 +162,13 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
           )}
         </div>
 
-        {/* Action Triggers */}
-        <div className="flex items-center gap-1.5 shrink-0 pl-1">
+        {/* Action Triggers: Stacked vertically to maximize filename width */}
+        <div className="flex flex-col gap-1 shrink-0 self-center pl-1">
           <a
             href={file.canvasUrl || file.fileUrl}
             target="_blank"
             rel="noreferrer"
-            className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
+            className="h-6 px-2 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
             title="Open and view on Canvas"
           >
             <span>View</span>
@@ -180,7 +180,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
               download
               target="_blank"
               rel="noreferrer"
-              className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-muted-foreground hover:text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
+              className="h-6 px-2 rounded border border-border bg-card hover:bg-muted/30 text-muted-foreground hover:text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
               title="Download file directly"
             >
               <span>Download</span>
