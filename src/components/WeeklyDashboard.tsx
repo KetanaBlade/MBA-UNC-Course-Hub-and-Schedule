@@ -444,10 +444,10 @@ export function WeeklyDashboard({
           </div>
 
           {/* D. WEEKLY STUDY CONTENT (Briefings & Homework + Course Readings & Cases) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-6 items-start">
-            {/* SUB-COLUMN 1: Priority Actions (Briefings, Zoom & Homework) -> (lg:col-span-3) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-start">
+            {/* SUB-COLUMN 1: Priority Actions (Briefings, Zoom & Homework) -> (lg:col-span-5) */}
             <div
-              className={`lg:col-span-3 space-y-6 ${
+              className={`lg:col-span-5 space-y-6 ${
                 mobileTab === "actions" ? "block" : "hidden xl:block"
               }`}
             >
@@ -464,9 +464,9 @@ export function WeeklyDashboard({
               />
             </div>
 
-            {/* SUB-COLUMN 2: Course Readings & Cases Checklist -> (lg:col-span-5) */}
+            {/* SUB-COLUMN 2: Course Readings & Cases Checklist -> (lg:col-span-7) */}
             <div
-              className={`lg:col-span-5 ${
+              className={`lg:col-span-7 ${
                 mobileTab === "readings" ? "block" : "hidden xl:block"
               }`}
             >
