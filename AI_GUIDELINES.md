@@ -37,3 +37,10 @@
 - Commit messages must follow conventional commits: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:`.
 - Commits must be atomic, focused on single logical changes.
 - Never commit `.env.local`, credentials, or temporary debug files.
+
+### 2.6. Design System & UX Standards
+- **Unified Typography**: `font-mono` is intentionally unified with `Inter` (sans-serif) in `tailwind.config.js` (`mono: ['"Inter"', ...]`) for visual consistency and readability across numbers, timestamps, tab counts, and badges. **Do NOT revert `font-mono` to JetBrains Mono or other monospace fonts.**
+- **Tab Design & Counts**: Course tabs must use the reusable `HorizontalCourseTabs` component. Tabs are flush (`gap-0`, `-mb-px`), left-aligned (`first:pl-0`), use plain language course titles (no raw course codes or section numbers), and tab counts format as `(n)` rendered in full legible size (`text-xs sm:text-sm font-semibold`) with high contrast.
+- **Top-Left Checkbox Alignment**: Checkboxes across all task sections (Term Milestones, Homework Tracker, Coursework Readings, and Course Files) must be positioned strictly at the top-left using `flex items-start gap-3` on the parent row and `mt-0.5` on the tactile checkbox button (`h-5 w-5 min-w-[20px] min-h-[20px]`).
+- **Initial Card States**: Weekly briefings and expandable cards must default to collapsed (`expandedId: null`) on page mount and refresh; never auto-expand items on load.
+
