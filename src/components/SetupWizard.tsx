@@ -190,8 +190,9 @@ export function SetupWizard({
                     Click the blue <strong className="text-foreground">+ New Access Token</strong> button. Enter Purpose as{" "}
                     <code className="px-1 py-0.5 rounded bg-card border border-border font-mono text-[11px] text-foreground">
                       UNC MBA Hub
-                    </code>{" "}
-                    (leave Expires blank for continuous sync).
+                    </code>
+                    , and set <strong className="text-foreground">Expires</strong> to the maximum of{" "}
+                    <strong className="text-foreground">90 days</strong> (UNC Canvas policy requires an expiration date and cannot be left blank).
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
