@@ -1,6 +1,6 @@
 import { CanvasCourse, StudentAuthTokens, WeeklyBundle } from "./canvas/types";
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   TOKENS: "unc_mba_tokens",
   COMPLETED_ITEMS: "unc_mba_completed_items",
   CACHED_COURSES: "unc_mba_cached_courses",
@@ -15,6 +15,89 @@ const STORAGE_KEYS = {
   FILES_TAB: "unc_mba_files_tab",
   CALENDAR_FILTER: "unc_mba_calendar_filter",
 };
+
+export const DEFAULT_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes (1800000ms)
+export const DEFAULT_CACHE_TTL = DEFAULT_CACHE_TTL_MS;
+
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const CACHE_KEYS = [
+  STORAGE_KEYS.CACHED_COURSES,
+  STORAGE_KEYS.CACHED_BUNDLES,
+];
+
+export function setWithTTL<T>(key: string, data: T): void {
+  if (typeof window === "undefined") return;
+  try {
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(key, JSON.stringify(entry));
+  } catch (e) {
+    console.warn(`Failed to set cached item for key "${key}":`, e);
+  }
+}
+
+export function getWithTTL<T>(key: string, maxAgeMs: number = DEFAULT_CACHE_TTL_MS): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(key);
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored);
+
+    // Backward compatibility: if cached data lacks a timestamp field, treat it as expired and re-fetch
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      Array.isArray(parsed) ||
+      !("timestamp" in parsed) ||
+      typeof parsed.timestamp !== "number" ||
+      !Number.isFinite(parsed.timestamp) ||
+      !("data" in parsed)
+    ) {
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    const age = Date.now() - parsed.timestamp;
+    if (age > maxAgeMs || age < 0) {
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    return parsed.data as T;
+  } catch {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Ignore errors when clearing corrupted cache
+    }
+    return null;
+  }
+}
+
+export function clearExpiredCaches(maxAgeMs: number = DEFAULT_CACHE_TTL_MS): void {
+  if (typeof window === "undefined") return;
+  try {
+    const keysToCheck = new Set<string>(CACHE_KEYS);
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("unc_mba_cached_")) {
+        keysToCheck.add(key);
+      }
+    }
+    keysToCheck.forEach((key) => {
+      getWithTTL(key, maxAgeMs);
+    });
+  } catch (e) {
+    console.warn("Failed to clear expired caches:", e);
+  }
+}
 
 export class AppStorage {
   static getTokens(): StudentAuthTokens {
@@ -77,34 +160,32 @@ export class AppStorage {
     localStorage.setItem(STORAGE_KEYS.IS_DEMO_MODE, enabled ? "true" : "false");
   }
 
-  static getCachedCourses(): CanvasCourse[] | null {
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.CACHED_COURSES);
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+  static getCachedCourses(maxAgeMs: number = DEFAULT_CACHE_TTL_MS): CanvasCourse[] | null {
+    return getWithTTL<CanvasCourse[]>(STORAGE_KEYS.CACHED_COURSES, maxAgeMs);
   }
 
   static saveCachedCourses(courses: CanvasCourse[]): void {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEYS.CACHED_COURSES, JSON.stringify(courses));
+    setWithTTL<CanvasCourse[]>(STORAGE_KEYS.CACHED_COURSES, courses);
   }
 
-  static getCachedBundles(): Record<number, WeeklyBundle[]> | null {
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.CACHED_BUNDLES);
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+  static getCachedBundles(maxAgeMs: number = DEFAULT_CACHE_TTL_MS): Record<number, WeeklyBundle[]> | null {
+    return getWithTTL<Record<number, WeeklyBundle[]>>(STORAGE_KEYS.CACHED_BUNDLES, maxAgeMs);
   }
 
   static saveCachedBundles(bundles: Record<number, WeeklyBundle[]>): void {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEYS.CACHED_BUNDLES, JSON.stringify(bundles));
+    setWithTTL<Record<number, WeeklyBundle[]>>(STORAGE_KEYS.CACHED_BUNDLES, bundles);
+  }
+
+  static setWithTTL<T>(key: string, data: T): void {
+    setWithTTL<T>(key, data);
+  }
+
+  static getWithTTL<T>(key: string, maxAgeMs: number = DEFAULT_CACHE_TTL_MS): T | null {
+    return getWithTTL<T>(key, maxAgeMs);
+  }
+
+  static clearExpiredCaches(maxAgeMs: number = DEFAULT_CACHE_TTL_MS): void {
+    clearExpiredCaches(maxAgeMs);
   }
 
   static getSelectedCourseId(): number | null {

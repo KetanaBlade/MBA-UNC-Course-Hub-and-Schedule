@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Calendar as CalendarIcon,
   Layers,
+  Loader2,
 } from "lucide-react";
 import {
   CanvasCalendarEvent,
@@ -518,11 +519,20 @@ export default function HomePage() {
     downloadICSFile("UNC_MBA_Master_Schedule.ics", icsContent);
   };
 
-  const allDeliverables = Object.values(bundlesByCourse).flatMap((bundles) =>
-    bundles.flatMap((b) => b.deliverables)
+  const allDeliverables = useMemo(
+    () =>
+      Object.values(bundlesByCourse).flatMap((bundles) =>
+        bundles.flatMap((b) => b.deliverables)
+      ),
+    [bundlesByCourse]
   );
-  const allLiveSessions = Object.values(bundlesByCourse).flatMap((bundles) =>
-    bundles.flatMap((b) => b.liveSessions)
+
+  const allLiveSessions = useMemo(
+    () =>
+      Object.values(bundlesByCourse).flatMap((bundles) =>
+        bundles.flatMap((b) => b.liveSessions)
+      ),
+    [bundlesByCourse]
   );
 
   return (

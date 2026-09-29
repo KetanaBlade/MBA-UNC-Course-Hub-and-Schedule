@@ -18,9 +18,7 @@ interface WeeklyOverviewCardProps {
 }
 
 export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverviewCardProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(
-    announcements[0]?.id || null
-  );
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Check if any announcement has a Zoom link
   const primaryZoom = announcements.find((a) => Boolean(a.zoomUrl));

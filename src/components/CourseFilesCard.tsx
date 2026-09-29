@@ -126,7 +126,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
     return (
       <div
         key={file.id}
-        className={`p-3 sm:py-3.5 sm:px-4 flex items-center gap-3 transition-colors hover:bg-muted/10 ${
+        className={`p-3 sm:py-3.5 sm:px-4 flex items-start gap-3 transition-colors hover:bg-muted/10 ${
           file.isCompleted ? "opacity-60 bg-muted/5" : ""
         }`}
       >
@@ -135,7 +135,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
           type="button"
           onClick={() => onToggleComplete(file.id)}
           aria-label={`Mark ${file.title} as ${file.isCompleted ? "incomplete" : "complete"}`}
-          className={`flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+          className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
             file.isCompleted
               ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
               : "border-border bg-card hover:border-primary shadow-2xs"
@@ -172,7 +172,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
         </div>
 
         {/* Action Triggers: Stacked vertically to maximize filename width */}
-        <div className="flex flex-col gap-1 shrink-0 self-center pl-1">
+        <div className="flex flex-col gap-1 shrink-0 self-start mt-0.5 pl-1">
           <a
             href={file.canvasUrl || file.fileUrl}
             target="_blank"

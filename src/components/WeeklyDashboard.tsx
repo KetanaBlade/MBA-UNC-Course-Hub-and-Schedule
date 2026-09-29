@@ -216,7 +216,7 @@ export function WeeklyDashboard({
                 <div className="flex flex-wrap items-center gap-2">
                   <Layers className="w-4 h-4 text-primary" />
                   <span className="text-xs sm:text-sm font-semibold text-foreground">
-                    Active Courses ({activeCourses.length} Visible):
+                    Active Courses:
                   </span>
                   {/* Quick Block Presets */}
                   <div className="flex items-center gap-1.5 sm:ml-2 flex-wrap">
@@ -224,9 +224,9 @@ export function WeeklyDashboard({
                       type="button"
                       onClick={() => handleSelectBlock("block_1")}
                       className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-all cursor-pointer ${
-                        currentBlock === 1 &&
                         activeCourses.length > 0 &&
-                        activeCourses.every((c) => c.block === "block_1" || c.block === "full_term")
+                        activeCourses.length < courses.length &&
+                        activeCourses.every((c) => c.block === "block_1" || c.block === "full_term" || !c.block)
                           ? "bg-primary text-primary-foreground shadow-xs"
                           : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
                       }`}
@@ -237,8 +237,8 @@ export function WeeklyDashboard({
                       type="button"
                       onClick={() => handleSelectBlock("block_2")}
                       className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-all cursor-pointer ${
-                        currentBlock === 2 &&
                         activeCourses.length > 0 &&
+                        activeCourses.length < courses.length &&
                         activeCourses.every((c) => c.block === "block_2" || c.block === "full_term")
                           ? "bg-primary text-primary-foreground shadow-xs"
                           : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
@@ -249,7 +249,11 @@ export function WeeklyDashboard({
                     <button
                       type="button"
                       onClick={onSelectAllCourses}
-                      className="text-[11px] font-semibold px-2 py-0.5 rounded bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border transition-all cursor-pointer"
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        courses.length > 0 && activeCourses.length === courses.length
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
+                      }`}
                     >
                       All ({courses.length})
                     </button>

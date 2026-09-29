@@ -66,7 +66,7 @@ export function HorizontalCourseTabs({
           type="button"
           onClick={() => scrollTabs("left")}
           aria-label="Scroll courses left"
-          className="absolute left-0 top-0 bottom-0 z-10 flex items-center justify-start pr-4 pl-0.5 bg-gradient-to-r from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+          className="absolute left-0 top-0 bottom-0 z-10 flex items-center justify-start pr-4 pl-0.5 bg-gradient-to-r from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -99,7 +99,14 @@ export function HorizontalCourseTabs({
             >
               <span>{tab.label}</span>
               {typeof tab.count === "number" && (
-                <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums">
+                <span
+                  className={cn(
+                    "text-xs sm:text-sm tabular-nums font-semibold",
+                    isSelected
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  )}
+                >
                   ({tab.count})
                 </span>
               )}
@@ -114,7 +121,7 @@ export function HorizontalCourseTabs({
           type="button"
           onClick={() => scrollTabs("right")}
           aria-label="Scroll courses right"
-          className="absolute right-0 top-0 bottom-0 z-10 flex items-center justify-end pl-4 pr-0.5 bg-gradient-to-l from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+          className="absolute right-0 top-0 bottom-0 z-10 flex items-center justify-end pl-4 pr-0.5 bg-gradient-to-l from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <ChevronRight className="w-4 h-4" />
         </button>

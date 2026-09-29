@@ -132,7 +132,7 @@ export function ReadingsSection({
     return (
       <div
         key={reading.id}
-        className={`p-3 sm:py-3.5 sm:px-4 flex items-center gap-3 transition-colors hover:bg-muted/10 ${
+        className={`p-3 sm:py-3.5 sm:px-4 flex items-start gap-3 transition-colors hover:bg-muted/10 ${
           reading.isCompleted ? "opacity-60 bg-muted/5" : ""
         }`}
       >
@@ -143,7 +143,7 @@ export function ReadingsSection({
           aria-label={`Mark ${reading.title} as ${
             reading.isCompleted ? "incomplete" : "complete"
           }`}
-          className={`flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+          className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
             reading.isCompleted
               ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
               : "border-border bg-card hover:border-primary shadow-2xs"
@@ -180,7 +180,7 @@ export function ReadingsSection({
         </div>
 
         {/* Action Trigger */}
-        <div className="shrink-0 pl-1">
+        <div className="shrink-0 pl-1 mt-0.5">
           <a
             href={reading.canvasUrl || reading.fileUrl}
             target="_blank"
