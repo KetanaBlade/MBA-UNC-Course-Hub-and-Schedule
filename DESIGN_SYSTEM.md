@@ -1,4 +1,4 @@
-﻿# The Static Design System (SDS) — Complete Specification & Starter Kit
+# The Static Design System (SDS) — Complete Specification & Starter Kit
 
 A tactile, technical, and modernist design system designed for high information density, crisp visual hierarchy, and WCAG 2.1 AA accessibility.
 
@@ -25,7 +25,7 @@ A tactile, technical, and modernist design system designed for high information 
 ## 1. Core Design DNA & Principles
 
 ### What makes this aesthetic unique?
-1. **Tactile Geometric Typography**: The combination of **Space Grotesk** (geometric, bold, personality-filled grotesque) with **JetBrains Mono** (technical tabular numbers and micro-data tags).
+1. **Tactile Modernist Typography**: The combination of **Inter** (ultra-readable, modern, crisp grotesque for all UI, headings, and content) with **JetBrains Mono** (technical tabular numbers and micro-data tags).
 2. **Warm Solarized Light & Pure Obsidian Dark**: 
    - Light mode is **NOT** cold sterile white; it uses a warm Solarized cream base (`#FDF6E3`) with bright off-white cards (`#FCFBF8`) and terracotta coral (`#D44E18`).
    - Dark mode uses pure Obsidian (`#101010`) with graphite cards (`#1A1A1A`), crisp 1px borders (`#333333`), and luminous peach-coral accents (`#EF6453`).
@@ -99,7 +99,7 @@ export default {
       },
     },
     fontFamily: {
-      sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+      sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
       mono: ['"JetBrains Mono"', 'monospace'],
     },
   },
@@ -109,7 +109,7 @@ export default {
 
 ### `src/index.css` (or `globals.css`)
 ```css
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -117,7 +117,7 @@ export default {
 
 @layer base {
   html, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   code, kbd, samp, pre {
@@ -230,10 +230,10 @@ body::before {
 
 | Tier | Size Class | Weight & Tracking | Font | Correct Usage | ⚠️ Never Use For |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Tier 1 (Hero/Display)** | `text-2xl sm:text-3xl font-extrabold` | `tracking-tight` | Space Grotesk | Landing Hero, Group/App Main Title | Card headers, form labels |
-| **Tier 2 (Card Title)** | `text-lg font-bold` | `tracking-tight` | Space Grotesk | All `CardTitle`, `DialogTitle` | Sub-sections inside cards |
-| **Tier 3 (Body & Subtitles)** | `text-sm font-medium` | `normal` | Space Grotesk | `CardDescription`, Form inputs, Select values, Paragraphs | Micro badges |
-| **Tier 4 (Controls)** | `text-xs font-semibold` | `tracking-normal` | Space Grotesk | Buttons, Tab triggers, Dropdown items, Filter labels | General body copy |
+| **Tier 1 (Hero/Display)** | `text-2xl sm:text-3xl font-extrabold` | `tracking-tight` | Inter | Landing Hero, Group/App Main Title | Card headers, form labels |
+| **Tier 2 (Card Title)** | `text-lg font-bold` | `tracking-tight` | Inter | All `CardTitle`, `DialogTitle` | Sub-sections inside cards |
+| **Tier 3 (Body & Subtitles)** | `text-sm font-medium` | `normal` | Inter | `CardDescription`, Form inputs, Select values, Paragraphs | Micro badges |
+| **Tier 4 (Controls)** | `text-xs font-semibold` | `tracking-normal` | Inter | Buttons, Tab triggers, Dropdown items, Filter labels | General body copy |
 | **Tier 5 (Micro Data)** | `text-[10px] font-bold` | `font-mono uppercase tracking-wider` | JetBrains Mono | Timezone pills (`PST`), Status chips (`FREE`), Avatars | Form inputs, descriptions |
 
 ---
@@ -412,7 +412,7 @@ Use these exact JSX component patterns to build UI that matches the system flawl
 | **`text-[10px]` on form labels or copy**: Setting regular text to 10px | Reserve `text-[10px]` ONLY for single-word mono chips (`UTC`, `ACTIVE`) | Makes form labels unreadable and breaks accessibility |
 | **Sub-section larger than card title**: Making a sub-heading `text-xl` when the card is `text-lg` | Keep sub-headings at `text-base` or `text-sm font-bold` | Distorts visual reading hierarchy |
 | **Heavy blurred drop shadows**: `shadow-xl` or `shadow-2xl` on cards | Use 1px borders `border-border/70` with `shadow-xs` | Makes cards look sluggish and dated instead of crisp and modern |
-| **Generic Inter/Roboto fonts**: Omitting Google Fonts import | Always import **Space Grotesk** and **JetBrains Mono** | The geometric grotesque character defines the entire brand |
+| **Multiple font stacks / unreadable quirks**: Using 3+ disparate fonts | Consolidate to **Inter** (Primary UI) and **JetBrains Mono** (Data/Code) | Maximizes reading speed and executive clarity |
 | **Multiple stacked dividers**: Adding `<Separator />` right above a bordered toolbar | Use spatial gap (`space-y-4`) | Creates clutter and line fatigue |
 
 ---
@@ -425,7 +425,7 @@ When prompting an AI assistant (Claude, ChatGPT, Gemini, Antigravity) to build a
 You must implement the user interface strictly adhering to the "Static Design System (SDS)":
 
 1. Typography:
-   - Primary Font: "Space Grotesk" (Headings, buttons, labels)
+   - Primary Font: "Inter" (Headings, buttons, labels, content, body)
    - Tabular / Monospace: "JetBrains Mono" (Numbers, statistics, timestamps, timezone tags)
    - Scale:
      * Hero Title: text-2xl sm:text-3xl font-extrabold tracking-tight

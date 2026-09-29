@@ -54,8 +54,8 @@ export default {
       },
     },
     fontFamily: {
-      sans: ['"Space Grotesk"', "system-ui", "sans-serif"],
-      mono: ['"JetBrains Mono"', "monospace"],
+      sans: ['"Inter"', "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto", "sans-serif"],
+      mono: ['"JetBrains Mono"', "ui-monospace", "SFMono-Regular", "monospace"],
     },
   },
   plugins: [],
