@@ -92,9 +92,6 @@ export function TermMilestonesCard({
             Major deliverables
           </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          Accessible now • Submissions spanning the entire quarter
-        </p>
       </div>
 
       {/* Deliverables List (Scrollable) */}

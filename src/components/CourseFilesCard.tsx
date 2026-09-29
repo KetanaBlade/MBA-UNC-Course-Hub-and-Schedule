@@ -106,9 +106,6 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
               ({files.length})
             </span>
           </h2>
-          <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
-            Spreadsheets, slide decks, and data rescued from Canvas Files
-          </p>
         </div>
 
         {/* RESPONSIVE HORIZONTAL COURSE TABS FOR FILES */}

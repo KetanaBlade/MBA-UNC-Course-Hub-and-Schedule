@@ -42,9 +42,6 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
             ({announcements.length})
           </span>
         </h2>
-        <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
-          Announcements, guidance, and Zoom links
-        </p>
       </div>
 
       {/* Prominent Quick-Join Zoom Banner if available */}

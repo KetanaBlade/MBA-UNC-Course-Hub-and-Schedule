@@ -411,6 +411,21 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
           }
         }
 
+        // Priority 3: Fallback by calendar date offset from term start (Sep 28, 2026)
+        if (!evWeek && ev.start_at) {
+          const evDate = new Date(ev.start_at);
+          if (!isNaN(evDate.getTime())) {
+            const termStartMonday = new Date(2026, 8, 28).getTime(); // Monday Sep 28, 2026
+            const diffDays = Math.floor((evDate.getTime() - termStartMonday) / 86400000);
+            if (diffDays >= 0) {
+              const calcWeek = Math.floor(diffDays / 7) + 1;
+              if (calcWeek >= 1 && calcWeek <= 10) {
+                evWeek = calcWeek;
+              }
+            }
+          }
+        }
+
         if (evWeek === weekNum) {
           // Extract Zoom links from location, description, or url
           const allText = `${ev.location_name || ""} ${ev.location_address || ""} ${ev.description || ""} ${ev.url || ""} ${ev.html_url || ""}`;
@@ -445,11 +460,11 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             return;
           }
 
-          // If this event matches a course assignment title and has no zoom link, skip it from live sessions
+          // If this event matches a course assignment title and has no zoom link and 0 duration, skip it
           const isAssignmentMatch = assignments.some(
             (a) => a.name.toLowerCase().trim() === ev.title?.toLowerCase().trim()
           );
-          if (isAssignmentMatch && !zoomUrl) {
+          if (isAssignmentMatch && !zoomUrl && durationMinutes <= 15) {
             return;
           }
 
@@ -484,14 +499,17 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             if (/\battendance\b/i.test(item.title)) return;
 
             const itemWeek = extractWeekNumber(item.title) || modWeek;
+            const titleLower = item.title.toLowerCase();
+            const isSyncSession =
+              /\b(?:sync|synchronous|live\s*session|live\s*class|zoom|virtual\s*class)\b/i.test(titleLower);
 
-            // ONLY consider it a live session if it has an actual zoom.us link!
+            // Consider it a live session if it has an actual zoom link or is an explicit synchronous session item!
             const zoomUrl =
               (item.external_url?.includes("zoom.us") ? item.external_url : undefined) ||
               (item.url?.includes("zoom.us") ? item.url : undefined) ||
               (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
 
-            if (zoomUrl && (itemWeek === weekNum || modWeek === weekNum)) {
+            if ((zoomUrl || isSyncSession) && (itemWeek === weekNum || modWeek === weekNum)) {
               const sessionKey = `${course.id}-${item.title}`.toLowerCase();
               if (!addedLiveKeys.has(sessionKey)) {
                 addedLiveKeys.add(sessionKey);

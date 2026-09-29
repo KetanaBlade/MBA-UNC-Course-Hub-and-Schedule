@@ -84,18 +84,25 @@ export function WeeklyDashboard({
   selectedCourseIds.forEach((courseId) => {
     const courseBundles = bundlesByCourse[courseId] || [];
     courseBundles.forEach((bundle) => {
-      bundle.deliverables.forEach((deliv) => {
-        if (!allQuarterDeliverablesMap.has(deliv.id)) {
-          allQuarterDeliverablesMap.set(deliv.id, deliv);
-        }
-      });
+      // Prioritize bundle.termDeliverables
       if (bundle.termDeliverables) {
         bundle.termDeliverables.forEach((deliv) => {
-          if (!allQuarterDeliverablesMap.has(deliv.id)) {
-            allQuarterDeliverablesMap.set(deliv.id, deliv);
+          const key = deliv.assignmentId
+            ? `${deliv.courseId || courseId}-assign-${deliv.assignmentId}`
+            : `${deliv.courseId || courseId}-${deliv.title.toLowerCase().trim()}`;
+          if (!allQuarterDeliverablesMap.has(key)) {
+            allQuarterDeliverablesMap.set(key, deliv);
           }
         });
       }
+      bundle.deliverables.forEach((deliv) => {
+        const key = deliv.assignmentId
+          ? `${deliv.courseId || courseId}-assign-${deliv.assignmentId}`
+          : `${deliv.courseId || courseId}-${deliv.title.toLowerCase().trim()}`;
+        if (!allQuarterDeliverablesMap.has(key)) {
+          allQuarterDeliverablesMap.set(key, deliv);
+        }
+      });
     });
   });
 

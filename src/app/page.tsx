@@ -110,16 +110,7 @@ export default function HomePage() {
     );
 
     return events.filter((ev) => {
-      // 0. If the event title or context explicitly specifies another 3-digit course number, check strictly!
-      const evCourseNumMatch = `${ev.title || ""} ${ev.context_name || ""}`.match(/\b(?:mba\s*)?(\d{3})\b/i);
-      const evCourseNum = evCourseNumMatch?.[1];
-      if (courseNum && evCourseNum) {
-        if (evCourseNum !== courseNum) {
-          return false; // Mismatched course number (e.g. event has 801, but course is 714)
-        }
-      }
-
-      // 1. Direct course ID or effective context
+      // 1. Authoritative: Direct Canvas course ID or context code match
       if (ev.course_id && ev.course_id === course.id) return true;
       if (ev.context_code === `course_${course.id}` || ev.effective_context_code === `course_${course.id}`) {
         return true;
@@ -128,20 +119,27 @@ export default function HomePage() {
         return true;
       }
 
-      // 2. Exact course number match (e.g. "801" in title or context)
-      if (courseNum && evCourseNum === courseNum) {
-        return true;
+      // 2. If the event is explicitly tagged with another Canvas course_XXXXX ID, do NOT leak
+      if (ev.context_code && ev.context_code.startsWith("course_") && !ev.context_code.includes(String(course.id))) {
+        return false;
       }
 
-      // 3. Context name match
-      const contextName = (ev.context_name || "").toLowerCase();
-      if (contextName && (contextName.includes(courseCodeLower) || contextName.includes(courseNameLower))) {
-        return true;
+      // 3. Check for explicit MBA course number (e.g. "MBA 801" vs "MBA 714")
+      const evMbaMatch = `${ev.title || ""} ${ev.context_name || ""}`.match(/\bmba\s*(\d{3})\b/i);
+      if (evMbaMatch && courseNum) {
+        if (evMbaMatch[1] === courseNum) return true;
+        return false; // Specifically tagged with a different MBA course number
       }
 
-      // 4. Exact course code in title
+      // 4. Exact course code match in title or context
       const evTitleClean = (ev.title || "").toLowerCase().trim();
-      if (courseCodeLower && evTitleClean.includes(courseCodeLower)) return true;
+      const contextName = (ev.context_name || "").toLowerCase();
+      if (courseCodeLower && (evTitleClean.includes(courseCodeLower) || contextName.includes(courseCodeLower))) {
+        return true;
+      }
+      if (courseNameLower && contextName.includes(courseNameLower)) {
+        return true;
+      }
 
       // 5. Significant course name match (ignore generic terms like "business", "school", "online", "mba")
       const stopWords = new Set([

@@ -145,9 +145,6 @@ export function HomeworkTracker({
             ({totalCount})
           </span>
         </h2>
-        <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
-          Graded assignments, case memos, and synchronous Zoom sessions
-        </p>
       </div>
 
       {/* Scannable Deliverables & Live Sessions List (Scrollable) */}
