@@ -130,11 +130,16 @@ export default function HomePage() {
     setCourses(mockCourses);
     setBundlesByCourse(mockBundles);
     const savedCourseIds = AppStorage.getSelectedCourseIds();
+    const curBlock = (selectedWeek || 1) <= 5 ? "block_1" : "block_2";
+    const defaultBlockCourses = mockCourses
+      .filter((c) => c.block === curBlock || c.block === "full_term")
+      .map((c) => c.id);
+
     if (savedCourseIds && Array.isArray(savedCourseIds) && savedCourseIds.length > 0) {
       const validIds = savedCourseIds.filter((id) => mockCourses.some((c) => c.id === id));
-      setSelectedCourseIds(validIds.length > 0 ? validIds : mockCourses.map((c) => c.id));
+      setSelectedCourseIds(validIds.length > 0 ? validIds : defaultBlockCourses);
     } else {
-      setSelectedCourseIds(mockCourses.map((c) => c.id));
+      setSelectedCourseIds(defaultBlockCourses.length > 0 ? defaultBlockCourses : mockCourses.map((c) => c.id));
     }
     setIsLoading(false);
   };
@@ -340,7 +345,15 @@ export default function HomePage() {
           const savedIds = AppStorage.getSelectedCourseIds();
           const sourceIds = prev.length > 0 ? prev : (savedIds || []);
           const valid = sourceIds.filter((id) => loadedCourses.some((c) => c.id === id));
-          const finalIds = valid.length > 0 ? valid : loadedCourses.map((c) => c.id);
+          if (valid.length > 0) {
+            AppStorage.setSelectedCourseIds(valid);
+            return valid;
+          }
+          const curBlock = (selectedWeek || 1) <= 5 ? "block_1" : "block_2";
+          const blockCourses = loadedCourses
+            .filter((c) => c.block === curBlock || c.block === "full_term")
+            .map((c) => c.id);
+          const finalIds = blockCourses.length > 0 ? blockCourses : loadedCourses.map((c) => c.id);
           AppStorage.setSelectedCourseIds(finalIds);
           return finalIds;
         });
@@ -602,6 +615,10 @@ export default function HomePage() {
             onClearAllCourses={() => {
               setSelectedCourseIds([]);
               AppStorage.setSelectedCourseIds([]);
+            }}
+            onSelectCourseIds={(ids) => {
+              setSelectedCourseIds(ids);
+              AppStorage.setSelectedCourseIds(ids);
             }}
             onSelectWeek={(w) => {
               setSelectedWeek(w);

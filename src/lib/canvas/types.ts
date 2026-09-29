@@ -11,6 +11,7 @@ export interface CanvasCourse {
     name: string;
   };
   syllabus_body?: string;
+  block?: "block_1" | "block_2" | "full_term" | "foundations_summit";
 }
 
 export interface CanvasSubmission {

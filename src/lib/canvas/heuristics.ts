@@ -265,9 +265,155 @@ export function calculateDueUrgency(
 }
 
 /**
+ * Evaluates whether an assignment is a major term milestone vs regular weekly homework.
+ * Refined to prevent minor weekly reflection papers from leaking into Term Milestones.
+ */
+export function isMajorTermMilestone(
+  assignmentName: string,
+  pointsPossible: number = 0
+): boolean {
+  if (!assignmentName) return false;
+  if (/\battendance\b/i.test(assignmentName)) return false;
+
+  const lower = assignmentName.toLowerCase();
+
+  // Explicit weekly homework patterns belong to their week tab, NOT term projects
+  const isWeeklyHw =
+    /\b(?:homework(?:\s*assignment)?|hw|problem\s*set|pset|assignment\s*\d+|quiz\s*\d+|session\s*\d+|reflection\s*journal\s*\d+|exercise\s*\d+)\b/i.test(
+      lower
+    ) && !/\b(?:final|term|capstone|development\s*plan|semester)\b/i.test(lower);
+
+  if (isWeeklyHw) return false;
+
+  // High-confidence semester milestone keywords
+  if (
+    lower.includes("capstone") ||
+    lower.includes("leadership development plan") ||
+    lower.includes("final project") ||
+    lower.includes("term project") ||
+    lower.includes("midterm exam") ||
+    lower.includes("final exam") ||
+    lower.includes("comprehensive exam") ||
+    lower.includes("simulation") ||
+    lower.includes("pitch deck") ||
+    lower.includes("client presentation")
+  ) {
+    return true;
+  }
+
+  // Major projects or strategic development plans
+  if (lower.includes("development plan") || lower.includes("strategic plan")) {
+    return true;
+  }
+
+  // For generic "paper", "project", or "report": require significant point weight (>= 25 pts) or explicit term/final qualifier
+  if (lower.includes("paper") || lower.includes("report") || lower.includes("project")) {
+    if (
+      lower.includes("final") ||
+      lower.includes("term") ||
+      lower.includes("research") ||
+      pointsPossible >= 25
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  if (lower.includes("final") || lower.includes("midterm")) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Anchor date for Fall 2026 Term: Monday, September 28, 2026 (00:00:00 local time).
  */
 export const FALL_2026_TERM_START = new Date(2026, 8, 28, 0, 0, 0, 0);
+
+/**
+ * Dynamically computes the term anchor Monday from the earliest assignment or calendar event dates.
+ * Falls back to FALL_2026_TERM_START if no valid dates are provided.
+ */
+export function findTermAnchorMonday(
+  dates: (string | Date | null | undefined)[],
+  fallback: Date = FALL_2026_TERM_START
+): Date {
+  const validTimestamps: number[] = [];
+  dates.forEach((d) => {
+    if (!d) return;
+    const dateObj = new Date(d);
+    const t = dateObj.getTime();
+    if (!isNaN(t)) {
+      validTimestamps.push(t);
+    }
+  });
+
+  if (validTimestamps.length === 0) return fallback;
+
+  validTimestamps.sort((a, b) => a - b);
+  const earliestDate = new Date(validTimestamps[0]);
+
+  // Find Monday of that week
+  const day = earliestDate.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(earliestDate);
+  monday.setDate(earliestDate.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  return monday;
+}
+
+export type CourseBlockType = "block_1" | "block_2" | "full_term" | "foundations_summit";
+
+/**
+ * Classifies where a course falls within the academic quarter:
+ * - Block 1 (Weeks 1-5): Primary Digital Campus courses ending by Week 5
+ * - Block 2 (Weeks 6-10): Primary Digital Campus courses starting in Week 6
+ * - Foundations / Summit: Kenan-Flagler instance courses (Orientation, Math Foundations, Summits)
+ */
+export function classifyCourseBlock(
+  course: { name: string; course_code?: string; instance?: string },
+  taskDates: (string | Date | null | undefined)[],
+  anchorMonday: Date = FALL_2026_TERM_START
+): CourseBlockType {
+  const nameLower = (course.name || "").toLowerCase();
+  const codeLower = (course.course_code || "").toLowerCase();
+
+  // 1. Kenan-Flagler instance or explicit foundational / orientation / summit courses
+  if (
+    course.instance === "kenan-flagler" ||
+    nameLower.includes("orientation") ||
+    nameLower.includes("foundations") ||
+    nameLower.includes("business math") ||
+    nameLower.includes("community") ||
+    nameLower.includes("hub") ||
+    nameLower.includes("summit") ||
+    codeLower.includes("summit")
+  ) {
+    return "foundations_summit";
+  }
+
+  // 2. Evaluate week distribution of tasks
+  const weeks = taskDates
+    .map((d) => getWeekFromDate(d, anchorMonday))
+    .filter((w): w is number => w !== null);
+
+  if (weeks.length === 0) {
+    return "block_1";
+  }
+
+  const minWeek = Math.min(...weeks);
+  const maxWeek = Math.max(...weeks);
+
+  // If tasks end by Week 5, it is strictly Block 1
+  if (maxWeek <= 5) return "block_1";
+
+  // If tasks only start in Week 6 or later, it is strictly Block 2
+  if (minWeek >= 6) return "block_2";
+
+  return "full_term";
+}
 
 /**
  * Returns exact start (Monday 00:00:00) and end (Sunday 23:59:59.999) dates for a course week.

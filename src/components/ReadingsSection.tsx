@@ -11,7 +11,7 @@ import {
   Search,
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { NormalizedReading, ReadingCategory } from "@/lib/canvas/types";
+import { NormalizedReading } from "@/lib/canvas/types";
 import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
 
 interface ReadingsSectionProps {
@@ -26,7 +26,7 @@ export function ReadingsSection({
   onToggleComplete,
 }: ReadingsSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "case" | "reading" | "video" | "pending">("all");
+  const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "todo" | "completed">("all");
   const [selectedCourseTab, setSelectedCourseTab] = useState<string>("all");
 
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -99,48 +99,15 @@ export function ReadingsSection({
     }
   };
 
-  const getCategoryBadge = (category: ReadingCategory) => {
-    switch (category) {
-      case "case":
-        return (
-          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
-            CASE
-          </span>
-        );
-      case "slides":
-        return (
-          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
-            SLIDES
-          </span>
-        );
-      case "spreadsheet":
-        return (
-          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-            MODEL
-          </span>
-        );
-      case "video":
-        return (
-          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-            VIDEO
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
-  // Filter items based on active tab, search, and category
+  // Filter items based on active tab, search, and status
   const filteredReadings = readings.filter((r) => {
     const itemCourse = r.courseCode || "General";
     if (selectedCourseTab !== "all" && itemCourse !== selectedCourseTab) {
       return false;
     }
 
-    if (categoryFilter === "case" && r.category !== "case") return false;
-    if (categoryFilter === "reading" && r.category !== "reading") return false;
-    if (categoryFilter === "video" && r.category !== "video") return false;
-    if (categoryFilter === "pending" && r.isCompleted) return false;
+    if (taskStatusFilter === "todo" && r.isCompleted) return false;
+    if (taskStatusFilter === "completed" && !r.isCompleted) return false;
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
@@ -201,7 +168,6 @@ export function ReadingsSection({
             >
               {reading.title}
             </h3>
-            {getCategoryBadge(reading.category)}
             {reading.pointsPossible !== undefined && reading.pointsPossible > 0 && (
               <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
                 • {reading.pointsPossible} pts
@@ -228,7 +194,7 @@ export function ReadingsSection({
   };
 
   // Check if we should render grouped by course
-  const shouldGroupByCourse = selectedCourseTab === "all" && !searchTerm.trim() && categoryFilter === "all" && courseKeys.length > 1;
+  const shouldGroupByCourse = selectedCourseTab === "all" && !searchTerm.trim() && taskStatusFilter === "all" && courseKeys.length > 1;
 
   return (
     <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col h-full transition-all">
@@ -355,51 +321,41 @@ export function ReadingsSection({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search lectures, videos, or cases..."
+              placeholder="Search coursework, lectures, or readings..."
               className="w-full h-8 pl-9 pr-3 text-xs sm:text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-1 text-xs">
             <button
-              onClick={() => setCategoryFilter("all")}
-              className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
-                categoryFilter === "all"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
+              onClick={() => setTaskStatusFilter("all")}
+              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                taskStatusFilter === "all"
+                  ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                  : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
               }`}
             >
               All ({readings.length})
             </button>
             <button
-              onClick={() => setCategoryFilter("video")}
-              className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
-                categoryFilter === "video"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
-              }`}
-            >
-              Videos ({readings.filter((r) => r.category === "video").length})
-            </button>
-            <button
-              onClick={() => setCategoryFilter("case")}
-              className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
-                categoryFilter === "case"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
-              }`}
-            >
-              Cases ({readings.filter((r) => r.category === "case").length})
-            </button>
-            <button
-              onClick={() => setCategoryFilter("pending")}
-              className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
-                categoryFilter === "pending"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
+              onClick={() => setTaskStatusFilter("todo")}
+              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                taskStatusFilter === "todo"
+                  ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                  : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
               }`}
             >
               To Do ({readings.length - completedCount})
+            </button>
+            <button
+              onClick={() => setTaskStatusFilter("completed")}
+              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                taskStatusFilter === "completed"
+                  ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                  : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
+              }`}
+            >
+              Completed ({completedCount})
             </button>
           </div>
         </div>

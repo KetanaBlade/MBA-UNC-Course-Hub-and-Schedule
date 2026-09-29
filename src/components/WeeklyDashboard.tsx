@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { CanvasCourse, NormalizedDeliverable, WeeklyBundle } from "@/lib/canvas/types";
-import { getWeekDateBounds } from "@/lib/canvas/heuristics";
+import { getWeekDateBounds, isMajorTermMilestone } from "@/lib/canvas/heuristics";
 import { WeeklyOverviewCard } from "./WeeklyOverviewCard";
 import { ReadingsSection } from "./ReadingsSection";
 import { HomeworkTracker } from "./HomeworkTracker";
@@ -30,6 +30,7 @@ interface WeeklyDashboardProps {
   onToggleCourse: (courseId: number) => void;
   onSelectAllCourses: () => void;
   onClearAllCourses: () => void;
+  onSelectCourseIds?: (courseIds: number[]) => void;
   onSelectWeek: (week: number) => void;
   onToggleCompleteItem: (itemId: string) => void;
 }
@@ -42,6 +43,7 @@ export function WeeklyDashboard({
   onToggleCourse,
   onSelectAllCourses,
   onClearAllCourses,
+  onSelectCourseIds,
   onSelectWeek,
   onToggleCompleteItem,
 }: WeeklyDashboardProps) {
@@ -55,9 +57,56 @@ export function WeeklyDashboard({
   const currentBlock = selectedWeek <= 5 ? 1 : 2;
   const blockWeekNum = selectedWeek <= 5 ? selectedWeek : selectedWeek - 5;
 
+  // Academic Block Course Groupings
+  const block1Courses = courses.filter((c) => c.block === "block_1");
+  const block2Courses = courses.filter((c) => c.block === "block_2");
+  const foundationsCourses = courses.filter((c) => c.block === "foundations_summit");
+  const otherBlockNum = currentBlock === 1 ? 2 : 1;
+  const otherBlockCourses = currentBlock === 1 ? block2Courses : block1Courses;
+
   // Active vs Hidden courses
   const activeCourses = courses.filter((c) => selectedCourseIds.includes(c.id));
   const hiddenCourses = courses.filter((c) => !selectedCourseIds.includes(c.id));
+
+  // Inactive courses categorized for clean opt-in
+  const inactiveOtherBlock = otherBlockCourses.filter((c) => !selectedCourseIds.includes(c.id));
+  const inactiveFoundations = foundationsCourses.filter((c) => !selectedCourseIds.includes(c.id));
+  const inactiveCurrentBlock = (currentBlock === 1 ? block1Courses : block2Courses).filter(
+    (c) => !selectedCourseIds.includes(c.id)
+  );
+
+  const handleSelectBlock = (block: "block_1" | "block_2") => {
+    const targetCourses = courses.filter(
+      (c) => c.block === block || c.block === "full_term" || (!c.block && block === "block_1")
+    );
+    const targetIds = targetCourses.map((c) => c.id);
+    if (onSelectCourseIds) {
+      onSelectCourseIds(targetIds);
+    } else {
+      targetCourses.forEach((c) => {
+        if (!selectedCourseIds.includes(c.id)) onToggleCourse(c.id);
+      });
+    }
+  };
+
+  const handleWeekClick = (w: number) => {
+    onSelectWeek(w);
+    const targetBlock = w <= 5 ? "block_1" : "block_2";
+    const prevBlock = selectedWeek <= 5 ? "block_1" : "block_2";
+    // If student shifts blocks and currently active courses belong exclusively to the previous block, auto-switch to target block
+    if (targetBlock !== prevBlock && onSelectCourseIds) {
+      const allBelongToPrevBlock =
+        activeCourses.length > 0 && activeCourses.every((c) => c.block === prevBlock);
+      if (allBelongToPrevBlock) {
+        const targetIds = courses
+          .filter((c) => c.block === targetBlock || c.block === "full_term")
+          .map((c) => c.id);
+        if (targetIds.length > 0) {
+          onSelectCourseIds(targetIds);
+        }
+      }
+    }
+  };
 
   // Filter bundles based on active courses
   const activeBundles: WeeklyBundle[] = [];
@@ -88,7 +137,6 @@ export function WeeklyDashboard({
   selectedCourseIds.forEach((courseId) => {
     const courseBundles = bundlesByCourse[courseId] || [];
     courseBundles.forEach((bundle) => {
-      // Prioritize bundle.termDeliverables
       if (bundle.termDeliverables) {
         bundle.termDeliverables.forEach((deliv) => {
           const key = deliv.assignmentId
@@ -110,38 +158,12 @@ export function WeeklyDashboard({
     });
   });
 
-  // Term Projects & Major Milestones (e.g. Leadership Development Plan Due Nov 8)
+  // Major Term Milestones strictly using pure heuristic
   const termMilestones = Array.from(allQuarterDeliverablesMap.values()).filter((d) => {
     if (onlyPending && (d.isCompleted || d.status === "graded" || d.status === "submitted")) {
       return false;
     }
-
-    const titleLower = d.title.toLowerCase();
-
-    // Regular weekly homework belongs to its week tab, NOT term projects
-    const isWeeklyHomeworkPattern =
-      /\b(?:homework(?:\s*assignment)?|hw|problem\s*set|pset|assignment\s*\d+|quiz\s*\d+|session\s*\d+|reflection\s*journal\s*\d+|weekly)\b/i.test(
-        titleLower
-      ) &&
-      !/\b(?:final|term|capstone|development\s*plan)\b/i.test(titleLower);
-
-    if (isWeeklyHomeworkPattern) {
-      return false;
-    }
-
-    // Milestone heuristics: keywords for term projects
-    const isMajorKeyword =
-      titleLower.includes("plan") ||
-      titleLower.includes("project") ||
-      titleLower.includes("paper") ||
-      titleLower.includes("capstone") ||
-      titleLower.includes("final") ||
-      titleLower.includes("midterm") ||
-      titleLower.includes("report") ||
-      titleLower.includes("leadership development") ||
-      titleLower.includes("term");
-
-    return isMajorKeyword;
+    return isMajorTermMilestone(d.title, d.pointsPossible);
   });
 
   // Sort chronologically by due date
@@ -188,22 +210,58 @@ export function WeeklyDashboard({
       {/* 2-COLUMN PANORAMIC LAYOUT (items-start):
              - LEFT COLUMN (xl:col-span-8): Filters, KPIs, Weekly Briefings, Homework & Coursework
              - RIGHT COLUMN (xl:col-span-4): Term Milestones Card & Course Files Card
-          Both columns flow naturally and independently with zero artificial gaps.
       */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* LEFT PRIMARY COLUMN (xl:col-span-8): Filters -> KPIs -> (Briefings/Homework + Coursework) */}
         <div className="xl:col-span-8 space-y-6">
-          {/* A. ANCHORED FILTER & CHIP CONTROL DECK (NO CHECKBOXES, HIDE CHIPS) */}
+          {/* A. ANCHORED FILTER & CHIP CONTROL DECK WITH BLOCK PRESETS */}
           <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
-            {/* Active Course Chips */}
-            <div className="space-y-2">
+            {/* Active Course Chips & Block Presets */}
+            <div className="space-y-2.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Layers className="w-4 h-4 text-primary" />
                   <span className="text-xs sm:text-sm font-semibold text-foreground">
                     Active Courses ({activeCourses.length} Visible):
                   </span>
+                  {/* Quick Block Presets */}
+                  <div className="flex items-center gap-1.5 sm:ml-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectBlock("block_1")}
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        currentBlock === 1 &&
+                        activeCourses.length > 0 &&
+                        activeCourses.every((c) => c.block === "block_1" || c.block === "full_term")
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
+                      }`}
+                    >
+                      Block 1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectBlock("block_2")}
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-all cursor-pointer ${
+                        currentBlock === 2 &&
+                        activeCourses.length > 0 &&
+                        activeCourses.every((c) => c.block === "block_2" || c.block === "full_term")
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
+                      }`}
+                    >
+                      Block 2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onSelectAllCourses}
+                      className="text-[11px] font-semibold px-2 py-0.5 rounded bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border transition-all cursor-pointer"
+                    >
+                      All ({courses.length})
+                    </button>
+                  </div>
                 </div>
+
                 {hiddenCourses.length > 0 && (
                   <button
                     onClick={onSelectAllCourses}
@@ -255,7 +313,7 @@ export function WeeklyDashboard({
                 )}
               </div>
 
-              {/* Hidden Courses Collapsible Section */}
+              {/* Inactive & Opt-In Courses Section (Grouped by Block and Foundations) */}
               {hiddenCourses.length > 0 && (
                 <div className="pt-2 border-t border-border/40">
                   <button
@@ -268,32 +326,104 @@ export function WeeklyDashboard({
                     ) : (
                       <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                     )}
-                    <span>Hidden Courses ({hiddenCourses.length})</span>
-                    <span className="text-[11px] opacity-70">— click to expand and restore</span>
+                    <span>Available Courses & Refresher Materials ({hiddenCourses.length})</span>
+                    <span className="text-[11px] opacity-70">— click to expand and opt in</span>
                   </button>
 
                   {showHiddenSection && (
-                    <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 pl-5">
-                      {hiddenCourses.map((course) => {
-                        const cleanCode = getCleanCourseCode(course.course_code, course.name);
-                        const cleanName = getCleanCourseName(course.course_code, course.name);
-                        const courseColor = getCourseColor(course.course_code || course.id);
+                    <div className="space-y-2 mt-2 pt-1 pl-4 border-l-2 border-border/50">
+                      {/* Other Block Courses */}
+                      {inactiveOtherBlock.length > 0 && (
+                        <div className="space-y-1">
+                          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Block {otherBlockNum} Courses ({currentBlock === 1 ? "Starts Week 6" : "Weeks 1–5"}):
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {inactiveOtherBlock.map((course) => {
+                              const cleanCode = getCleanCourseCode(course.course_code, course.name);
+                              const cleanName = getCleanCourseName(course.course_code, course.name);
+                              const courseColor = getCourseColor(course.course_code || course.id);
 
-                        return (
-                          <button
-                            key={course.id}
-                            type="button"
-                            onClick={() => onToggleCourse(course.id)}
-                            title={`Unhide ${cleanCode} ${cleanName}`}
-                            aria-label={`Unhide ${cleanCode} ${cleanName}`}
-                            className={`text-xs font-medium pl-2 pr-2.5 py-0.5 rounded-md border border-dashed inline-flex items-center gap-1.5 opacity-60 hover:opacity-100 hover:border-solid transition-all cursor-pointer ${courseColor.badge}`}
-                          >
-                            <Plus className="w-3 h-3" />
-                            <span className="font-semibold uppercase">{cleanCode}</span>
-                            <span className="truncate max-w-[140px]">{cleanName}</span>
-                          </button>
-                        );
-                      })}
+                              return (
+                                <button
+                                  key={course.id}
+                                  type="button"
+                                  onClick={() => onToggleCourse(course.id)}
+                                  title={`Opt-in to ${cleanCode} ${cleanName}`}
+                                  aria-label={`Opt-in to ${cleanCode} ${cleanName}`}
+                                  className={`text-xs font-medium pl-2 pr-2.5 py-0.5 rounded-md border border-dashed inline-flex items-center gap-1.5 opacity-70 hover:opacity-100 hover:border-solid transition-all cursor-pointer ${courseColor.badge}`}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span className="font-semibold uppercase">{cleanCode}</span>
+                                  <span className="truncate max-w-[150px]">{cleanName}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Foundations / Kenan-Flagler Courses */}
+                      {inactiveFoundations.length > 0 && (
+                        <div className="space-y-1 pt-1">
+                          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Foundations & Summits (Kenan-Flagler Canvas):
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {inactiveFoundations.map((course) => {
+                              const cleanCode = getCleanCourseCode(course.course_code, course.name);
+                              const cleanName = getCleanCourseName(course.course_code, course.name);
+                              const courseColor = getCourseColor(course.course_code || course.id);
+
+                              return (
+                                <button
+                                  key={course.id}
+                                  type="button"
+                                  onClick={() => onToggleCourse(course.id)}
+                                  title={`Opt-in to ${cleanCode} ${cleanName}`}
+                                  aria-label={`Opt-in to ${cleanCode} ${cleanName}`}
+                                  className={`text-xs font-medium pl-2 pr-2.5 py-0.5 rounded-md border border-dashed inline-flex items-center gap-1.5 opacity-70 hover:opacity-100 hover:border-solid transition-all cursor-pointer ${courseColor.badge}`}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span className="font-semibold uppercase">{cleanCode}</span>
+                                  <span className="truncate max-w-[150px]">{cleanName}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Inactive Current Block Courses */}
+                      {inactiveCurrentBlock.length > 0 && (
+                        <div className="space-y-1 pt-1">
+                          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Current Block {currentBlock} Hidden Courses:
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {inactiveCurrentBlock.map((course) => {
+                              const cleanCode = getCleanCourseCode(course.course_code, course.name);
+                              const cleanName = getCleanCourseName(course.course_code, course.name);
+                              const courseColor = getCourseColor(course.course_code || course.id);
+
+                              return (
+                                <button
+                                  key={course.id}
+                                  type="button"
+                                  onClick={() => onToggleCourse(course.id)}
+                                  title={`Unhide ${cleanCode} ${cleanName}`}
+                                  aria-label={`Unhide ${cleanCode} ${cleanName}`}
+                                  className={`text-xs font-medium pl-2 pr-2.5 py-0.5 rounded-md border border-dashed inline-flex items-center gap-1.5 opacity-70 hover:opacity-100 hover:border-solid transition-all cursor-pointer ${courseColor.badge}`}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span className="font-semibold uppercase">{cleanCode}</span>
+                                  <span className="truncate max-w-[150px]">{cleanName}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -313,7 +443,7 @@ export function WeeklyDashboard({
                     return (
                       <button
                         key={w}
-                        onClick={() => onSelectWeek(w)}
+                        onClick={() => handleWeekClick(w)}
                         className={`h-8 min-w-[38px] px-1.5 rounded-sm border flex flex-col items-center justify-center transition-all cursor-pointer ${
                           isCurrent
                             ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs"
@@ -341,7 +471,7 @@ export function WeeklyDashboard({
                     return (
                       <button
                         key={w}
-                        onClick={() => onSelectWeek(w)}
+                        onClick={() => handleWeekClick(w)}
                         className={`h-8 min-w-[38px] px-1.5 rounded-sm border flex flex-col items-center justify-center transition-all cursor-pointer ${
                           isCurrent
                             ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs"
