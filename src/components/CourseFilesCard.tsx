@@ -110,27 +110,24 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
 
         {/* RESPONSIVE HORIZONTAL COURSE TABS FOR FILES */}
         {courseKeys.length > 1 && (
-          <div className="pt-1 flex items-center gap-1.5">
-            {/* Left Scroll Button */}
-            <button
-              type="button"
-              onClick={() => scrollTabs("left")}
-              disabled={!canScrollLeft}
-              aria-label="Scroll courses left"
-              className={`shrink-0 h-8 w-8 rounded-md flex items-center justify-center border border-border transition-all ${
-                canScrollLeft
-                  ? "bg-card text-foreground hover:bg-muted/50 cursor-pointer shadow-2xs"
-                  : "bg-muted/10 text-muted-foreground/30 cursor-not-allowed opacity-40 border-border/40"
-              }`}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+          <div className="relative pt-1 group">
+            {/* Left Scroll Angle (Overlaid on left edge only when scrollable) */}
+            {canScrollLeft && (
+              <button
+                type="button"
+                onClick={() => scrollTabs("left")}
+                aria-label="Scroll courses left"
+                className="absolute left-0 top-1 bottom-0 z-10 flex items-center justify-start pl-0.5 pr-4 bg-gradient-to-r from-card via-card/90 to-transparent text-foreground/70 hover:text-foreground cursor-pointer transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5 drop-shadow-xs" />
+              </button>
+            )}
 
             {/* Scrollable Tabs Track */}
             <div
               ref={tabsRef}
               onScroll={updateScrollButtons}
-              className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
+              className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
             >
               {/* "All Files" Tab */}
               <button
@@ -188,20 +185,17 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
               })}
             </div>
 
-            {/* Right Scroll Button */}
-            <button
-              type="button"
-              onClick={() => scrollTabs("right")}
-              disabled={!canScrollRight}
-              aria-label="Scroll courses right"
-              className={`shrink-0 h-8 w-8 rounded-md flex items-center justify-center border border-border transition-all ${
-                canScrollRight
-                  ? "bg-card text-foreground hover:bg-muted/50 cursor-pointer shadow-2xs"
-                  : "bg-muted/10 text-muted-foreground/30 cursor-not-allowed opacity-40 border-border/40"
-              }`}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            {/* Right Scroll Angle (Overlaid on right edge only when scrollable) */}
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={() => scrollTabs("right")}
+                aria-label="Scroll courses right"
+                className="absolute right-0 top-1 bottom-0 z-10 flex items-center justify-end pr-0.5 pl-4 bg-gradient-to-l from-card via-card/90 to-transparent text-foreground/70 hover:text-foreground cursor-pointer transition-colors"
+              >
+                <ChevronRight className="w-5 h-5 drop-shadow-xs" />
+              </button>
+            )}
           </div>
         )}
 

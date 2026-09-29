@@ -33,11 +33,11 @@ const PALETTE: CourseColorStyle[] = [
     text: "text-emerald-800 dark:text-emerald-300",
   },
   {
-    // Amber / Warm Gold
-    badge: "bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/30",
-    border: "border-amber-500/40",
-    pillActive: "bg-amber-700 text-white dark:bg-amber-600",
-    text: "text-amber-900 dark:text-amber-300",
+    // Violet / Lavender (replaces bright amber/yellow)
+    badge: "bg-violet-500/10 text-violet-800 dark:text-violet-300 border-violet-500/30",
+    border: "border-violet-500/40",
+    pillActive: "bg-violet-700 text-white dark:bg-violet-600",
+    text: "text-violet-800 dark:text-violet-300",
   },
   {
     // Rose / Crimson
@@ -52,6 +52,13 @@ const PALETTE: CourseColorStyle[] = [
     border: "border-teal-500/40",
     pillActive: "bg-teal-700 text-white dark:bg-teal-600",
     text: "text-teal-800 dark:text-teal-300",
+  },
+  {
+    // Cyan / Electric Blue
+    badge: "bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border-cyan-500/30",
+    border: "border-cyan-500/40",
+    pillActive: "bg-cyan-700 text-white dark:bg-cyan-600",
+    text: "text-cyan-800 dark:text-cyan-300",
   },
 ];
 

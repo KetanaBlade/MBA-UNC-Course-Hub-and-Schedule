@@ -163,7 +163,7 @@ export function TermMilestonesCard({
                       </span>
                     )}
                     {deliv.dueInDays !== undefined && (
-                      <span className="font-mono text-xs font-semibold text-amber-700 dark:text-amber-300">
+                      <span className="font-mono text-xs font-semibold text-primary">
                         • {deliv.dueInDays}d left
                       </span>
                     )}
