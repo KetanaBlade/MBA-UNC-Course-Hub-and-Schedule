@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Check,
   CheckCheck,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Download,
   ExternalLink,
   File,
@@ -17,6 +15,7 @@ import {
 import { NormalizedReading } from "@/lib/canvas/types";
 import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
 import { AppStorage } from "@/lib/storage";
+import { HorizontalCourseTabs, CourseTabItem } from "@/components/HorizontalCourseTabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,10 +51,6 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
     AppStorage.setFilesCourseTab(tab);
   };
 
-  const tabsRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
   // Group files by course code
   const groupedByCourse: Record<string, { courseName: string; items: NormalizedReading[] }> = {};
   files.forEach((f) => {
@@ -71,30 +66,14 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
 
   const courseKeys = Object.keys(groupedByCourse);
 
-  const updateScrollButtons = () => {
-    if (tabsRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
-      setCanScrollLeft(scrollLeft > 2);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
-    }
-  };
-
-  useEffect(() => {
-    updateScrollButtons();
-    window.addEventListener("resize", updateScrollButtons);
-    return () => window.removeEventListener("resize", updateScrollButtons);
-  }, [courseKeys.length]);
-
-  const scrollTabs = (direction: "left" | "right") => {
-    if (tabsRef.current) {
-      const scrollAmount = 180;
-      tabsRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-      setTimeout(updateScrollButtons, 300);
-    }
-  };
+  const fileTabs: CourseTabItem[] = [
+    { key: "all", label: "All Files", count: files.length },
+    ...courseKeys.map((code) => ({
+      key: code,
+      label: getCleanCourseName(code, groupedByCourse[code].courseName),
+      count: groupedByCourse[code].items.length,
+    })),
+  ];
 
   useEffect(() => {
     if (selectedCourseTab !== "all" && !groupedByCourse[selectedCourseTab]) {
@@ -237,78 +216,13 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
           </h2>
         </div>
 
-        {/* Responsive Horizontal Course Tabs (Standard Underline Tab Layout) */}
+        {/* Responsive Horizontal Course Tabs (Reusable Component) */}
         {courseKeys.length >= 1 && (
-          <div className="relative border-b border-border/80 group">
-            {canScrollLeft && (
-              <button
-                type="button"
-                onClick={() => scrollTabs("left")}
-                aria-label="Scroll courses left"
-                className="absolute left-0 top-0 bottom-0 z-10 flex items-center justify-start pr-4 pl-0.5 bg-gradient-to-r from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            )}
-
-            <div
-              ref={tabsRef}
-              onScroll={updateScrollButtons}
-              className="w-full flex items-center gap-0 overflow-x-auto no-scrollbar scroll-smooth -mb-px"
-            >
-              {/* All Files Tab */}
-              <button
-                type="button"
-                onClick={() => handleSelectTab("all")}
-                className={`shrink-0 py-2 sm:py-2.5 px-3 sm:px-4 first:pl-0 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
-                  selectedCourseTab === "all"
-                    ? "border-primary text-foreground font-semibold"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
-                }`}
-              >
-                <span>All Files</span>
-                <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums">
-                  ({files.length})
-                </span>
-              </button>
-
-              {/* Course Tabs */}
-              {courseKeys.map((code) => {
-                const group = groupedByCourse[code];
-                const isSelected = selectedCourseTab === code;
-                const cleanName = getCleanCourseName(code, group.courseName);
-
-                return (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => handleSelectTab(code)}
-                    className={`shrink-0 py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
-                      isSelected
-                        ? "border-primary text-foreground font-semibold"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
-                    }`}
-                  >
-                    <span>{cleanName}</span>
-                    <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums">
-                      ({group.items.length})
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {canScrollRight && (
-              <button
-                type="button"
-                onClick={() => scrollTabs("right")}
-                aria-label="Scroll courses right"
-                className="absolute right-0 top-0 bottom-0 z-10 flex items-center justify-end pl-4 pr-0.5 bg-gradient-to-l from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          <HorizontalCourseTabs
+            tabs={fileTabs}
+            selectedTab={selectedCourseTab}
+            onSelectTab={handleSelectTab}
+          />
         )}
 
         {/* Search + Status Filter Dropdown */}
