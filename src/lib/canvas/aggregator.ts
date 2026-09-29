@@ -517,16 +517,13 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
               itemWeek = 5;
             }
 
-            const titleLower = item.title.toLowerCase();
-            const isSyncSession =
-              /\b(?:sync|synchronous|live\s*session|live\s*class|zoom|virtual\s*class)\b/i.test(titleLower);
-
             const zoomUrl =
               (item.external_url?.includes("zoom.us") ? item.external_url : undefined) ||
               (item.url?.includes("zoom.us") ? item.url : undefined) ||
               (item.html_url?.includes("zoom.us") ? item.html_url : undefined);
 
-            if ((zoomUrl || isSyncSession) && itemWeek === weekNum) {
+            // Require an actual Zoom URL: items without video links are course pages, not live sessions
+            if (zoomUrl && itemWeek === weekNum) {
               const sessionKey = `${course.id}-${item.title}`.toLowerCase();
               if (!addedLiveKeys.has(sessionKey)) {
                 addedLiveKeys.add(sessionKey);

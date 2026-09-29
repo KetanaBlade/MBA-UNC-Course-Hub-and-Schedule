@@ -339,29 +339,9 @@ export function findTermAnchorMonday(
   dates: (string | Date | null | undefined)[],
   fallback: Date = FALL_2026_TERM_START
 ): Date {
-  const validTimestamps: number[] = [];
-  dates.forEach((d) => {
-    if (!d) return;
-    const dateObj = new Date(d);
-    const t = dateObj.getTime();
-    if (!isNaN(t)) {
-      validTimestamps.push(t);
-    }
-  });
-
-  if (validTimestamps.length === 0) return fallback;
-
-  validTimestamps.sort((a, b) => a - b);
-  const earliestDate = new Date(validTimestamps[0]);
-
-  // Find Monday of that week
-  const day = earliestDate.getDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(earliestDate);
-  monday.setDate(earliestDate.getDate() + diffToMonday);
-  monday.setHours(0, 0, 0, 0);
-
-  return monday;
+  // For the active Fall 2026 quarter, Monday September 28, 2026 is the authoritative term start.
+  // Pre-term tech tutorials and orientation quizzes must never shift the academic calendar backwards.
+  return FALL_2026_TERM_START;
 }
 
 export type CourseBlockType = "block_1" | "block_2" | "full_term" | "foundations_summit";
@@ -406,12 +386,14 @@ export function classifyCourseBlock(
     return "block_2";
   }
 
-  // Explicit Block 1 courses (e.g. MBA 714 Business Statistics & Analytics, MBA 710 Leading & Managing)
+  // Explicit Block 1 courses (e.g. MBA 714 / MBA 801 Business Statistics & Analytics, MBA 710 Leading & Managing)
   if (
     combined.includes("714") ||
+    combined.includes("801") ||
     combined.includes("statistics") ||
     combined.includes("710") ||
     combined.includes("leading") ||
+    combined.includes("managing") ||
     combined.includes("block 1") ||
     combined.includes("block i")
   ) {
@@ -465,6 +447,7 @@ export function getWeekDateBounds(
 
 /**
  * Returns the week number (1-12) for a given date, strictly configured by Monday-Sunday boundaries.
+ * Uses local midnight day comparison to eliminate UTC timezone bleeding.
  */
 export function getWeekFromDate(
   dateInput?: string | Date | null,
@@ -484,8 +467,10 @@ export function getWeekFromDate(
     0
   ).getTime();
 
-  const diffMs = d.getTime() - anchorStart;
-  const diffDays = Math.floor(diffMs / 86400000);
+  // Convert to local midnight to prevent UTC Sunday night (03:59 UTC) from bleeding into Monday
+  const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  const diffMs = targetDate.getTime() - anchorStart;
+  const diffDays = Math.round(diffMs / 86400000);
 
   if (diffDays < 0) {
     if (diffDays >= -7) return 1; // Prior week / orientation belongs to Week 1 prep

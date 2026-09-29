@@ -11,7 +11,6 @@ import {
   File,
   FileSpreadsheet,
   FileText,
-  Layers,
   Search,
 } from "lucide-react";
 import { NormalizedReading } from "@/lib/canvas/types";
@@ -207,75 +206,68 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
           </h2>
         </div>
 
-        {/* Responsive Horizontal Course Tabs */}
+        {/* Responsive Horizontal Course Tabs (Standard Underline Tab Layout) */}
         {courseKeys.length > 1 && (
-          <div className="relative pt-1 group">
+          <div className="relative border-b border-border/80 group">
             {canScrollLeft && (
               <button
                 type="button"
                 onClick={() => scrollTabs("left")}
                 aria-label="Scroll courses left"
-                className="absolute left-0 top-1 bottom-0 z-10 flex items-center justify-start pl-0.5 pr-4 bg-gradient-to-r from-card via-card/90 to-transparent text-foreground/70 hover:text-foreground cursor-pointer transition-colors"
+                className="absolute left-0 top-0 bottom-0 z-10 flex items-center justify-start pr-4 pl-0.5 bg-gradient-to-r from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
-                <ChevronLeft className="w-5 h-5 drop-shadow-xs" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
             )}
 
             <div
               ref={tabsRef}
               onScroll={updateScrollButtons}
-              className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
+              className="w-full flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar scroll-smooth px-1"
             >
               {/* All Files Tab */}
               <button
                 type="button"
                 onClick={() => setSelectedCourseTab("all")}
-                className={`shrink-0 flex items-center gap-2 h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
+                className={`shrink-0 py-2.5 sm:py-3 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
                   selectedCourseTab === "all"
-                    ? "bg-primary text-primary-foreground font-semibold shadow-xs border-primary"
-                    : "bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
+                    ? "border-primary text-foreground font-semibold"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
                 }`}
               >
-                <Layers className="w-3.5 h-3.5" />
                 <span>All Files</span>
-                <span className="text-[11px] opacity-80 tabular-nums">({files.length})</span>
+                <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums">
+                  ({files.length})
+                </span>
               </button>
 
               {/* Course Tabs */}
               {courseKeys.map((code) => {
                 const group = groupedByCourse[code];
-                const color = getCourseColor(code);
                 const isSelected = selectedCourseTab === code;
                 const doneCount = group.items.filter((i) => i.isCompleted).length;
-                const isAllDone = doneCount === group.items.length && group.items.length > 0;
+                const cleanCode = getCleanCourseCode(code, group.courseName);
+                const cleanName = getCleanCourseName(code, group.courseName);
 
                 return (
                   <button
                     key={code}
                     type="button"
                     onClick={() => setSelectedCourseTab(code)}
-                    className={`shrink-0 flex items-center gap-2 h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
+                    className={`shrink-0 py-2.5 sm:py-3 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
                       isSelected
-                        ? "bg-card text-foreground border-primary ring-2 ring-primary/20 shadow-xs font-semibold"
-                        : "bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
+                        ? "border-primary text-foreground font-semibold"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
                     }`}
                   >
-                    <span
-                      className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${color.badge}`}
-                    >
-                      {getCleanCourseCode(code, group.courseName)}
-                    </span>
-                    <span className="max-w-[140px] sm:max-w-[180px] truncate">
-                      {getCleanCourseName(code, group.courseName)}
-                    </span>
-                    <span
-                      className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums ${
-                        isAllDone
-                          ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {doneCount}/{group.items.length}
+                    <span>{cleanCode}</span>
+                    {cleanName !== cleanCode && (
+                      <span className="hidden md:inline text-xs text-muted-foreground font-normal">
+                        · {cleanName}
+                      </span>
+                    )}
+                    <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums">
+                      ({doneCount}/{group.items.length})
                     </span>
                   </button>
                 );
@@ -287,9 +279,9 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                 type="button"
                 onClick={() => scrollTabs("right")}
                 aria-label="Scroll courses right"
-                className="absolute right-0 top-1 bottom-0 z-10 flex items-center justify-end pr-0.5 pl-4 bg-gradient-to-l from-card via-card/90 to-transparent text-foreground/70 hover:text-foreground cursor-pointer transition-colors"
+                className="absolute right-0 top-0 bottom-0 z-10 flex items-center justify-end pl-4 pr-0.5 bg-gradient-to-l from-card via-card/90 to-transparent text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
-                <ChevronRight className="w-5 h-5 drop-shadow-xs" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             )}
           </div>
