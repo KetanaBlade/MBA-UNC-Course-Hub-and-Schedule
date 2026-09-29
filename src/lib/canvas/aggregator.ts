@@ -273,6 +273,11 @@ export function aggregateCourseIntoWeeks(input: AggregatorInput): WeeklyBundle[]
             courseName: course.name,
             pointsPossible,
             type: item.type,
+            courseId: course.id,
+            moduleId: targetModule.id,
+            moduleItemId: item.id,
+            instance: course.instance,
+            completionRequirementType: item.completion_requirement?.type,
           });
         });
       }

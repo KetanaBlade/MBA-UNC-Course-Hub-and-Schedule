@@ -146,6 +146,11 @@ export interface NormalizedReading {
   courseName?: string;
   pointsPossible?: number;
   type?: string;
+  courseId?: number;
+  moduleId?: number;
+  moduleItemId?: number;
+  instance?: CanvasInstance;
+  completionRequirementType?: string;
 }
 
 export type DeliverableStatus =

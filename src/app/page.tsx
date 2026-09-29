@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Calendar as CalendarIcon,
   Layers,
@@ -42,6 +42,14 @@ export default function HomePage() {
   const [showSetupWizard, setShowSetupWizard] = useState(false);
   const [showCohortShare, setShowCohortShare] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+
+  const tokensRef = useRef(tokens);
+  tokensRef.current = tokens;
+  const isSyncingRef = useRef(isSyncing);
+  isSyncingRef.current = isSyncing;
+  const lastSyncedAtRef = useRef(lastSyncedAt);
+  lastSyncedAtRef.current = lastSyncedAt;
 
   useEffect(() => {
     const savedTokens = AppStorage.getTokens();
@@ -79,6 +87,42 @@ export default function HomePage() {
       loadMockData();
       setShowSetupWizard(true);
     }
+  }, []);
+
+  // 5-minute background auto-sync interval + tab focus re-sync
+  useEffect(() => {
+    const AUTO_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+
+    const performAutoSync = () => {
+      const currentTokens = tokensRef.current;
+      const hasAnyToken = Boolean(
+        currentTokens.digitalCampusToken || currentTokens.kenanFlaglerToken
+      );
+      if (!hasAnyToken || isSyncingRef.current) return;
+
+      fetchLiveData(currentTokens);
+    };
+
+    const intervalId = setInterval(() => {
+      performAutoSync();
+    }, AUTO_SYNC_INTERVAL_MS);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        const lastSync = lastSyncedAtRef.current;
+        // If it's been more than 5 minutes since last sync, trigger an auto-sync on tab refocus
+        if (!lastSync || Date.now() - lastSync.getTime() > AUTO_SYNC_INTERVAL_MS) {
+          performAutoSync();
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const loadMockData = () => {
@@ -288,6 +332,10 @@ export default function HomePage() {
         AppStorage.saveCachedCourses(loadedCourses);
         AppStorage.saveCachedBundles(bundlesMap);
 
+        const now = new Date();
+        setLastSyncedAt(now);
+        lastSyncedAtRef.current = now;
+
         setSelectedCourseIds((prev) => {
           const savedIds = AppStorage.getSelectedCourseIds();
           const sourceIds = prev.length > 0 ? prev : (savedIds || []);
@@ -353,6 +401,38 @@ export default function HomePage() {
 
   const handleToggleCompleteItem = (itemId: string) => {
     AppStorage.toggleCompletedItem(itemId);
+
+    // If this item is a Canvas module item with completion support, push to Canvas in the background
+    const targetReading = Object.values(bundlesByCourse)
+      .flatMap((bList) => bList.flatMap((b) => b.readings))
+      .find((r) => r.id === itemId);
+
+    if (
+      targetReading?.courseId &&
+      targetReading?.moduleId &&
+      targetReading?.moduleItemId &&
+      targetReading?.instance
+    ) {
+      const activeToken =
+        targetReading.instance === "digitalcampus"
+          ? tokens.digitalCampusToken
+          : tokens.kenanFlaglerToken;
+      if (activeToken) {
+        const nextCompleted = !targetReading.isCompleted;
+        const client = new CanvasApiClient(targetReading.instance, activeToken);
+        client
+          .markModuleItemDone(
+            targetReading.courseId,
+            targetReading.moduleId,
+            targetReading.moduleItemId,
+            nextCompleted
+          )
+          .catch((err) => {
+            console.warn("Background Canvas push completion failed:", err);
+          });
+      }
+    }
+
     setBundlesByCourse((prev) => {
       const next = { ...prev };
       Object.keys(next).forEach((cId) => {
@@ -441,6 +521,7 @@ export default function HomePage() {
         onExportCalendar={handleExportCalendar}
         onSync={() => fetchLiveData(tokens)}
         isSyncing={isSyncing}
+        lastSyncedAt={lastSyncedAt}
       />
 
       {/* Main Container with generous horizontal space */}

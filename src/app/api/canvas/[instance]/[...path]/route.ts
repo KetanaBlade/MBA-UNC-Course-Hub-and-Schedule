@@ -19,10 +19,24 @@ export async function POST(
   return handleProxy(request, context, "POST");
 }
 
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ instance: string; path: string[] }> }
+) {
+  return handleProxy(request, context, "PUT");
+}
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ instance: string; path: string[] }> }
+) {
+  return handleProxy(request, context, "DELETE");
+}
+
 async function handleProxy(
   request: NextRequest,
   context: { params: Promise<{ instance: string; path: string[] }> },
-  method: "GET" | "POST"
+  method: "GET" | "POST" | "PUT" | "DELETE"
 ) {
   const { instance, path } = await context.params;
   const targetHost = ALLOWED_INSTANCES[instance];
@@ -61,7 +75,7 @@ async function handleProxy(
     };
 
     let body: BodyInit | undefined = undefined;
-    if (method === "POST") {
+    if (method === "POST" || method === "PUT") {
       const contentType = request.headers.get("content-type");
       if (contentType) {
         fetchHeaders["Content-Type"] = contentType;

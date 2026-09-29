@@ -104,14 +104,17 @@ export function SetupWizard({
                 <span>Why does UNC MBA use two Canvas sites?</span>
               </div>
               <p className="leading-relaxed">
-                The program uses <strong className="text-foreground">digitalcampus.instructure.com</strong> (for 2U live synchronous delivery & orientation) and <strong className="text-foreground">kenan-flagler.instructure.com</strong> (for core courses & electives). This app stitches both into a single weekly schedule.
+                The program uses <strong className="text-foreground">digitalcampus.instructure.com</strong> (for 2U live synchronous delivery & orientation) and <strong className="text-foreground">kenan-flagler.instructure.com</strong> (for core courses & electives).
+              </p>
+              <p className="text-[11px] text-primary font-semibold pt-0.5">
+                💡 Only one token is required — you can connect Digital Campus alone, Kenan-Flagler alone, or both!
               </p>
             </div>
 
             {/* Site 1: DigitalCampus (Recipe 5.4 Form Input) */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                <span>1. DigitalCampus Token</span>
+                <span>1. Digital Campus Token <span className="font-normal text-muted-foreground">(Optional if using Kenan-Flagler)</span></span>
                 <a
                   href="https://digitalcampus.instructure.com/profile/settings#access_tokens"
                   target="_blank"
@@ -143,7 +146,7 @@ export function SetupWizard({
             {/* Site 2: Kenan-Flagler (Recipe 5.4 Form Input) */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                <span>2. Kenan-Flagler Token</span>
+                <span>2. Kenan-Flagler Token <span className="font-normal text-muted-foreground">(Optional if using Digital Campus)</span></span>
                 <a
                   href="https://kenan-flagler.instructure.com/profile/settings#access_tokens"
                   target="_blank"

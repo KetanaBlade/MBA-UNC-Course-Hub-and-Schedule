@@ -20,6 +20,7 @@ interface NavbarProps {
   onExportCalendar: () => void;
   onSync: () => void;
   isSyncing: boolean;
+  lastSyncedAt?: Date | null;
 }
 
 export function Navbar({
@@ -30,6 +31,7 @@ export function Navbar({
   onExportCalendar,
   onSync,
   isSyncing,
+  lastSyncedAt,
 }: NavbarProps) {
   const hasDigitalCampus = Boolean(tokens.digitalCampusToken);
   const hasKenanFlagler = Boolean(tokens.kenanFlaglerToken);
@@ -95,12 +97,21 @@ export function Navbar({
             disabled={isSyncing}
             aria-label="Synchronize Canvas data"
             className="h-9 px-3 sm:px-3.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 disabled:opacity-50 shadow-2xs"
-            title="Refresh Canvas Data"
+            title={
+              lastSyncedAt
+                ? `Last synced at ${lastSyncedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} • Auto-syncs every 5m`
+                : "Refresh Canvas Data (Auto-syncs every 5m)"
+            }
           >
             <RefreshCw
               className={`w-3.5 h-3.5 text-muted-foreground ${isSyncing ? "animate-spin text-primary" : ""}`}
             />
             <span className="hidden sm:inline">Sync</span>
+            {lastSyncedAt && !isSyncing && (
+              <span className="hidden xl:inline text-[10px] font-mono text-muted-foreground font-normal ml-0.5">
+                {lastSyncedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+              </span>
+            )}
           </button>
 
           {/* Export Calendar (.ics) */}

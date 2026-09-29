@@ -193,4 +193,61 @@ export class CanvasApiClient {
 
     return allEvents;
   }
+
+  /**
+   * Marks a module item as done or undone in Canvas.
+   * Canvas API endpoint:
+   *   PUT /api/v1/courses/:course_id/modules/:module_id/items/:id/done
+   *   DELETE /api/v1/courses/:course_id/modules/:module_id/items/:id/done
+   */
+  async markModuleItemDone(
+    courseId: number,
+    moduleId: number,
+    itemId: number,
+    isDone: boolean
+  ): Promise<boolean> {
+    try {
+      const url = new URL(
+        `/api/canvas/${this.instance}/courses/${courseId}/modules/${moduleId}/items/${itemId}/done`,
+        window.location.origin
+      );
+      const res = await fetch(url.toString(), {
+        method: isDone ? "PUT" : "DELETE",
+        headers: {
+          "x-canvas-token": this.token,
+          Accept: "application/json",
+        },
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Marks a module item as read in Canvas.
+   * Canvas API endpoint: POST /api/v1/courses/:course_id/modules/:module_id/items/:id/mark_read
+   */
+  async markModuleItemRead(
+    courseId: number,
+    moduleId: number,
+    itemId: number
+  ): Promise<boolean> {
+    try {
+      const url = new URL(
+        `/api/canvas/${this.instance}/courses/${courseId}/modules/${moduleId}/items/${itemId}/mark_read`,
+        window.location.origin
+      );
+      const res = await fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          "x-canvas-token": this.token,
+          Accept: "application/json",
+        },
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
 }
