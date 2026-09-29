@@ -266,13 +266,13 @@ export function ReadingsSection({
             <div
               ref={tabsRef}
               onScroll={updateScrollButtons}
-              className="w-full flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth"
+              className="w-full flex items-center gap-0 overflow-x-auto no-scrollbar scroll-smooth -mb-px"
             >
               {/* All Courses Tab */}
               <button
                 type="button"
                 onClick={() => handleSelectTab("all")}
-                className={`shrink-0 py-2 sm:py-2.5 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 first:pl-0 ${
+                className={`shrink-0 py-2 sm:py-2.5 px-3 sm:px-4 first:pl-0 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
                   selectedCourseTab === "all"
                     ? "border-primary text-foreground font-semibold"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
@@ -288,7 +288,6 @@ export function ReadingsSection({
               {courseKeys.map((code) => {
                 const group = groupedByCourse[code];
                 const isSelected = selectedCourseTab === code;
-                const doneCount = group.items.filter((i) => i.isCompleted).length;
                 const cleanName = getCleanCourseName(code, group.courseName);
 
                 return (
@@ -296,7 +295,7 @@ export function ReadingsSection({
                     key={code}
                     type="button"
                     onClick={() => handleSelectTab(code)}
-                    className={`shrink-0 py-2 sm:py-2.5 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
+                    className={`shrink-0 py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
                       isSelected
                         ? "border-primary text-foreground font-semibold"
                         : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
@@ -304,7 +303,7 @@ export function ReadingsSection({
                   >
                     <span>{cleanName}</span>
                     <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums">
-                      ({doneCount}/{group.items.length})
+                      ({group.items.length})
                     </span>
                   </button>
                 );
