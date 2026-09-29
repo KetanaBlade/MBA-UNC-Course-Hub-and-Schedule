@@ -42,7 +42,7 @@ export function ThemeToggle() {
         role="radio"
         aria-checked={theme === "light"}
         onClick={() => handleSetTheme("light")}
-        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs sm:text-sm font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer ${
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer ${
           theme === "light"
             ? "bg-primary text-primary-foreground shadow-xs"
             : "text-muted-foreground hover:text-foreground bg-transparent font-medium"
@@ -58,7 +58,7 @@ export function ThemeToggle() {
         role="radio"
         aria-checked={theme === "dark"}
         onClick={() => handleSetTheme("dark")}
-        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs sm:text-sm font-bold tracking-tight transition-all active:scale-[0.98] cursor-pointer ${
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs sm:text-sm font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer ${
           theme === "dark"
             ? "bg-primary text-primary-foreground shadow-xs"
             : "text-muted-foreground hover:text-foreground bg-transparent font-medium"

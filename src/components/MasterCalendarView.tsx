@@ -133,7 +133,7 @@ export function MasterCalendarView({
       <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight">
               Master Term Schedule
             </h2>
             <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1">
@@ -147,7 +147,7 @@ export function MasterCalendarView({
               <button
                 type="button"
                 onClick={() => setActiveFilter("weeks")}
-                className={`px-3 py-1.5 rounded text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   activeFilter === "weeks"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -158,7 +158,7 @@ export function MasterCalendarView({
               <button
                 type="button"
                 onClick={() => setActiveFilter("all")}
-                className={`px-3 py-1.5 rounded text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   activeFilter === "all"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -169,7 +169,7 @@ export function MasterCalendarView({
               <button
                 type="button"
                 onClick={() => setActiveFilter("live")}
-                className={`px-3 py-1.5 rounded text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   activeFilter === "live"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -209,10 +209,10 @@ export function MasterCalendarView({
                 {/* Week Header Banner */}
                 <div className="p-4 sm:p-5 bg-muted/20 border-b border-border flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm font-extrabold uppercase px-2.5 py-1 rounded bg-primary text-primary-foreground shadow-2xs">
+                    <span className="font-mono text-sm font-semibold uppercase px-2.5 py-1 rounded bg-primary text-primary-foreground shadow-2xs">
                       WEEK {w}
                     </span>
-                    <span className="text-base sm:text-lg font-bold text-foreground">
+                    <span className="text-base sm:text-lg font-semibold text-foreground">
                       Module Milestones & Deliverables
                     </span>
                   </div>
@@ -232,7 +232,7 @@ export function MasterCalendarView({
                   {/* Live Sessions if any */}
                   {weekLives.length > 0 && (
                     <div className="space-y-2">
-                      <span className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      <span className="font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Live Synchronous Sessions:
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -242,10 +242,10 @@ export function MasterCalendarView({
                             className="p-3.5 rounded-lg border border-purple-500/30 bg-purple-500/10 flex items-center justify-between gap-3"
                           >
                             <div className="space-y-1 min-w-0">
-                              <span className="text-xs font-bold uppercase text-purple-900 dark:text-purple-300">
+                              <span className="text-xs font-semibold uppercase text-purple-900 dark:text-purple-300">
                                 {getCleanCourseName(session.courseCode, session.courseName)}
                               </span>
-                              <h4 className="text-sm font-bold text-foreground truncate">
+                              <h4 className="text-sm font-semibold text-foreground truncate">
                                 {session.title}
                               </h4>
                             </div>
@@ -254,7 +254,7 @@ export function MasterCalendarView({
                                 href={session.zoomUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="h-8 px-3 rounded bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5 shrink-0"
+                                className="h-8 px-3 rounded bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 shrink-0"
                               >
                                 <Video className="w-3.5 h-3.5" />
                                 <span>Join Zoom</span>
@@ -268,7 +268,7 @@ export function MasterCalendarView({
 
                   {/* Deliverables for this week */}
                   <div className="space-y-2">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Assignments & Memos:
                     </span>
                     {weekDelivs.length === 0 ? (
@@ -308,12 +308,12 @@ export function MasterCalendarView({
                               <div className="space-y-1 flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span
-                                    className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                                    className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                                   >
                                     {getCleanCourseName(deliv.courseCode, deliv.courseName)}
                                   </span>
                                   <h4
-                                    className={`text-sm sm:text-base font-bold ${
+                                    className={`text-sm sm:text-base font-semibold ${
                                       isFinished ? "text-muted-foreground line-through" : "text-foreground"
                                     }`}
                                   >
@@ -369,10 +369,10 @@ export function MasterCalendarView({
       {activeFilter !== "weeks" && (
         <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-border bg-card flex items-center justify-between">
-            <h3 className="text-base sm:text-lg font-bold text-foreground">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               Chronological Agenda Stream
             </h3>
-            <span className="font-mono text-xs font-bold text-muted-foreground">
+            <span className="font-mono text-xs font-semibold text-muted-foreground">
               {timelineEvents.length} dated events
             </span>
           </div>
@@ -411,12 +411,12 @@ export function MasterCalendarView({
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
-                          className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                          className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                         >
                           {getCleanCourseName(evt.courseCode, evt.courseName)}
                         </span>
                         <h4
-                          className={`text-sm sm:text-base font-bold ${
+                          className={`text-sm sm:text-base font-semibold ${
                             evt.isCompleted ? "text-muted-foreground line-through" : "text-foreground"
                           }`}
                         >
@@ -431,7 +431,7 @@ export function MasterCalendarView({
                           <span className="font-mono">• {evt.points} PTS</span>
                         )}
                         {evt.type === "live" && (
-                          <span className="font-mono text-purple-700 dark:text-purple-300 font-bold">
+                          <span className="font-mono text-purple-700 dark:text-purple-300 font-semibold">
                             • LIVE ZOOM
                           </span>
                         )}

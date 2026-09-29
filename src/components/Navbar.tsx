@@ -39,16 +39,16 @@ export function Navbar({
       <div className="mx-auto flex max-w-[1650px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand & Program Title */}
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary font-bold text-primary-foreground shadow-xs text-sm font-sans tracking-tight">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary font-semibold text-primary-foreground shadow-xs text-sm font-sans tracking-tight">
             UNC
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold tracking-tight text-foreground text-sm sm:text-base font-sans">
+              <span className="font-semibold tracking-tight text-foreground text-sm sm:text-base font-sans">
                 Kenan-Flagler Online MBA
               </span>
               {isDemoMode && (
-                <span className="font-mono text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary">
+                <span className="font-mono text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary">
                   <Sparkles className="h-2.5 w-2.5 inline mr-1" />
                   DEMO
                 </span>
@@ -62,7 +62,7 @@ export function Navbar({
 
         {/* Canvas Instance Micro-Data Tags */}
         <div className="hidden md:flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
+          <div className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
             <span
               className={`h-2 w-2 rounded-full ${
                 hasDigitalCampus || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
@@ -74,7 +74,7 @@ export function Navbar({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
+          <div className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
             <span
               className={`h-2 w-2 rounded-full ${
                 hasKenanFlagler || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
@@ -132,7 +132,7 @@ export function Navbar({
           <button
             onClick={onOpenSettings}
             aria-label="Open Token Settings"
-            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
+            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
           >
             <Key className="w-3.5 h-3.5" />
             <span>Tokens</span>

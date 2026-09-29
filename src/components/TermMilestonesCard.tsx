@@ -30,7 +30,7 @@ export function TermMilestonesCard({
   ) => {
     if (status === "graded") {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
           <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
           <span>GRADED {grade ? `(${grade})` : score !== null && score !== undefined ? `(${score}P)` : ""}</span>
         </span>
@@ -38,7 +38,7 @@ export function TermMilestonesCard({
     }
     if (status === "submitted" || isCompleted) {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
           <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
           <span>DONE</span>
         </span>
@@ -49,7 +49,7 @@ export function TermMilestonesCard({
     }
     if (status === "overdue") {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-destructive/15 text-destructive border border-destructive/30">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-destructive/15 text-destructive border border-destructive/30">
           <AlertTriangle className="w-3 h-3" />
           <span>OVERDUE</span>
         </span>
@@ -81,9 +81,9 @@ export function TermMilestonesCard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">
               Term Projects & Milestones{" "}
-              <span className="text-primary font-mono text-sm sm:text-base font-bold">
+              <span className="text-primary font-mono text-sm sm:text-base font-semibold">
                 ({deliverables.length})
               </span>
             </h2>
@@ -143,7 +143,7 @@ export function TermMilestonesCard({
 
                   {/* Line 2: Title */}
                   <h3
-                    className={`text-sm sm:text-base font-bold leading-snug tracking-tight ${
+                    className={`text-sm sm:text-base font-semibold leading-snug tracking-tight ${
                       isFinished ? "text-muted-foreground line-through" : "text-foreground"
                     }`}
                   >
@@ -153,7 +153,7 @@ export function TermMilestonesCard({
                   {/* Line 3: Course Tag + Points + Countdown */}
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span
-                      className={`text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                      className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                     >
                       {getCleanCourseName(deliv.courseCode, deliv.courseName)}
                     </span>

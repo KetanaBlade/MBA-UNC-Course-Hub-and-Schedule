@@ -81,7 +81,7 @@ export function SetupWizard({
         <div className="p-5 border-b border-border/40 flex items-center justify-between bg-card">
           <div className="flex items-center gap-2.5">
             <Key className="w-4 h-4 text-primary" />
-            <h3 id="wizard-title" className="text-lg font-bold text-foreground tracking-tight font-sans">
+            <h3 id="wizard-title" className="text-lg font-semibold text-foreground tracking-tight font-sans">
               Canvas Integration Setup
             </h3>
           </div>
@@ -99,7 +99,7 @@ export function SetupWizard({
           <div className="p-5 space-y-4 text-sm font-medium text-foreground">
             {/* Explainer Box */}
             <div className="bg-muted/20 border border-border/70 rounded-md p-3.5 space-y-1.5 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5 font-bold text-foreground">
+              <div className="flex items-center gap-1.5 font-semibold text-foreground">
                 <HelpCircle className="w-3.5 h-3.5 text-primary" />
                 <span>Why does UNC MBA use two Canvas sites?</span>
               </div>
@@ -116,7 +116,7 @@ export function SetupWizard({
                   href="https://digitalcampus.instructure.com/profile/settings#access_tokens"
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono text-[10px] text-primary uppercase font-bold hover:underline flex items-center gap-1"
+                  className="font-mono text-[10px] text-primary uppercase font-semibold hover:underline flex items-center gap-1"
                 >
                   Generate Token <ExternalLink className="w-2.5 h-2.5" />
                 </a>
@@ -148,7 +148,7 @@ export function SetupWizard({
                   href="https://kenan-flagler.instructure.com/profile/settings#access_tokens"
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono text-[10px] text-primary uppercase font-bold hover:underline flex items-center gap-1"
+                  className="font-mono text-[10px] text-primary uppercase font-semibold hover:underline flex items-center gap-1"
                 >
                   Generate Token <ExternalLink className="w-2.5 h-2.5" />
                 </a>
@@ -176,7 +176,7 @@ export function SetupWizard({
             <div className="flex items-start gap-2 rounded-md bg-emerald-500/10 p-2.5 text-xs text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <p className="leading-snug">
-                <strong className="font-bold">Zero-Storage Privacy: </strong>
+                <strong className="font-semibold">Zero-Storage Privacy: </strong>
                 Your tokens are stored strictly in your browser localStorage. They are never saved to a database or server disk.
               </p>
             </div>
@@ -189,7 +189,7 @@ export function SetupWizard({
             )}
 
             {verificationSuccess && (
-              <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+              <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-2.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Connected successfully! Loading your courses...</span>
               </div>
@@ -221,7 +221,7 @@ export function SetupWizard({
               <button
                 type="submit"
                 disabled={isVerifying || (!digitalToken && !kfToken)}
-                className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isVerifying ? (
                   <>Verifying...</>

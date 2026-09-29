@@ -100,9 +100,9 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
       {/* Sticky Header: Clean, count integrated into headline, responsive course tabs & search */}
       <div className="sticky top-0 z-20 bg-card border-b border-border p-4 sm:p-5 space-y-3">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
             Week {weekNumber} Course Files{" "}
-            <span className="text-primary font-mono text-base font-bold">
+            <span className="text-primary font-mono text-base font-semibold">
               ({files.length})
             </span>
           </h2>
@@ -138,7 +138,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                 onClick={() => setSelectedCourseTab("all")}
                 className={`shrink-0 flex items-center gap-2 h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
                   selectedCourseTab === "all"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs border-primary"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs border-primary"
                     : "bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
                 }`}
               >
@@ -162,12 +162,12 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                     onClick={() => setSelectedCourseTab(code)}
                     className={`shrink-0 flex items-center gap-2 h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
                       isSelected
-                        ? "bg-card text-foreground border-primary ring-2 ring-primary/20 shadow-xs font-bold"
+                        ? "bg-card text-foreground border-primary ring-2 ring-primary/20 shadow-xs font-semibold"
                         : "bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
                     }`}
                   >
                     <span
-                      className={`font-mono text-[10px] font-bold uppercase px-1.5 py-0.2 rounded-xs border ${color.badge}`}
+                      className={`font-mono text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${color.badge}`}
                     >
                       {getCleanCourseCode(code, group.courseName)}
                     </span>
@@ -175,7 +175,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                       {getCleanCourseName(code, group.courseName)}
                     </span>
                     <span
-                      className={`font-mono text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                      className={`font-mono text-[10px] font-semibold px-1.5 py-0.2 rounded-full ${
                         isAllDone
                           ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
                           : "bg-muted text-muted-foreground"
@@ -257,7 +257,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                   {selectedCourseTab === "all" && file.courseCode && courseColor && (
                     <div>
                       <span
-                        className={`inline-block text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                        className={`inline-block text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                       >
                         {getCleanCourseName(file.courseCode, file.courseName)}
                       </span>
@@ -273,12 +273,12 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
 
                   <div className="flex flex-wrap items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">
                     {file.category === "spreadsheet" ? (
-                      <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                         <FileSpreadsheet className="w-3.5 h-3.5" />
                         EXCEL / MODEL
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-muted-foreground">
                         <FileText className="w-3.5 h-3.5" />
                         DOCUMENT
                       </span>

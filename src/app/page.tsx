@@ -448,7 +448,7 @@ export default function HomePage() {
         {/* Page Header & Hero */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border/60">
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight font-sans">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight font-sans">
               Course Hub & Master Schedule
             </h1>
             <p className="text-sm font-medium text-muted-foreground font-sans">
@@ -461,7 +461,7 @@ export default function HomePage() {
             <div className="flex items-center bg-card p-1 rounded-md border border-border shadow-2xs">
               <button
                 onClick={() => setActiveTab("weekly")}
-                className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === "weekly"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -473,7 +473,7 @@ export default function HomePage() {
 
               <button
                 onClick={() => setActiveTab("calendar")}
-                className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === "calendar"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -492,7 +492,7 @@ export default function HomePage() {
             <span>{syncError}</span>
             <button
               onClick={() => setShowSetupWizard(true)}
-              className="text-primary font-bold underline ml-2 cursor-pointer"
+              className="text-primary font-semibold underline ml-2 cursor-pointer"
             >
               Check Tokens
             </button>

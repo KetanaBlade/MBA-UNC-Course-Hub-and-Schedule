@@ -36,9 +36,9 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
     <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden transition-all">
       {/* Clean Full-Width Header: Count integrated into headline, zero zoom wrapping */}
       <div className="p-4 sm:p-5 border-b border-border bg-card">
-        <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
           Week {weekNumber} Briefings{" "}
-          <span className="text-primary font-mono text-base font-bold">
+          <span className="text-primary font-mono text-base font-semibold">
             ({announcements.length})
           </span>
         </h2>
@@ -48,7 +48,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
       {primaryZoom?.zoomUrl && (
         <div className="p-3 sm:p-4 bg-primary/10 border-b border-primary/20 flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
               Live Session Scheduled
             </span>
             <span className="font-mono text-[11px] text-muted-foreground">Week {weekNumber}</span>
@@ -57,7 +57,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
             href={primaryZoom.zoomUrl}
             target="_blank"
             rel="noreferrer"
-            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 w-full"
+            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 w-full"
           >
             <Video className="w-4 h-4" />
             <span>Join Live Class on Zoom</span>
@@ -73,7 +73,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
             <div key={ann.id} className="p-4 transition-colors hover:bg-muted/10">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1 min-w-0 flex-1">
-                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug tracking-tight">
+                  <h3 className="text-sm sm:text-base font-semibold text-foreground leading-snug tracking-tight">
                     {ann.title}
                   </h3>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">

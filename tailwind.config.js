@@ -52,6 +52,14 @@ export default {
       boxShadow: {
         xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
       },
+      fontWeight: {
+        normal: "400",
+        medium: "500",
+        semibold: "600",
+        bold: "600",
+        extrabold: "600",
+        black: "600",
+      },
     },
     fontFamily: {
       sans: ['"Inter"', "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto", "sans-serif"],

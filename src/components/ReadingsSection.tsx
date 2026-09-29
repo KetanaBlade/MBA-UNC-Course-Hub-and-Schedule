@@ -107,19 +107,19 @@ export function ReadingsSection({
     switch (category) {
       case "case":
         return (
-          <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-purple-500/10 text-purple-800 dark:text-purple-300 border border-purple-500/30">
+          <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-purple-500/10 text-purple-800 dark:text-purple-300 border border-purple-500/30">
             HBR CASE
           </span>
         );
       case "slides":
         return (
-          <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/30">
+          <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/30">
             SLIDES
           </span>
         );
       case "spreadsheet":
         return (
-          <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+          <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
             MODEL
           </span>
         );
@@ -155,9 +155,9 @@ export function ReadingsSection({
       {/* Sticky Header: Clean, count integrated into headline, progress & responsive course tabs */}
       <div className="sticky top-0 z-20 bg-card border-b border-border p-4 sm:p-5 space-y-3">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
             Week {weekNumber} Coursework & Lectures{" "}
-            <span className="text-primary font-mono text-base font-bold">
+            <span className="text-primary font-mono text-base font-semibold">
               ({readings.length})
             </span>
           </h2>
@@ -165,7 +165,7 @@ export function ReadingsSection({
             <span>
               {completedCount} of {readings.length} completed
             </span>
-            <span className="font-mono font-bold text-foreground">
+            <span className="font-mono font-semibold text-foreground">
               {progressPercent}%
             </span>
           </div>
@@ -209,7 +209,7 @@ export function ReadingsSection({
                 onClick={() => setSelectedCourseTab("all")}
                 className={`shrink-0 flex items-center gap-2 h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
                   selectedCourseTab === "all"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs border-primary"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs border-primary"
                     : "bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
                 }`}
               >
@@ -233,12 +233,12 @@ export function ReadingsSection({
                     onClick={() => setSelectedCourseTab(code)}
                     className={`shrink-0 flex items-center gap-2 h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer border ${
                       isSelected
-                        ? "bg-card text-foreground border-primary ring-2 ring-primary/20 shadow-xs font-bold"
+                        ? "bg-card text-foreground border-primary ring-2 ring-primary/20 shadow-xs font-semibold"
                         : "bg-muted/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
                     }`}
                   >
                     <span
-                      className={`font-mono text-[10px] font-bold uppercase px-1.5 py-0.2 rounded-xs border ${color.badge}`}
+                      className={`font-mono text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${color.badge}`}
                     >
                       {getCleanCourseCode(code, group.courseName)}
                     </span>
@@ -246,7 +246,7 @@ export function ReadingsSection({
                       {getCleanCourseName(code, group.courseName)}
                     </span>
                     <span
-                      className={`font-mono text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                      className={`font-mono text-[10px] font-semibold px-1.5 py-0.2 rounded-full ${
                         isAllDone
                           ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
                           : "bg-muted text-muted-foreground"
@@ -294,7 +294,7 @@ export function ReadingsSection({
               onClick={() => setCategoryFilter("all")}
               className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
                 categoryFilter === "all"
-                  ? "bg-primary text-primary-foreground font-bold"
+                  ? "bg-primary text-primary-foreground font-semibold"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
               }`}
             >
@@ -304,7 +304,7 @@ export function ReadingsSection({
               onClick={() => setCategoryFilter("video")}
               className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
                 categoryFilter === "video"
-                  ? "bg-primary text-primary-foreground font-bold"
+                  ? "bg-primary text-primary-foreground font-semibold"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
               }`}
             >
@@ -314,7 +314,7 @@ export function ReadingsSection({
               onClick={() => setCategoryFilter("case")}
               className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
                 categoryFilter === "case"
-                  ? "bg-primary text-primary-foreground font-bold"
+                  ? "bg-primary text-primary-foreground font-semibold"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
               }`}
             >
@@ -324,7 +324,7 @@ export function ReadingsSection({
               onClick={() => setCategoryFilter("pending")}
               className={`px-2 py-1 rounded font-semibold transition-all cursor-pointer ${
                 categoryFilter === "pending"
-                  ? "bg-primary text-primary-foreground font-bold"
+                  ? "bg-primary text-primary-foreground font-semibold"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border"
               }`}
             >
@@ -374,7 +374,7 @@ export function ReadingsSection({
                   {selectedCourseTab === "all" && reading.courseCode && courseColor && (
                     <div>
                       <span
-                        className={`inline-block text-xs font-bold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                        className={`inline-block text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
                       >
                         {getCleanCourseName(reading.courseCode, reading.courseName)}
                       </span>
@@ -395,7 +395,7 @@ export function ReadingsSection({
                     {getCategoryBadge(reading.category)}
 
                     {reading.pointsPossible !== undefined && reading.pointsPossible > 0 && (
-                      <span className="font-mono text-xs font-bold uppercase px-2 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
+                      <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
                         {reading.pointsPossible} PTS
                       </span>
                     )}

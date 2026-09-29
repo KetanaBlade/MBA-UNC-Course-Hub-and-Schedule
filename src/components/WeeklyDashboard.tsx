@@ -181,7 +181,7 @@ export function WeeklyDashboard({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-primary" />
-                  <span className="text-xs sm:text-sm font-bold text-foreground">
+                  <span className="text-xs sm:text-sm font-semibold text-foreground">
                     Active Courses ({activeCourses.length} Visible):
                   </span>
                 </div>
@@ -202,7 +202,7 @@ export function WeeklyDashboard({
                     All courses are currently hidden.{" "}
                     <button
                       onClick={onSelectAllCourses}
-                      className="text-primary font-bold hover:underline"
+                      className="text-primary font-semibold hover:underline"
                     >
                       Show all courses
                     </button>
@@ -218,7 +218,7 @@ export function WeeklyDashboard({
                         key={course.id}
                         className={`text-xs font-semibold pl-2.5 pr-1.5 py-1 rounded-md border inline-flex items-center gap-1.5 transition-all shadow-2xs ${courseColor.badge}`}
                       >
-                        <span className="font-mono font-bold uppercase">{cleanCode}</span>
+                        <span className="font-mono font-semibold uppercase">{cleanCode}</span>
                         <span className="opacity-40">•</span>
                         <span className="font-medium truncate max-w-[160px] sm:max-w-[220px]">{cleanName}</span>
                         <button
@@ -270,7 +270,7 @@ export function WeeklyDashboard({
                             className={`text-xs font-medium pl-2 pr-2.5 py-0.5 rounded-md border border-dashed inline-flex items-center gap-1.5 opacity-60 hover:opacity-100 hover:border-solid transition-all cursor-pointer ${courseColor.badge}`}
                           >
                             <Plus className="w-3 h-3" />
-                            <span className="font-mono font-bold uppercase">{cleanCode}</span>
+                            <span className="font-mono font-semibold uppercase">{cleanCode}</span>
                             <span className="truncate max-w-[140px]">{cleanName}</span>
                           </button>
                         );
@@ -284,7 +284,7 @@ export function WeeklyDashboard({
             {/* Week Selector Scrubber & Global Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
               <div className="flex items-center gap-1 sm:gap-2">
-                <span className="text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground mr-1">
+                <span className="text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground mr-1">
                   Week:
                 </span>
                 {weekNumbers.map((w) => {
@@ -295,7 +295,7 @@ export function WeeklyDashboard({
                       onClick={() => onSelectWeek(w)}
                       className={`h-9 min-w-[56px] px-2.5 rounded-md border flex flex-col items-center justify-center transition-all cursor-pointer ${
                         isCurrent
-                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs scale-102"
+                          ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs scale-102"
                           : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border"
                       }`}
                       aria-label={`Select Week ${w}`}
@@ -303,7 +303,7 @@ export function WeeklyDashboard({
                       <span className="text-[8px] font-mono uppercase tracking-wider opacity-80">
                         Week
                       </span>
-                      <span className="text-sm font-extrabold leading-none">{w}</span>
+                      <span className="text-sm font-semibold leading-none">{w}</span>
                     </button>
                   );
                 })}
@@ -313,7 +313,7 @@ export function WeeklyDashboard({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setOnlyPending(!onlyPending)}
-                  className={`h-9 px-3 rounded-md border text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                  className={`h-9 px-3 rounded-md border text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1.5 ${
                     onlyPending
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card text-foreground hover:bg-muted/30 border-border"
@@ -330,10 +330,10 @@ export function WeeklyDashboard({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {/* Deliverables Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
                 Deliverables
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
                 {submittedDeliverablesCount} / {totalDeliverablesCount}
               </div>
               <p className="text-xs text-muted-foreground">Submitted for Week {selectedWeek}</p>
@@ -341,10 +341,10 @@ export function WeeklyDashboard({
 
             {/* Coursework & Lectures Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
                 Coursework & Lectures
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
                 {completedReadingsCount} / {totalReadingsCount}
               </div>
               <p className="text-xs text-muted-foreground">Completed for Week {selectedWeek}</p>
@@ -352,10 +352,10 @@ export function WeeklyDashboard({
 
             {/* Live Zoom Class Count */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
                 Live Zoom
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
                 {allLiveSessions.length}
               </div>
               <p className="text-xs text-muted-foreground">Sessions scheduled</p>
@@ -363,10 +363,10 @@ export function WeeklyDashboard({
 
             {/* Completion Rate Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
                 Overall Pace
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
                 {totalDeliverablesCount + totalReadingsCount > 0
                   ? Math.round(
                       ((submittedDeliverablesCount + completedReadingsCount) /
@@ -384,7 +384,7 @@ export function WeeklyDashboard({
           <div className="xl:hidden flex items-center bg-card border border-border p-1 rounded-lg">
             <button
               onClick={() => setMobileTab("actions")}
-              className={`flex-1 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 mobileTab === "actions"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -396,7 +396,7 @@ export function WeeklyDashboard({
 
             <button
               onClick={() => setMobileTab("readings")}
-              className={`flex-1 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 mobileTab === "readings"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -408,7 +408,7 @@ export function WeeklyDashboard({
 
             <button
               onClick={() => setMobileTab("files")}
-              className={`flex-1 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 mobileTab === "files"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -420,7 +420,7 @@ export function WeeklyDashboard({
 
             <button
               onClick={() => setMobileTab("milestones")}
-              className={`flex-1 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 mobileTab === "milestones"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"

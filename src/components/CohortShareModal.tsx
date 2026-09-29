@@ -51,7 +51,7 @@ export function CohortShareModal({ isOpen, onClose }: CohortShareModalProps) {
         <div className="p-5 border-b border-border/40 flex items-center justify-between bg-card">
           <div className="flex items-center gap-2.5">
             <Users className="w-4 h-4 text-primary" />
-            <h3 id="share-title" className="text-lg font-bold text-foreground tracking-tight font-sans">
+            <h3 id="share-title" className="text-lg font-semibold text-foreground tracking-tight font-sans">
               Share with Your Cohort
             </h3>
           </div>
@@ -67,7 +67,7 @@ export function CohortShareModal({ isOpen, onClose }: CohortShareModalProps) {
         {/* Body (Recipe 5.7) */}
         <div className="p-5 space-y-4 text-sm font-medium text-foreground">
           <div className="bg-muted/20 border border-border/70 rounded-md p-3.5 space-y-1.5 text-xs text-muted-foreground">
-            <h4 className="font-bold text-foreground flex items-center gap-1.5 font-sans">
+            <h4 className="font-semibold text-foreground flex items-center gap-1.5 font-sans">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               <span>How classmates use this app:</span>
             </h4>
@@ -100,7 +100,7 @@ export function CohortShareModal({ isOpen, onClose }: CohortShareModalProps) {
               />
               <button
                 onClick={handleCopy}
-                className="h-10 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shrink-0"
+                className="h-10 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold tracking-tight shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5 shrink-0"
               >
                 {copied ? (
                   <>
@@ -120,7 +120,7 @@ export function CohortShareModal({ isOpen, onClose }: CohortShareModalProps) {
           <div className="border-t border-border/40 pt-3">
             <div className="flex items-center justify-between">
               <div>
-                <h5 className="font-bold text-foreground text-xs font-sans">Export Cohort Course Config</h5>
+                <h5 className="font-semibold text-foreground text-xs font-sans">Export Cohort Course Config</h5>
                 <p className="text-[11px] text-muted-foreground">
                   Backup current course mapping JSON
                 </p>
