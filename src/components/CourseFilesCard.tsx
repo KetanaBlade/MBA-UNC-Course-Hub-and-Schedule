@@ -33,19 +33,19 @@ interface CourseFilesCardProps {
 
 export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseFilesCardProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [fileStatusFilter, setFileStatusFilter] = useState<"all" | "todo" | "completed">(() =>
-    AppStorage.getFileStatusFilter()
-  );
+  const [fileStatusFilter, setFileStatusFilter] = useState<"all" | "todo" | "completed">("all");
+  const [selectedCourseTab, setSelectedCourseTab] = useState<string>("all");
+
+  useEffect(() => {
+    setFileStatusFilter(AppStorage.getFileStatusFilter());
+    setSelectedCourseTab(AppStorage.getFilesCourseTab());
+  }, []);
 
   const handleStatusFilterChange = (val: string) => {
     const next = val as "all" | "todo" | "completed";
     setFileStatusFilter(next);
     AppStorage.setFileStatusFilter(next);
   };
-
-  const [selectedCourseTab, setSelectedCourseTab] = useState<string>(() =>
-    AppStorage.getFilesCourseTab()
-  );
 
   const handleSelectTab = (tab: string) => {
     setSelectedCourseTab(tab);

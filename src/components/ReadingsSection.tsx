@@ -34,19 +34,19 @@ export function ReadingsSection({
   onToggleComplete,
 }: ReadingsSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "todo" | "completed">(() =>
-    AppStorage.getTaskStatusFilter()
-  );
+  const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "todo" | "completed">("all");
+  const [selectedCourseTab, setSelectedCourseTab] = useState<string>("all");
+
+  useEffect(() => {
+    setTaskStatusFilter(AppStorage.getTaskStatusFilter());
+    setSelectedCourseTab(AppStorage.getReadingsCourseTab());
+  }, []);
 
   const handleStatusFilterChange = (val: string) => {
     const next = val as "all" | "todo" | "completed";
     setTaskStatusFilter(next);
     AppStorage.setTaskStatusFilter(next);
   };
-
-  const [selectedCourseTab, setSelectedCourseTab] = useState<string>(() =>
-    AppStorage.getReadingsCourseTab()
-  );
 
   const handleSelectTab = (tab: string) => {
     setSelectedCourseTab(tab);

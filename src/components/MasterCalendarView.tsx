@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Calendar as CalendarIcon,
   Check,
@@ -37,9 +37,11 @@ export function MasterCalendarView({
   onExportICS,
   onToggleCompleteItem,
 }: MasterCalendarViewProps) {
-  const [activeFilter, setActiveFilter] = useState<"weeks" | "timeline">(() =>
-    AppStorage.getCalendarFilter()
-  );
+  const [activeFilter, setActiveFilter] = useState<"weeks" | "timeline">("weeks");
+
+  useEffect(() => {
+    setActiveFilter(AppStorage.getCalendarFilter());
+  }, []);
 
   const handleFilterChange = (filter: "weeks" | "timeline") => {
     setActiveFilter(filter);
