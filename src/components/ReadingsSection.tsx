@@ -289,7 +289,6 @@ export function ReadingsSection({
                 const group = groupedByCourse[code];
                 const isSelected = selectedCourseTab === code;
                 const doneCount = group.items.filter((i) => i.isCompleted).length;
-                const cleanCode = getCleanCourseCode(code, group.courseName);
                 const cleanName = getCleanCourseName(code, group.courseName);
 
                 return (
@@ -303,12 +302,7 @@ export function ReadingsSection({
                         : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
                     }`}
                   >
-                    <span>{cleanCode}</span>
-                    {cleanName !== cleanCode && (
-                      <span className="hidden md:inline text-xs text-muted-foreground font-normal">
-                        · {cleanName}
-                      </span>
-                    )}
+                    <span>{cleanName}</span>
                     <span className="text-[11px] font-mono text-muted-foreground/80 tabular-nums">
                       ({doneCount}/{group.items.length})
                     </span>
