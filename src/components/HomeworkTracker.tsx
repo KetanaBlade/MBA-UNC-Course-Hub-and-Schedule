@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   AlertTriangle,
   Calendar,
@@ -11,7 +11,7 @@ import {
   Video,
 } from "lucide-react";
 import { DeliverableStatus, NormalizedDeliverable, NormalizedLiveSession } from "@/lib/canvas/types";
-import { getCourseColor, getCleanCourseName } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseCode } from "@/lib/courseColors";
 
 interface HomeworkTrackerProps {
   deliverables: NormalizedDeliverable[];
@@ -34,16 +34,16 @@ export function HomeworkTracker({
   ) => {
     if (status === "graded") {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>GRADED {grade ? `(${grade})` : score !== null && score !== undefined ? `(${score} PTS)` : ""}</span>
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+          <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+          <span>GRADED {grade ? `(${grade})` : score !== null && score !== undefined ? `(${score} pts)` : ""}</span>
         </span>
       );
     }
     if (status === "submitted" || isCompleted) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+          <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
           <span>DONE</span>
         </span>
       );
@@ -53,8 +53,8 @@ export function HomeworkTracker({
     }
     if (status === "overdue") {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-destructive/15 text-destructive border border-destructive/30">
-          <AlertTriangle className="w-3.5 h-3.5" />
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[11px] font-semibold bg-destructive/15 text-destructive border border-destructive/30">
+          <AlertTriangle className="w-3 h-3" />
           <span>OVERDUE</span>
         </span>
       );
@@ -141,64 +141,63 @@ export function HomeworkTracker({
       <div className="sticky top-0 z-10 p-4 sm:p-5 border-b border-border bg-card shrink-0">
         <h2 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
           Week {weekNumber} Assignments and Live Sessions{" "}
-          <span className="text-primary font-mono text-base font-semibold">
+          <span className="text-primary text-base font-semibold tabular-nums">
             ({totalCount})
           </span>
         </h2>
       </div>
 
-      {/* Scannable Deliverables & Live Sessions List (Scrollable) */}
+      {/* Scannable Deliverables & Live Sessions List */}
       <div className="overflow-y-auto max-h-[760px] divide-y divide-border/60 flex-1 min-h-0">
         {/* Live Synchronous Sessions from Canvas Calendar */}
         {liveSessions.map((session) => {
           const courseColor = getCourseColor(session.courseCode);
+          const cleanCode = getCleanCourseCode(session.courseCode, session.courseName);
+
           return (
             <div
               key={session.id}
-              className="p-4 flex items-start gap-3 transition-colors hover:bg-purple-500/10 bg-purple-500/5"
+              className="p-3.5 sm:p-4 flex items-start gap-3 transition-colors hover:bg-purple-500/10 bg-purple-500/5"
             >
               {/* Visual Indicator Icon */}
-              <div className="mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm bg-purple-500/20 text-purple-700 dark:text-purple-300">
+              <div className="mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded bg-purple-500/20 text-purple-700 dark:text-purple-300">
                 <Video className="w-3.5 h-3.5 stroke-[2.5]" />
               </div>
 
-              <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="space-y-1 flex-1 min-w-0 pr-1">
                 {/* Line 1: Live Status Badge + Schedule */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-purple-700 dark:text-purple-300">
-                    <Clock className="w-3.5 h-3.5 opacity-70" />
-                    LIVE ZOOM SESSION
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-purple-700 dark:text-purple-300">
+                    <Clock className="w-3.5 h-3.5 opacity-75" />
+                    Live Zoom
                   </span>
-                  <span className="font-mono text-xs text-muted-foreground font-semibold">
+                  <span className="text-xs text-muted-foreground font-medium">
                     • {formatSessionSchedule(session.startAt, session.endAt)}
                   </span>
                 </div>
 
                 {/* Line 2: Title */}
-                <h3 className="text-sm sm:text-base font-semibold text-foreground leading-snug tracking-tight">
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground leading-snug tracking-tight">
                   {session.title}
                 </h3>
 
-                {/* Line 3: Course Tag (Below Title) */}
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                {/* Line 3: Course Code & Location */}
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                   <span
-                    className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                    className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${courseColor.badge}`}
                   >
-                    {getCleanCourseName(session.courseCode, session.courseName)}
+                    {cleanCode}
                   </span>
                   {session.location && !session.location.includes("http") && (
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       • {session.location}
                     </span>
                   )}
-                  <span className="font-mono text-xs font-semibold text-purple-700 dark:text-purple-300">
-                    • Real-time Attendance Required
-                  </span>
                 </div>
               </div>
 
               {/* Action Button */}
-              <div className="pt-0.5 shrink-0 self-center">
+              <div className="shrink-0 self-center">
                 <a
                   href={session.zoomUrl || session.canvasUrl}
                   target="_blank"
@@ -207,21 +206,24 @@ export function HomeworkTracker({
                   title={session.zoomUrl ? "Join live Zoom session" : "View session details in Canvas Calendar"}
                 >
                   <span>{session.zoomUrl ? "Join Zoom" : "View"}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                  <ExternalLink className="w-3 h-3 opacity-80" />
                 </a>
               </div>
             </div>
           );
         })}
+
+        {/* Deliverables */}
         {deliverables.map((deliv) => {
           const courseColor = getCourseColor(deliv.courseCode);
+          const cleanCode = getCleanCourseCode(deliv.courseCode, deliv.courseName);
           const isFinished =
             deliv.status === "graded" || deliv.status === "submitted" || deliv.isCompleted;
 
           return (
             <div
               key={deliv.id}
-              className={`p-4 flex items-start gap-3 transition-colors hover:bg-muted/10 ${
+              className={`p-3.5 sm:p-4 flex items-start gap-3 transition-colors hover:bg-muted/10 ${
                 isFinished ? "opacity-70 bg-muted/5" : ""
               }`}
             >
@@ -230,19 +232,19 @@ export function HomeworkTracker({
                 type="button"
                 onClick={() => onToggleComplete(deliv.id)}
                 aria-label={`Mark ${deliv.title} as ${isFinished ? "incomplete" : "complete"}`}
-                className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                   isFinished
                     ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
-                    : "border-border bg-card hover:border-primary"
+                    : "border-border bg-card hover:border-primary shadow-2xs"
                 }`}
               >
                 {isFinished && <Check className="w-3.5 h-3.5 stroke-[3]" />}
               </button>
 
-              <div className="space-y-1.5 flex-1 min-w-0">
-                {/* Line 1: Due date + Status badge (Above Title) */}
+              <div className="space-y-1 flex-1 min-w-0 pr-1">
+                {/* Line 1: Due date + Status badge */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground font-semibold">
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground font-medium">
                     <Calendar className="w-3.5 h-3.5 opacity-70" />
                     {formatDueText(deliv)}
                   </span>
@@ -251,40 +253,40 @@ export function HomeworkTracker({
 
                 {/* Line 2: Title */}
                 <h3
-                  className={`text-sm sm:text-base font-semibold leading-snug tracking-tight ${
+                  className={`text-xs sm:text-sm font-semibold leading-snug tracking-tight ${
                     isFinished ? "text-muted-foreground line-through" : "text-foreground"
                   }`}
                 >
                   {deliv.title}
                 </h3>
 
-                {/* Line 3: Course tag + Points metadata (Below Title) */}
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                {/* Line 3: Course code + Points metadata */}
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                   <span
-                    className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                    className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${courseColor.badge}`}
                   >
-                    {getCleanCourseName(deliv.courseCode, deliv.courseName)}
+                    {cleanCode}
                   </span>
                   {deliv.pointsPossible > 0 && (
-                    <span className="font-mono text-xs tabular-nums font-semibold text-foreground/80">
-                      • {deliv.pointsPossible} PTS
+                    <span className="text-xs tabular-nums text-muted-foreground font-medium">
+                      • {deliv.pointsPossible} pts
                     </span>
                   )}
                 </div>
+              </div>
 
-                {/* View Action Button */}
-                <div className="pt-0.5">
-                  <a
-                    href={deliv.canvasUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
-                    title="View on Canvas"
-                  >
-                    <span>View</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                  </a>
-                </div>
+              {/* View Action Button */}
+              <div className="shrink-0 self-center">
+                <a
+                  href={deliv.canvasUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                  title="View on Canvas"
+                >
+                  <span>View</span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                </a>
               </div>
             </div>
           );

@@ -38,7 +38,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
       <div className="p-4 sm:p-5 border-b border-border bg-card">
         <h2 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
           Week {weekNumber} Briefings{" "}
-          <span className="text-primary font-mono text-base font-semibold">
+          <span className="text-primary text-base font-semibold tabular-nums">
             ({announcements.length})
           </span>
         </h2>
@@ -51,7 +51,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
               Live Session Scheduled
             </span>
-            <span className="font-mono text-[11px] text-muted-foreground">Week {weekNumber}</span>
+            <span className="text-[11px] text-muted-foreground">Week {weekNumber}</span>
           </div>
           <a
             href={primaryZoom.zoomUrl}
@@ -82,7 +82,7 @@ export function WeeklyOverviewCard({ announcements, weekNumber }: WeeklyOverview
                       {ann.authorName}
                     </span>
                     <span>•</span>
-                    <span className="font-mono text-xs tabular-nums">
+                    <span className="text-xs tabular-nums">
                       {new Date(ann.postedAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

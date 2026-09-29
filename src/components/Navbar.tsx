@@ -50,7 +50,7 @@ export function Navbar({
                 Kenan-Flagler Online MBA
               </span>
               {isDemoMode && (
-                <span className="font-mono text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary">
+                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary">
                   <Sparkles className="h-2.5 w-2.5 inline mr-1" />
                   DEMO
                 </span>
@@ -64,7 +64,7 @@ export function Navbar({
 
         {/* Canvas Instance Micro-Data Tags */}
         <div className="hidden md:flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
             <span
               className={`h-2 w-2 rounded-full ${
                 hasDigitalCampus || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
@@ -76,7 +76,7 @@ export function Navbar({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase px-2.5 py-1 rounded-sm bg-muted/60 border border-border text-foreground">
             <span
               className={`h-2 w-2 rounded-full ${
                 hasKenanFlagler || isDemoMode ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
@@ -108,7 +108,7 @@ export function Navbar({
             />
             <span className="hidden sm:inline">Sync</span>
             {lastSyncedAt && !isSyncing && (
-              <span className="hidden xl:inline text-[10px] font-mono text-muted-foreground font-normal ml-0.5">
+              <span className="hidden xl:inline text-[10px] text-muted-foreground font-normal ml-0.5 tabular-nums">
                 {lastSyncedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
               </span>
             )}

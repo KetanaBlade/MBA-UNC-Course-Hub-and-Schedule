@@ -6,9 +6,7 @@ import {
   CheckCheck,
   ChevronLeft,
   ChevronRight,
-  Download,
   ExternalLink,
-  FolderTree,
   Layers,
   Search,
 } from "lucide-react";
@@ -50,7 +48,6 @@ export function ReadingsSection({
 
   const courseKeys = Object.keys(groupedByCourse);
 
-  // Check and update tab scroll indicators
   const updateScrollButtons = () => {
     if (tabsRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
@@ -76,7 +73,6 @@ export function ReadingsSection({
     }
   };
 
-  // If currently selected tab no longer exists in available courses, reset to "all"
   useEffect(() => {
     if (selectedCourseTab !== "all" && !groupedByCourse[selectedCourseTab]) {
       setSelectedCourseTab("all");
@@ -107,20 +103,26 @@ export function ReadingsSection({
     switch (category) {
       case "case":
         return (
-          <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-purple-500/10 text-purple-800 dark:text-purple-300 border border-purple-500/30">
-            HBR CASE
+          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
+            CASE
           </span>
         );
       case "slides":
         return (
-          <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-sky-500/10 text-sky-800 dark:text-sky-300 border border-sky-500/30">
+          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
             SLIDES
           </span>
         );
       case "spreadsheet":
         return (
-          <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
             MODEL
+          </span>
+        );
+      case "video":
+        return (
+          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+            VIDEO
           </span>
         );
       default:
@@ -150,14 +152,92 @@ export function ReadingsSection({
     return true;
   });
 
+  // Render a clean, scannable reading item row
+  const renderItemRow = (reading: NormalizedReading, showCourseBadge = false) => {
+    const courseColor = reading.courseCode ? getCourseColor(reading.courseCode) : null;
+    const cleanCode = reading.courseCode
+      ? getCleanCourseCode(reading.courseCode, reading.courseName)
+      : "";
+
+    return (
+      <div
+        key={reading.id}
+        className={`p-3 sm:py-3.5 sm:px-4 flex items-center gap-3 transition-colors hover:bg-muted/10 ${
+          reading.isCompleted ? "opacity-60 bg-muted/5" : ""
+        }`}
+      >
+        {/* Tactile Checkbox */}
+        <button
+          type="button"
+          onClick={() => handleCheckboxClick(reading)}
+          aria-label={`Mark ${reading.title} as ${
+            reading.isCompleted ? "incomplete" : "complete"
+          }`}
+          className={`flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+            reading.isCompleted
+              ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
+              : "border-border bg-card hover:border-primary shadow-2xs"
+          }`}
+        >
+          {reading.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+        </button>
+
+        {/* Content Details */}
+        <div className="min-w-0 flex-1 pr-2 space-y-0.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            {showCourseBadge && courseColor && cleanCode && (
+              <span
+                className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border shrink-0 ${courseColor.badge}`}
+              >
+                {cleanCode}
+              </span>
+            )}
+            <h3
+              className={`text-xs sm:text-sm font-semibold leading-snug break-words ${
+                reading.isCompleted
+                  ? "text-muted-foreground line-through"
+                  : "text-foreground"
+              }`}
+            >
+              {reading.title}
+            </h3>
+            {getCategoryBadge(reading.category)}
+            {reading.pointsPossible !== undefined && reading.pointsPossible > 0 && (
+              <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
+                • {reading.pointsPossible} pts
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Action Trigger */}
+        <div className="shrink-0 pl-1">
+          <a
+            href={reading.canvasUrl || reading.fileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
+            title="Open and view on Canvas"
+          >
+            <span>View</span>
+            <ExternalLink className="w-3 h-3 text-muted-foreground" />
+          </a>
+        </div>
+      </div>
+    );
+  };
+
+  // Check if we should render grouped by course
+  const shouldGroupByCourse = selectedCourseTab === "all" && !searchTerm.trim() && categoryFilter === "all" && courseKeys.length > 1;
+
   return (
     <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden flex flex-col h-full transition-all">
-      {/* Sticky Header: Clean, count integrated into headline, progress & responsive course tabs */}
+      {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-card border-b border-border p-4 sm:p-5 space-y-3">
         <div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
             Week {weekNumber} Coursework & Lectures{" "}
-            <span className="text-primary font-mono text-base font-semibold">
+            <span className="text-primary text-base font-semibold tabular-nums">
               ({readings.length})
             </span>
           </h2>
@@ -165,7 +245,7 @@ export function ReadingsSection({
             <span>
               {completedCount} of {readings.length} completed
             </span>
-            <span className="font-mono font-semibold text-foreground">
+            <span className="font-semibold text-foreground tabular-nums">
               {progressPercent}%
             </span>
           </div>
@@ -179,10 +259,9 @@ export function ReadingsSection({
           />
         </div>
 
-        {/* RESPONSIVE HORIZONTAL COURSE TABS */}
+        {/* Responsive Horizontal Course Tabs */}
         {courseKeys.length > 1 && (
           <div className="relative pt-1 group">
-            {/* Left Scroll Angle (Overlaid on left edge only when scrollable) */}
             {canScrollLeft && (
               <button
                 type="button"
@@ -194,13 +273,12 @@ export function ReadingsSection({
               </button>
             )}
 
-            {/* Scrollable Tabs Track */}
             <div
               ref={tabsRef}
               onScroll={updateScrollButtons}
               className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
             >
-              {/* "All Courses" Tab */}
+              {/* All Courses Tab */}
               <button
                 type="button"
                 onClick={() => setSelectedCourseTab("all")}
@@ -212,7 +290,7 @@ export function ReadingsSection({
               >
                 <Layers className="w-3.5 h-3.5" />
                 <span>All Courses</span>
-                <span className="font-mono text-[11px] opacity-80">({readings.length})</span>
+                <span className="text-[11px] opacity-80 tabular-nums">({readings.length})</span>
               </button>
 
               {/* Course-specific Tabs */}
@@ -235,7 +313,7 @@ export function ReadingsSection({
                     }`}
                   >
                     <span
-                      className={`font-mono text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${color.badge}`}
+                      className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${color.badge}`}
                     >
                       {getCleanCourseCode(code, group.courseName)}
                     </span>
@@ -243,7 +321,7 @@ export function ReadingsSection({
                       {getCleanCourseName(code, group.courseName)}
                     </span>
                     <span
-                      className={`font-mono text-[10px] font-semibold px-1.5 py-0.2 rounded-full ${
+                      className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-full tabular-nums ${
                         isAllDone
                           ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
                           : "bg-muted text-muted-foreground"
@@ -256,7 +334,6 @@ export function ReadingsSection({
               })}
             </div>
 
-            {/* Right Scroll Angle (Overlaid on right edge only when scrollable) */}
             {canScrollRight && (
               <button
                 type="button"
@@ -328,109 +405,50 @@ export function ReadingsSection({
         </div>
       </div>
 
-      {/* Scrollable Container (max-h-[760px]) */}
+      {/* Scrollable Container */}
       <div className="overflow-y-auto max-h-[760px] divide-y divide-border/60">
         {filteredReadings.length === 0 ? (
           <div className="p-8 text-center text-xs sm:text-sm text-muted-foreground space-y-2">
             <CheckCheck className="w-8 h-8 mx-auto text-emerald-600 opacity-60" />
             <p>No coursework matches your filter.</p>
           </div>
-        ) : (
-          filteredReadings.map((reading) => {
-            const courseColor = reading.courseCode ? getCourseColor(reading.courseCode) : null;
+        ) : shouldGroupByCourse ? (
+          courseKeys.map((code) => {
+            const group = groupedByCourse[code];
+            const groupColor = getCourseColor(code);
+            const groupCleanCode = getCleanCourseCode(code, group.courseName);
+            const groupCleanName = getCleanCourseName(code, group.courseName);
+            const groupDone = group.items.filter((i) => i.isCompleted).length;
 
             return (
-              <div
-                key={reading.id}
-                className={`p-3.5 sm:p-4 flex items-start gap-3 transition-colors hover:bg-muted/10 ${
-                  reading.isCompleted ? "opacity-60 bg-muted/5" : ""
-                }`}
-              >
-                {/* Tactile Checkbox (Middle-aligned like action button) */}
-                <button
-                  type="button"
-                  onClick={() => handleCheckboxClick(reading)}
-                  aria-label={`Mark ${reading.title} as ${
-                    reading.isCompleted ? "incomplete" : "complete"
-                  }`}
-                  className={`self-center flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
-                    reading.isCompleted
-                      ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
-                      : "border-border bg-card hover:border-primary shadow-2xs"
-                  }`}
-                >
-                  {reading.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                </button>
-
-                {/* Content Details (min-w-0 pr-2 with break-all to prevent extending behind buttons) */}
-                <div className="min-w-0 flex-1 space-y-1.5 pr-2">
-                  {/* Always stack: Course badge on its own line above title */}
-                  {selectedCourseTab === "all" && reading.courseCode && courseColor && (
-                    <div>
-                      <span
-                        className={`inline-block text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
-                      >
-                        {getCleanCourseName(reading.courseCode, reading.courseName)}
-                      </span>
-                    </div>
-                  )}
-                  <h3
-                    className={`text-sm sm:text-base font-semibold leading-snug break-all [overflow-wrap:anywhere] ${
-                      reading.isCompleted
-                        ? "text-muted-foreground line-through"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {reading.title}
-                  </h3>
-
-                  {/* Metadata row */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">
-                    {getCategoryBadge(reading.category)}
-
-                    {reading.pointsPossible !== undefined && reading.pointsPossible > 0 && (
-                      <span className="font-mono text-xs font-semibold uppercase px-2 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20">
-                        {reading.pointsPossible} PTS
-                      </span>
-                    )}
-
-                    {reading.folderPath && (
-                      <span className="font-mono text-xs text-muted-foreground/80 break-all [overflow-wrap:anywhere]">
-                        • {reading.folderPath}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Trigger - View on Canvas & Direct Download for Files (shrink-0 pl-2) */}
-                <div className="flex flex-col gap-1.5 shrink-0 self-center pl-2">
-                  <a
-                    href={reading.canvasUrl || reading.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
-                    title="Open and view on Canvas"
-                  >
-                    <span>View</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                  </a>
-                  {reading.source === "files_tab" && reading.fileUrl && (
-                    <a
-                      href={reading.fileUrl}
-                      download
-                      target="_blank"
-                      rel="noreferrer"
-                      className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-muted-foreground hover:text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs justify-center"
-                      title="Download file directly"
+              <div key={code}>
+                {/* Clean Course Group Divider */}
+                <div className="sticky top-0 z-10 px-4 py-2 bg-muted/40 backdrop-blur-xs border-y border-border/80 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${groupColor.badge}`}
                     >
-                      <span>Download</span>
-                      <Download className="w-3.5 h-3.5 text-muted-foreground" />
-                    </a>
-                  )}
+                      {groupCleanCode}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground truncate max-w-[240px] sm:max-w-none">
+                      {groupCleanName}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
+                    {groupDone}/{group.items.length} completed
+                  </span>
+                </div>
+                {/* Course Items with zero individual course tags */}
+                <div className="divide-y divide-border/40">
+                  {group.items.map((reading) => renderItemRow(reading, false))}
                 </div>
               </div>
             );
           })
+        ) : (
+          filteredReadings.map((reading) =>
+            renderItemRow(reading, selectedCourseTab === "all" && courseKeys.length > 1)
+          )
         )}
       </div>
     </div>

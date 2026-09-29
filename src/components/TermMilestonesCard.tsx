@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { DeliverableStatus, NormalizedDeliverable } from "@/lib/canvas/types";
-import { getCourseColor, getCleanCourseName } from "@/lib/courseColors";
+import { getCourseColor, getCleanCourseCode } from "@/lib/courseColors";
 
 interface TermMilestonesCardProps {
   deliverables: NormalizedDeliverable[];
@@ -30,15 +30,15 @@ export function TermMilestonesCard({
   ) => {
     if (status === "graded") {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
           <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-          <span>GRADED {grade ? `(${grade})` : score !== null && score !== undefined ? `(${score}P)` : ""}</span>
+          <span>GRADED {grade ? `(${grade})` : score !== null && score !== undefined ? `(${score} pts)` : ""}</span>
         </span>
       );
     }
     if (status === "submitted" || isCompleted) {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
           <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
           <span>DONE</span>
         </span>
@@ -49,7 +49,7 @@ export function TermMilestonesCard({
     }
     if (status === "overdue") {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-destructive/15 text-destructive border border-destructive/30">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[11px] font-semibold bg-destructive/15 text-destructive border border-destructive/30">
           <AlertTriangle className="w-3 h-3" />
           <span>OVERDUE</span>
         </span>
@@ -63,15 +63,13 @@ export function TermMilestonesCard({
     const dateObj = new Date(deliv.dueAt);
     if (isNaN(dateObj.getTime())) return "Date TBA";
 
-    const dateStr = dateObj.toLocaleDateString("en-US", {
+    return dateObj.toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
     });
-
-    return dateStr;
   };
 
   return (
@@ -83,7 +81,7 @@ export function TermMilestonesCard({
             <Sparkles className="w-4 h-4 text-primary" />
             <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">
               Term Projects & Milestones{" "}
-              <span className="text-primary font-mono text-sm sm:text-base font-semibold">
+              <span className="text-primary text-sm sm:text-base font-semibold tabular-nums">
                 ({deliverables.length})
               </span>
             </h2>
@@ -106,6 +104,7 @@ export function TermMilestonesCard({
         ) : (
           deliverables.map((deliv) => {
             const courseColor = getCourseColor(deliv.courseCode);
+            const cleanCode = getCleanCourseCode(deliv.courseCode, deliv.courseName);
             const isFinished =
               deliv.status === "graded" || deliv.status === "submitted" || deliv.isCompleted;
 
@@ -121,7 +120,7 @@ export function TermMilestonesCard({
                   type="button"
                   onClick={() => onToggleComplete(deliv.id)}
                   aria-label={`Mark ${deliv.title} as ${isFinished ? "incomplete" : "complete"}`}
-                  className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded-sm border-2 transition-all cursor-pointer ${
+                  className={`mt-0.5 flex h-5 w-5 min-w-[20px] min-h-[20px] shrink-0 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                     isFinished
                       ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
                       : "border-border bg-card hover:border-primary shadow-2xs"
@@ -131,10 +130,10 @@ export function TermMilestonesCard({
                 </button>
 
                 {/* Content Details */}
-                <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="space-y-1 flex-1 min-w-0 pr-1">
                   {/* Line 1: Due Date + Status */}
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground font-semibold">
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground font-medium">
                       <Calendar className="w-3.5 h-3.5 opacity-70" />
                       {formatDueText(deliv)}
                     </span>
@@ -143,45 +142,45 @@ export function TermMilestonesCard({
 
                   {/* Line 2: Title */}
                   <h3
-                    className={`text-sm sm:text-base font-semibold leading-snug tracking-tight ${
+                    className={`text-xs sm:text-sm font-semibold leading-snug tracking-tight ${
                       isFinished ? "text-muted-foreground line-through" : "text-foreground"
                     }`}
                   >
                     {deliv.title}
                   </h3>
 
-                  {/* Line 3: Course Tag + Points + Countdown */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  {/* Line 3: Compact Course Tag + Points + Countdown */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                     <span
-                      className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-sm border ${courseColor.badge}`}
+                      className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-xs border ${courseColor.badge}`}
                     >
-                      {getCleanCourseName(deliv.courseCode, deliv.courseName)}
+                      {cleanCode}
                     </span>
                     {deliv.pointsPossible > 0 && (
-                      <span className="font-mono text-xs tabular-nums font-semibold text-foreground/80">
-                        • {deliv.pointsPossible} PTS
+                      <span className="text-xs tabular-nums font-medium text-muted-foreground">
+                        • {deliv.pointsPossible} pts
                       </span>
                     )}
                     {deliv.dueInDays !== undefined && (
-                      <span className="font-mono text-xs font-semibold text-primary">
+                      <span className="text-xs font-semibold text-primary tabular-nums">
                         • {deliv.dueInDays}d left
                       </span>
                     )}
                   </div>
+                </div>
 
-                  {/* Line 4: Action Button */}
-                  <div className="pt-0.5">
-                    <a
-                      href={deliv.canvasUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
-                      title="View on Canvas"
-                    >
-                      <span>View</span>
-                      <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                    </a>
-                  </div>
+                {/* Line 4: Action Button */}
+                <div className="shrink-0 self-center">
+                  <a
+                    href={deliv.canvasUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-6 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                    title="View on Canvas"
+                  >
+                    <span>View</span>
+                    <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                  </a>
                 </div>
               </div>
             );

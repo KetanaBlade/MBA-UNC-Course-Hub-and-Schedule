@@ -234,7 +234,7 @@ export function WeeklyDashboard({
                         key={course.id}
                         className={`text-xs font-semibold pl-2.5 pr-1.5 py-1 rounded-md border inline-flex items-center gap-1.5 transition-all shadow-2xs ${courseColor.badge}`}
                       >
-                        <span className="font-mono font-semibold uppercase">{cleanCode}</span>
+                        <span className="font-semibold uppercase">{cleanCode}</span>
                         <span className="opacity-40">•</span>
                         <span className="font-medium truncate max-w-[160px] sm:max-w-[220px]">{cleanName}</span>
                         <button
@@ -286,7 +286,7 @@ export function WeeklyDashboard({
                             className={`text-xs font-medium pl-2 pr-2.5 py-0.5 rounded-md border border-dashed inline-flex items-center gap-1.5 opacity-60 hover:opacity-100 hover:border-solid transition-all cursor-pointer ${courseColor.badge}`}
                           >
                             <Plus className="w-3 h-3" />
-                            <span className="font-mono font-semibold uppercase">{cleanCode}</span>
+                            <span className="font-semibold uppercase">{cleanCode}</span>
                             <span className="truncate max-w-[140px]">{cleanName}</span>
                           </button>
                         );
@@ -300,7 +300,7 @@ export function WeeklyDashboard({
             {/* Week Selector Scrubber & Global Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
               <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                <span className="text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground mr-1">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-1">
                   Week:
                 </span>
                 {weekNumbers.map((w) => {
@@ -316,14 +316,14 @@ export function WeeklyDashboard({
                       }`}
                       aria-label={`Select Week ${w}`}
                     >
-                      <span className="text-[8px] font-mono uppercase tracking-wider opacity-80">
+                      <span className="text-[8px] uppercase tracking-wider opacity-80 font-medium">
                         Week
                       </span>
-                      <span className="text-sm font-semibold leading-none">{w}</span>
+                      <span className="text-sm font-semibold leading-none tabular-nums">{w}</span>
                     </button>
                   );
                 })}
-                <span className="text-xs font-mono font-medium text-muted-foreground ml-1.5 hidden md:inline">
+                <span className="text-xs font-medium text-muted-foreground ml-1.5 hidden md:inline tabular-nums">
                   ({weekDateRangeLabel})
                 </span>
               </div>
@@ -349,10 +349,10 @@ export function WeeklyDashboard({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {/* Deliverables Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Deliverables
               </div>
-              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {submittedDeliverablesCount} / {totalDeliverablesCount}
               </div>
               <p className="text-xs text-muted-foreground">Submitted for Week {selectedWeek}</p>
@@ -360,32 +360,32 @@ export function WeeklyDashboard({
 
             {/* Coursework & Lectures Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Coursework
               </div>
-              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {completedCourseworkCount} / {totalCourseworkCount}
               </div>
               <p className="text-xs text-muted-foreground">Completed for Week {selectedWeek}</p>
             </div>
 
-            {/* Course Files Metric (replaces Live Zoom) */}
+            {/* Course Files Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Course Files
               </div>
-              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {completedFilesCount} / {totalFilesCount}
               </div>
               <p className="text-xs text-muted-foreground">Reviewed for Week {selectedWeek}</p>
             </div>
 
-            {/* Overall Progress Metric (Scoped to Selected Week) */}
+            {/* Overall Progress Metric */}
             <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-xs space-y-1">
-              <div className="text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Overall Progress
               </div>
-              <div className="text-2xl sm:text-3xl font-semibold tabular-nums font-mono text-foreground">
+              <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
                 {weekProgressPercent}%
               </div>
               <p className="text-xs text-muted-foreground">Week {selectedWeek} completion</p>
