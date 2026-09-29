@@ -19,6 +19,7 @@ import {
   WeeklyBundle,
 } from "@/lib/canvas/types";
 import { getCourseColor, getCleanCourseName } from "@/lib/courseColors";
+import { AppStorage } from "@/lib/storage";
 
 interface MasterCalendarViewProps {
   courses?: CanvasCourse[];
@@ -36,10 +37,24 @@ export function MasterCalendarView({
   onExportICS,
   onToggleCompleteItem,
 }: MasterCalendarViewProps) {
-  const [activeFilter, setActiveFilter] = useState<"all" | "deliverables" | "live" | "weeks">("weeks");
+  const [activeFilter, setActiveFilter] = useState<"all" | "deliverables" | "live" | "weeks">(() =>
+    AppStorage.getCalendarFilter()
+  );
 
-  // Week numbers for standard 5-week term
-  const weekNumbers = [1, 2, 3, 4, 5];
+  const handleFilterChange = (filter: "all" | "deliverables" | "live" | "weeks") => {
+    setActiveFilter(filter);
+    AppStorage.setCalendarFilter(filter);
+  };
+
+  // Dynamically calculate all academic week numbers present across active courses
+  const allWeekNumbers = Array.from(
+    new Set(
+      Object.values(bundlesByCourse).flatMap((courseBundles) =>
+        courseBundles.map((b) => b.weekNumber)
+      )
+    )
+  ).sort((a, b) => a - b);
+  const weekNumbers = allWeekNumbers.length > 0 ? allWeekNumbers : [1, 2, 3, 4, 5];
 
   // Group bundles by week
   const weekData: Record<
@@ -127,6 +142,13 @@ export function MasterCalendarView({
 
   timelineEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  // Filter stream by selected filter: all vs deliverables vs live zoom
+  const displayedTimelineEvents = timelineEvents.filter((evt) => {
+    if (activeFilter === "live") return evt.type === "live";
+    if (activeFilter === "deliverables") return evt.type === "deliverable";
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       {/* Master Calendar Header Card */}
@@ -146,18 +168,18 @@ export function MasterCalendarView({
             <div className="flex items-center bg-muted/40 p-0.5 rounded-md border border-border">
               <button
                 type="button"
-                onClick={() => setActiveFilter("weeks")}
+                onClick={() => handleFilterChange("weeks")}
                 className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   activeFilter === "weeks"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                5-Week Roadmap
+                Term Roadmap
               </button>
               <button
                 type="button"
-                onClick={() => setActiveFilter("all")}
+                onClick={() => handleFilterChange("all")}
                 className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   activeFilter === "all"
                     ? "bg-primary text-primary-foreground shadow-xs"
@@ -168,7 +190,7 @@ export function MasterCalendarView({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveFilter("live")}
+                onClick={() => handleFilterChange("live")}
                 className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   activeFilter === "live"
                     ? "bg-primary text-primary-foreground shadow-xs"
@@ -365,25 +387,34 @@ export function MasterCalendarView({
         </div>
       )}
 
-      {/* VIEW MODE 2: CHRONOLOGICAL TIMELINE STREAM */}
+      {/* VIEW MODE 2: CHRONOLOGICAL TIMELINE STREAM / LIVE ZOOM */}
       {activeFilter !== "weeks" && (
         <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-border bg-card flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-foreground">
-              Chronological Agenda Stream
+              {activeFilter === "live"
+                ? "Live Zoom Class Schedule"
+                : activeFilter === "deliverables"
+                ? "Upcoming Deliverables & Memos"
+                : "Chronological Agenda Stream"}
             </h3>
             <span className="font-mono text-xs font-semibold text-muted-foreground">
-              {timelineEvents.length} dated events
+              {displayedTimelineEvents.length}{" "}
+              {activeFilter === "live"
+                ? displayedTimelineEvents.length === 1
+                  ? "live session"
+                  : "live sessions"
+                : "dated events"}
             </span>
           </div>
 
           <div className="divide-y divide-border/60">
-            {timelineEvents.length === 0 ? (
+            {displayedTimelineEvents.length === 0 ? (
               <div className="p-8 text-center text-xs sm:text-sm text-muted-foreground">
-                No dated events found. Try switching to the 5-Week Roadmap view.
+                No {activeFilter === "live" ? "live Zoom sessions" : "dated events"} found. Try switching to the Term Roadmap view.
               </div>
             ) : (
-              timelineEvents.map((evt) => {
+              displayedTimelineEvents.map((evt) => {
                 const courseColor = getCourseColor(evt.courseCode);
                 return (
                   <div
@@ -439,16 +470,29 @@ export function MasterCalendarView({
                     </div>
 
                     <div className="shrink-0 self-center">
-                      <a
-                        href={evt.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
-                        title={evt.type === "live" ? "Join Zoom session" : "View on Canvas"}
-                      >
-                        <span>{evt.type === "live" ? "Join Zoom" : "View"}</span>
-                        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                      </a>
+                      {evt.type === "live" ? (
+                        <a
+                          href={evt.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-7 px-2.5 rounded border border-purple-600/40 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                          title="Join Zoom session"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Join Zoom</span>
+                        </a>
+                      ) : (
+                        <a
+                          href={evt.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-7 px-2.5 rounded border border-border bg-card hover:bg-muted/30 text-foreground text-xs font-semibold tracking-tight transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                          title="View on Canvas"
+                        >
+                          <span>View</span>
+                          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 );

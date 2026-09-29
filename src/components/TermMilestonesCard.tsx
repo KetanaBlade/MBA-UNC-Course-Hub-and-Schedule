@@ -86,9 +86,6 @@ export function TermMilestonesCard({
               </span>
             </h2>
           </div>
-          <span className="text-[11px] font-semibold text-muted-foreground hidden sm:inline">
-            Major deliverables
-          </span>
         </div>
       </div>
 

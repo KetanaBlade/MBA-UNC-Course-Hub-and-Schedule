@@ -58,10 +58,12 @@ export default function HomePage() {
     const cachedBundles = AppStorage.getCachedBundles();
     const savedWeek = AppStorage.getSelectedWeek();
     const savedCourseIds = AppStorage.getSelectedCourseIds();
+    const savedMainTab = AppStorage.getMainTab();
 
     setTokens(savedTokens);
     setIsDemoMode(demo);
     setSelectedWeek(savedWeek || 1);
+    setActiveTab(savedMainTab);
 
     const hasAnyToken = Boolean(savedTokens.digitalCampusToken || savedTokens.kenanFlaglerToken);
 
@@ -554,7 +556,10 @@ export default function HomePage() {
           <div className="flex items-center gap-2.5 self-start md:self-auto">
             <div className="flex items-center bg-card p-1 rounded-md border border-border shadow-2xs">
               <button
-                onClick={() => setActiveTab("weekly")}
+                onClick={() => {
+                  setActiveTab("weekly");
+                  AppStorage.setMainTab("weekly");
+                }}
                 className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === "weekly"
                     ? "bg-primary text-primary-foreground shadow-xs"
@@ -566,7 +571,10 @@ export default function HomePage() {
               </button>
 
               <button
-                onClick={() => setActiveTab("calendar")}
+                onClick={() => {
+                  setActiveTab("calendar");
+                  AppStorage.setMainTab("calendar");
+                }}
                 className={`px-3.5 py-1.5 rounded-sm text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === "calendar"
                     ? "bg-primary text-primary-foreground shadow-xs"

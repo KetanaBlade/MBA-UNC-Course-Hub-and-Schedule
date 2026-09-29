@@ -6,7 +6,6 @@ import {
   ChevronRight,
   FileSpreadsheet,
   FileText,
-  Filter,
   GraduationCap,
   Layers,
   Plus,
@@ -47,7 +46,6 @@ export function WeeklyDashboard({
   onSelectWeek,
   onToggleCompleteItem,
 }: WeeklyDashboardProps) {
-  const [onlyPending, setOnlyPending] = useState(false);
   const [mobileTab, setMobileTab] = useState<"actions" | "readings" | "files" | "milestones">("actions");
   const [showHiddenSection, setShowHiddenSection] = useState(false);
 
@@ -117,16 +115,9 @@ export function WeeklyDashboard({
   });
 
   const allAnnouncements = activeBundles.flatMap((b) => b.announcements);
-  let allReadings = activeBundles.flatMap((b) => b.readings);
-  let allDeliverables = activeBundles.flatMap((b) => b.deliverables);
+  const allReadings = activeBundles.flatMap((b) => b.readings);
+  const allDeliverables = activeBundles.flatMap((b) => b.deliverables);
   const allLiveSessions = activeBundles.flatMap((b) => b.liveSessions);
-
-  if (onlyPending) {
-    allReadings = allReadings.filter((r) => !r.isCompleted);
-    allDeliverables = allDeliverables.filter(
-      (d) => d.status !== "graded" && d.status !== "submitted" && !d.isCompleted
-    );
-  }
 
   // Separate readings into: Left Pane (Course Readings & Cases) and Right Pane (Rescued Files Tab items)
   const leftPaneReadings = allReadings.filter((r) => r.source !== "files_tab");
@@ -159,12 +150,9 @@ export function WeeklyDashboard({
   });
 
   // Major Term Milestones strictly using pure heuristic
-  const termMilestones = Array.from(allQuarterDeliverablesMap.values()).filter((d) => {
-    if (onlyPending && (d.isCompleted || d.status === "graded" || d.status === "submitted")) {
-      return false;
-    }
-    return isMajorTermMilestone(d.title, d.pointsPossible);
-  });
+  const termMilestones = Array.from(allQuarterDeliverablesMap.values()).filter((d) =>
+    isMajorTermMilestone(d.title, d.pointsPossible)
+  );
 
   // Sort chronologically by due date
   termMilestones.sort((a, b) => {
@@ -326,8 +314,7 @@ export function WeeklyDashboard({
                     ) : (
                       <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                     )}
-                    <span>Available Courses & Refresher Materials ({hiddenCourses.length})</span>
-                    <span className="text-[11px] opacity-70">— click to expand and opt in</span>
+                    <span>Hidden Courses ({hiddenCourses.length})</span>
                   </button>
 
                   {showHiddenSection && (
@@ -491,21 +478,6 @@ export function WeeklyDashboard({
                 <span className="text-xs font-medium text-muted-foreground hidden sm:inline tabular-nums">
                   Block {currentBlock} • Week {blockWeekNum} ({weekDateRangeLabel})
                 </span>
-              </div>
-
-              {/* Status Filter Toggle */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setOnlyPending(!onlyPending)}
-                  className={`h-9 px-3 rounded-md border text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1.5 ${
-                    onlyPending
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card text-foreground hover:bg-muted/30 border-border"
-                  }`}
-                >
-                  <Filter className="w-3.5 h-3.5" />
-                  <span>{onlyPending ? "Showing To-Do Only" : "Show All Tasks"}</span>
-                </button>
               </div>
             </div>
           </div>

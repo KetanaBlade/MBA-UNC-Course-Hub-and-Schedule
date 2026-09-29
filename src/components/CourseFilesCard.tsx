@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { NormalizedReading } from "@/lib/canvas/types";
 import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
+import { AppStorage } from "@/lib/storage";
 
 interface CourseFilesCardProps {
   files: NormalizedReading[];
@@ -24,7 +25,14 @@ interface CourseFilesCardProps {
 
 export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseFilesCardProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCourseTab, setSelectedCourseTab] = useState<string>("all");
+  const [selectedCourseTab, setSelectedCourseTab] = useState<string>(() =>
+    AppStorage.getFilesCourseTab()
+  );
+
+  const handleSelectTab = (tab: string) => {
+    setSelectedCourseTab(tab);
+    AppStorage.setFilesCourseTab(tab);
+  };
 
   const tabsRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -207,7 +215,7 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
         </div>
 
         {/* Responsive Horizontal Course Tabs (Standard Underline Tab Layout) */}
-        {courseKeys.length > 1 && (
+        {courseKeys.length >= 1 && (
           <div className="relative border-b border-border/80 group">
             {canScrollLeft && (
               <button
@@ -223,13 +231,13 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
             <div
               ref={tabsRef}
               onScroll={updateScrollButtons}
-              className="w-full flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar scroll-smooth px-1"
+              className="w-full flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth"
             >
               {/* All Files Tab */}
               <button
                 type="button"
-                onClick={() => setSelectedCourseTab("all")}
-                className={`shrink-0 py-2.5 sm:py-3 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
+                onClick={() => handleSelectTab("all")}
+                className={`shrink-0 py-2 sm:py-2.5 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 first:pl-0 ${
                   selectedCourseTab === "all"
                     ? "border-primary text-foreground font-semibold"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"
@@ -253,8 +261,8 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
                   <button
                     key={code}
                     type="button"
-                    onClick={() => setSelectedCourseTab(code)}
-                    className={`shrink-0 py-2.5 sm:py-3 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
+                    onClick={() => handleSelectTab(code)}
+                    className={`shrink-0 py-2 sm:py-2.5 text-xs sm:text-sm transition-colors cursor-pointer select-none border-b-2 flex items-center gap-1.5 ${
                       isSelected
                         ? "border-primary text-foreground font-semibold"
                         : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60 font-medium"

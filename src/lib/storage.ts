@@ -10,6 +10,10 @@ const STORAGE_KEYS = {
   SELECTED_WEEK: "unc_mba_selected_week",
   IS_DEMO_MODE: "unc_mba_demo_mode",
   THEME: "unc_mba_theme",
+  MAIN_TAB: "unc_mba_main_tab",
+  READINGS_TAB: "unc_mba_readings_tab",
+  FILES_TAB: "unc_mba_files_tab",
+  CALENDAR_FILTER: "unc_mba_calendar_filter",
 };
 
 export class AppStorage {
@@ -172,6 +176,51 @@ export class AppStorage {
     const next = current === "dark" ? "light" : "dark";
     this.setTheme(next);
     return next;
+  }
+
+  static getMainTab(): "weekly" | "calendar" {
+    if (typeof window === "undefined") return "weekly";
+    const stored = localStorage.getItem(STORAGE_KEYS.MAIN_TAB);
+    return stored === "calendar" ? "calendar" : "weekly";
+  }
+
+  static setMainTab(tab: "weekly" | "calendar"): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.MAIN_TAB, tab);
+  }
+
+  static getReadingsCourseTab(): string {
+    if (typeof window === "undefined") return "all";
+    return localStorage.getItem(STORAGE_KEYS.READINGS_TAB) || "all";
+  }
+
+  static setReadingsCourseTab(tab: string): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.READINGS_TAB, tab);
+  }
+
+  static getFilesCourseTab(): string {
+    if (typeof window === "undefined") return "all";
+    return localStorage.getItem(STORAGE_KEYS.FILES_TAB) || "all";
+  }
+
+  static setFilesCourseTab(tab: string): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.FILES_TAB, tab);
+  }
+
+  static getCalendarFilter(): "all" | "deliverables" | "live" | "weeks" {
+    if (typeof window === "undefined") return "weeks";
+    const stored = localStorage.getItem(STORAGE_KEYS.CALENDAR_FILTER);
+    if (stored === "all" || stored === "deliverables" || stored === "live" || stored === "weeks") {
+      return stored;
+    }
+    return "weeks";
+  }
+
+  static setCalendarFilter(filter: "all" | "deliverables" | "live" | "weeks"): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.CALENDAR_FILTER, filter);
   }
 
   static exportCohortConfig(): string {
