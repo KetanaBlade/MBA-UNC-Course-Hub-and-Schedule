@@ -37,11 +37,11 @@ export function MasterCalendarView({
   onExportICS,
   onToggleCompleteItem,
 }: MasterCalendarViewProps) {
-  const [activeFilter, setActiveFilter] = useState<"all" | "deliverables" | "live" | "weeks">(() =>
+  const [activeFilter, setActiveFilter] = useState<"weeks" | "timeline">(() =>
     AppStorage.getCalendarFilter()
   );
 
-  const handleFilterChange = (filter: "all" | "deliverables" | "live" | "weeks") => {
+  const handleFilterChange = (filter: "weeks" | "timeline") => {
     setActiveFilter(filter);
     AppStorage.setCalendarFilter(filter);
   };
@@ -142,12 +142,8 @@ export function MasterCalendarView({
 
   timelineEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Filter stream by selected filter: all vs deliverables vs live zoom
-  const displayedTimelineEvents = timelineEvents.filter((evt) => {
-    if (activeFilter === "live") return evt.type === "live";
-    if (activeFilter === "deliverables") return evt.type === "deliverable";
-    return true;
-  });
+  // In timeline mode, all events are displayed chronologically
+  const displayedTimelineEvents = timelineEvents;
 
   return (
     <div className="space-y-6">
@@ -164,7 +160,7 @@ export function MasterCalendarView({
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* View Filter Switcher */}
+            {/* View Switcher: Term Roadmap vs Timeline Stream */}
             <div className="flex items-center bg-muted/40 p-0.5 rounded-md border border-border">
               <button
                 type="button"
@@ -179,25 +175,14 @@ export function MasterCalendarView({
               </button>
               <button
                 type="button"
-                onClick={() => handleFilterChange("all")}
+                onClick={() => handleFilterChange("timeline")}
                 className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                  activeFilter === "all"
+                  activeFilter === "timeline"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Timeline Stream ({timelineEvents.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFilterChange("live")}
-                className={`px-3 py-1.5 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                  activeFilter === "live"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Live Zoom ({liveSessions.length})
               </button>
             </div>
 
@@ -387,31 +372,23 @@ export function MasterCalendarView({
         </div>
       )}
 
-      {/* VIEW MODE 2: CHRONOLOGICAL TIMELINE STREAM / LIVE ZOOM */}
-      {activeFilter !== "weeks" && (
+      {/* VIEW MODE 2: CHRONOLOGICAL TIMELINE STREAM */}
+      {activeFilter === "timeline" && (
         <div className="border border-border rounded-lg bg-card text-card-foreground shadow-xs overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-border bg-card flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-semibold text-foreground">
-              {activeFilter === "live"
-                ? "Live Zoom Class Schedule"
-                : activeFilter === "deliverables"
-                ? "Upcoming Deliverables & Memos"
-                : "Chronological Agenda Stream"}
+              Chronological Agenda Stream
             </h3>
             <span className="font-mono text-xs font-semibold text-muted-foreground">
               {displayedTimelineEvents.length}{" "}
-              {activeFilter === "live"
-                ? displayedTimelineEvents.length === 1
-                  ? "live session"
-                  : "live sessions"
-                : "dated events"}
+              {displayedTimelineEvents.length === 1 ? "dated event" : "dated events"}
             </span>
           </div>
 
           <div className="divide-y divide-border/60">
             {displayedTimelineEvents.length === 0 ? (
               <div className="p-8 text-center text-xs sm:text-sm text-muted-foreground">
-                No {activeFilter === "live" ? "live Zoom sessions" : "dated events"} found. Try switching to the Term Roadmap view.
+                No dated events found. Try switching to the Term Roadmap view.
               </div>
             ) : (
               displayedTimelineEvents.map((evt) => {

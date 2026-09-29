@@ -249,15 +249,6 @@ export function WeeklyDashboard({
                     </button>
                   </div>
                 </div>
-
-                {hiddenCourses.length > 0 && (
-                  <button
-                    onClick={onSelectAllCourses}
-                    className="text-xs font-semibold text-primary hover:underline cursor-pointer"
-                  >
-                    Restore All ({courses.length})
-                  </button>
-                )}
               </div>
 
               {/* Active Chips with subtle "Hide" (X) trigger */}

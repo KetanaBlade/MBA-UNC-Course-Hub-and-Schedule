@@ -209,18 +209,43 @@ export class AppStorage {
     localStorage.setItem(STORAGE_KEYS.FILES_TAB, tab);
   }
 
-  static getCalendarFilter(): "all" | "deliverables" | "live" | "weeks" {
+  static getCalendarFilter(): "weeks" | "timeline" {
     if (typeof window === "undefined") return "weeks";
     const stored = localStorage.getItem(STORAGE_KEYS.CALENDAR_FILTER);
-    if (stored === "all" || stored === "deliverables" || stored === "live" || stored === "weeks") {
-      return stored;
-    }
-    return "weeks";
+    return stored === "timeline" ? "timeline" : "weeks";
   }
 
-  static setCalendarFilter(filter: "all" | "deliverables" | "live" | "weeks"): void {
+  static setCalendarFilter(filter: "weeks" | "timeline"): void {
     if (typeof window === "undefined") return;
     localStorage.setItem(STORAGE_KEYS.CALENDAR_FILTER, filter);
+  }
+
+  static getTaskStatusFilter(): "all" | "todo" | "completed" {
+    if (typeof window === "undefined") return "all";
+    const stored = localStorage.getItem("unc_mba_task_status_filter");
+    if (stored === "all" || stored === "todo" || stored === "completed") {
+      return stored;
+    }
+    return "all";
+  }
+
+  static setTaskStatusFilter(filter: "all" | "todo" | "completed"): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("unc_mba_task_status_filter", filter);
+  }
+
+  static getFileStatusFilter(): "all" | "todo" | "completed" {
+    if (typeof window === "undefined") return "all";
+    const stored = localStorage.getItem("unc_mba_file_status_filter");
+    if (stored === "all" || stored === "todo" || stored === "completed") {
+      return stored;
+    }
+    return "all";
+  }
+
+  static setFileStatusFilter(filter: "all" | "todo" | "completed"): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("unc_mba_file_status_filter", filter);
   }
 
   static exportCohortConfig(): string {

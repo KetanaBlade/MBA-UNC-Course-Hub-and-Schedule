@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Check,
   CheckCheck,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -16,6 +17,13 @@ import {
 import { NormalizedReading } from "@/lib/canvas/types";
 import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
 import { AppStorage } from "@/lib/storage";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface CourseFilesCardProps {
   files: NormalizedReading[];
@@ -25,6 +33,16 @@ interface CourseFilesCardProps {
 
 export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseFilesCardProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [fileStatusFilter, setFileStatusFilter] = useState<"all" | "todo" | "completed">(() =>
+    AppStorage.getFileStatusFilter()
+  );
+
+  const handleStatusFilterChange = (val: string) => {
+    const next = val as "all" | "todo" | "completed";
+    setFileStatusFilter(next);
+    AppStorage.setFileStatusFilter(next);
+  };
+
   const [selectedCourseTab, setSelectedCourseTab] = useState<string>(() =>
     AppStorage.getFilesCourseTab()
   );
@@ -84,11 +102,16 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
     }
   }, [courseKeys, selectedCourseTab]);
 
+  const completedFilesCount = files.filter((f) => f.isCompleted).length;
+
   const filteredFiles = files.filter((f) => {
     const itemCourse = f.courseCode || "General";
     if (selectedCourseTab !== "all" && itemCourse !== selectedCourseTab) {
       return false;
     }
+
+    if (fileStatusFilter === "todo" && f.isCompleted) return false;
+    if (fileStatusFilter === "completed" && !f.isCompleted) return false;
 
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
@@ -295,9 +318,9 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
           </div>
         )}
 
-        {/* Search Bar */}
-        <div className="pt-0.5">
-          <div className="relative">
+        {/* Search + Status Filter Dropdown */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
+          <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-2 text-muted-foreground" />
             <input
               type="text"
@@ -307,6 +330,49 @@ export function CourseFilesCard({ files, weekNumber, onToggleComplete }: CourseF
               className="w-full h-8 pl-9 pr-3 text-xs sm:text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
+
+          {/* Accessible Status Filter Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="h-8 px-2.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold inline-flex items-center gap-1.5 transition-all shadow-2xs shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label={`Filter files by status: currently ${
+                  fileStatusFilter === "all"
+                    ? "All"
+                    : fileStatusFilter === "todo"
+                    ? "To Do"
+                    : "Completed"
+                }`}
+              >
+                <span className="text-muted-foreground font-medium">Status:</span>
+                <span className="font-semibold text-foreground">
+                  {fileStatusFilter === "all"
+                    ? `All (${files.length})`
+                    : fileStatusFilter === "todo"
+                    ? `To Do (${files.length - completedFilesCount})`
+                    : `Completed (${completedFilesCount})`}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuRadioGroup
+                value={fileStatusFilter}
+                onValueChange={handleStatusFilterChange}
+              >
+                <DropdownMenuRadioItem value="all">
+                  All Files ({files.length})
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="todo">
+                  To Do ({files.length - completedFilesCount})
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="completed">
+                  Completed ({completedFilesCount})
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

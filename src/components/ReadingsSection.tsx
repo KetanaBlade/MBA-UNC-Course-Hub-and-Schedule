@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Check,
   CheckCheck,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -13,6 +14,13 @@ import confetti from "canvas-confetti";
 import { NormalizedReading } from "@/lib/canvas/types";
 import { getCourseColor, getCleanCourseCode, getCleanCourseName } from "@/lib/courseColors";
 import { AppStorage } from "@/lib/storage";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ReadingsSectionProps {
   readings: NormalizedReading[];
@@ -26,7 +34,16 @@ export function ReadingsSection({
   onToggleComplete,
 }: ReadingsSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "todo" | "completed">("all");
+  const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "todo" | "completed">(() =>
+    AppStorage.getTaskStatusFilter()
+  );
+
+  const handleStatusFilterChange = (val: string) => {
+    const next = val as "all" | "todo" | "completed";
+    setTaskStatusFilter(next);
+    AppStorage.setTaskStatusFilter(next);
+  };
+
   const [selectedCourseTab, setSelectedCourseTab] = useState<string>(() =>
     AppStorage.getReadingsCourseTab()
   );
@@ -326,38 +343,48 @@ export function ReadingsSection({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 text-xs">
-            <button
-              onClick={() => setTaskStatusFilter("all")}
-              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                taskStatusFilter === "all"
-                  ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                  : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
-              }`}
-            >
-              All ({readings.length})
-            </button>
-            <button
-              onClick={() => setTaskStatusFilter("todo")}
-              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                taskStatusFilter === "todo"
-                  ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                  : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
-              }`}
-            >
-              To Do ({readings.length - completedCount})
-            </button>
-            <button
-              onClick={() => setTaskStatusFilter("completed")}
-              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                taskStatusFilter === "completed"
-                  ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                  : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"
-              }`}
-            >
-              Completed ({completedCount})
-            </button>
-          </div>
+          {/* Accessible Status Filter Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="h-8 px-2.5 rounded-md border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-semibold inline-flex items-center gap-1.5 transition-all shadow-2xs shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label={`Filter coursework by status: currently ${
+                  taskStatusFilter === "all"
+                    ? "All"
+                    : taskStatusFilter === "todo"
+                    ? "To Do"
+                    : "Completed"
+                }`}
+              >
+                <span className="text-muted-foreground font-medium">Status:</span>
+                <span className="font-semibold text-foreground">
+                  {taskStatusFilter === "all"
+                    ? `All (${readings.length})`
+                    : taskStatusFilter === "todo"
+                    ? `To Do (${readings.length - completedCount})`
+                    : `Completed (${completedCount})`}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuRadioGroup
+                value={taskStatusFilter}
+                onValueChange={handleStatusFilterChange}
+              >
+                <DropdownMenuRadioItem value="all">
+                  All Tasks ({readings.length})
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="todo">
+                  To Do ({readings.length - completedCount})
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="completed">
+                  Completed ({completedCount})
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
